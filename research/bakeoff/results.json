@@ -1,0 +1,146 @@
+[
+  {
+    "model": "gemini-3.1-flash-image",
+    "spec": "stormback",
+    "latency_s": 12.0,
+    "native_alpha": false,
+    "pct_opaque": 35.9,
+    "pct_edge": 0.0,
+    "size": [
+      2528,
+      1696
+    ]
+  },
+  {
+    "model": "gemini-3.1-flash-image",
+    "spec": "basilodion",
+    "latency_s": 12.4,
+    "native_alpha": false,
+    "pct_opaque": 54.0,
+    "pct_edge": 0.0,
+    "size": [
+      2528,
+      1696
+    ]
+  },
+  {
+    "model": "gemini-3-pro-image",
+    "spec": "basilodion",
+    "latency_s": 23.5,
+    "native_alpha": false,
+    "pct_opaque": 54.2,
+    "pct_edge": 0.0,
+    "size": [
+      2528,
+      1696
+    ]
+  },
+  {
+    "model": "gemini-3-pro-image",
+    "spec": "stormback",
+    "latency_s": 27.0,
+    "native_alpha": false,
+    "pct_opaque": 40.3,
+    "pct_edge": 0.0,
+    "size": [
+      2528,
+      1696
+    ]
+  },
+  {
+    "model": "gemini-3-pro-image",
+    "spec": "tideburn",
+    "latency_s": 21.6,
+    "native_alpha": false,
+    "pct_opaque": 51.3,
+    "pct_edge": 0.0,
+    "size": [
+      2528,
+      1696
+    ]
+  },
+  {
+    "model": "gemini-3.1-flash-image",
+    "spec": "tideburn",
+    "latency_s": 12.8,
+    "native_alpha": false,
+    "pct_opaque": 44.6,
+    "pct_edge": 0.0,
+    "size": [
+      2528,
+      1696
+    ]
+  },
+  {
+    "model": "gpt-image-1.5",
+    "spec": "stormback",
+    "latency_s": 49.5,
+    "native_alpha": true,
+    "pct_opaque": 44.4,
+    "pct_edge": 1.58,
+    "size": [
+      1536,
+      1024
+    ]
+  },
+  {
+    "model": "gpt-image-1.5",
+    "spec": "basilodion",
+    "latency_s": 52.5,
+    "native_alpha": true,
+    "pct_opaque": 53.3,
+    "pct_edge": 1.45,
+    "size": [
+      1536,
+      1024
+    ]
+  },
+  {
+    "model": "gpt-image-1.5",
+    "spec": "tideburn",
+    "latency_s": 46.2,
+    "native_alpha": true,
+    "pct_opaque": 52.1,
+    "pct_edge": 4.1,
+    "size": [
+      1536,
+      1024
+    ]
+  },
+  {
+    "model": "gpt-image-2(chroma)",
+    "spec": "basilodion",
+    "latency_s": 87.2,
+    "native_alpha": false,
+    "pct_opaque": 43.9,
+    "pct_edge": 0.0,
+    "size": [
+      1536,
+      1024
+    ]
+  },
+  {
+    "model": "gpt-image-2(chroma)",
+    "spec": "stormback",
+    "latency_s": 88.5,
+    "native_alpha": false,
+    "pct_opaque": 43.6,
+    "pct_edge": 0.0,
+    "size": [
+      1536,
+      1024
+    ]
+  },
+  {
+    "model": "gpt-image-2(chroma)",
+    "spec": "tideburn",
+    "latency_s": 89.9,
+    "native_alpha": false,
+    "pct_opaque": 48.0,
+    "pct_edge": 0.0,
+    "size": [
+      1536,
+      1024
+    ]
+  }
+]

@@ -1,0 +1,337 @@
+{
+  "gemini-3-pro-preview": {
+    "error": "ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-3-pro-preview is no longer available. Please update your code to use a newer model for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs/migrate-to-interactions).', 'status': 'NOT_FOUND'}}"
+  },
+  "gemini-3-flash-preview": {
+    "model": "gemini-3-flash-preview",
+    "latency_s": 9.1,
+    "record": {
+      "name": "Frost-Tusk Phantom",
+      "title": "The Shifting Mountain",
+      "anatomy_plan": "A massive beast with the hulking body and thick fur of a mammoth, using four powerful Kraken-like tentacles as limbs tipped with sharp falcon talons. It features a pair of giant ivory tusks and swiveling chameleon eyes that can look in two directions at once.",
+      "core_stats": {
+        "power": 82,
+        "speed": 45,
+        "armor": 78,
+        "size": 92,
+        "special_name": "Stealth",
+        "special": 94
+      },
+      "abilities": [
+        {
+          "name": "Glacier Ghost",
+          "blurb": "Its fur and skin change color instantly to make this giant monster totally invisible in the snow.",
+          "sources": [
+            "Chameleon",
+            "Kraken"
+          ]
+        },
+        {
+          "name": "Talon-Trunk Smash",
+          "blurb": "It uses its four huge tentacle-arms to grab enemies with bird claws and squeeze with mammoth strength.",
+          "sources": [
+            "Woolly Mammoth",
+            "Peregrine Falcon"
+          ]
+        },
+        {
+          "name": "Lightning Tongue",
+          "blurb": "A sticky, super-fast tongue shoots out from its mouth to snatch prey from the sky like a falcon.",
+          "sources": [
+            "Chameleon",
+            "Peregrine Falcon"
+          ]
+        }
+      ],
+      "strengths": [
+        "Invisible in cold places",
+        "Can grab four things at once",
+        "Super strong tusks"
+      ],
+      "weaknesses": [
+        "Very slow at turning around",
+        "Thick fur makes it overheat in the sun",
+        "Bright colors can confuse its camouflage"
+      ],
+      "environment_affinities": {
+        "deep_ocean": -1,
+        "storm_coast": 1,
+        "volcanic_shore": -2,
+        "jungle_canyon": 0,
+        "frozen_ridge": 2,
+        "open_sky": -1,
+        "desert_ruins": -2,
+        "swamp": 0,
+        "city_harbor": 1
+      },
+      "sim_profile": {
+        "land_speed": 35,
+        "swim_speed": 50,
+        "flight_speed": 0,
+        "bite_force": 65,
+        "armor_rating": 80,
+        "intelligence": 60,
+        "endurance": 85,
+        "regeneration": 30,
+        "attack_range": 75,
+        "maneuverability": 30
+      },
+      "visual_spec": "A gargantuan creature with shaggy, snow-white mammoth fur that shimmers with rainbow chameleon scales underneath. Instead of legs, it has four thick, muscular Kraken tentacles covered in suckers, ending in massive yellow Peregrine Falcon talons. Its head has two enormous curved tusks and two large, independently moving turret eyes that glow soft blue.",
+      "rarity": "Legendary",
+      "fun_fact": "This creature can stay so still and hidden that hikers often mistake it for a small, furry hill!"
+    }
+  },
+  "gpt-5.1": {
+    "model": "gpt-5.1",
+    "latency_s": 15.7,
+    "record": {
+      "name": "Storm Mammothon",
+      "title": "The Shifting Sky Titan",
+      "anatomy_plan": "Huge four-legged titan with a mammoth-style body and thick, sea-soaked wool; front half is bulky like a Woolly Mammoth with a short trunk split into flexible, Kraken-like tentacle tips; back half and tail are long, muscular, and chameleon-like for balance and gripping cliffs; head is a blend of mammoth and falcon with a curved beak, forward-facing falcon eyes, and a chameleon\u2019s swiveling color-shifting skin around them; two broad feathered wings like a giant Peregrine Falcon grow from its shoulders; hide is covered in soft fur that can change color and pattern like a chameleon, with slick, rubbery Kraken skin showing along the tentacles and underside; feet are heavy, clawed pads for land, with webbing between toes for swimming.",
+      "core_stats": {
+        "power": 88,
+        "speed": 76,
+        "armor": 72,
+        "size": 95,
+        "special_name": "Camouflage",
+        "special": 90
+      },
+      "abilities": [
+        {
+          "name": "Thunder Tusk Smash",
+          "blurb": "It charges and slams its tusks like a furry lightning bolt, shaking the ground.",
+          "sources": [
+            "Woolly Mammoth",
+            "Peregrine Falcon"
+          ]
+        },
+        {
+          "name": "Ink Mist Vanish",
+          "blurb": "It sprays a dark, inky fog and melts into the colors around it to disappear.",
+          "sources": [
+            "Kraken",
+            "Chameleon"
+          ]
+        },
+        {
+          "name": "Sky-Strike Dive",
+          "blurb": "From high in the clouds it folds its wings and dives faster than a race car.",
+          "sources": [
+            "Peregrine Falcon",
+            "Kraken"
+          ]
+        },
+        {
+          "name": "Cliff-Grip Crawler",
+          "blurb": "Its sticky tail and strong legs let it cling to cliffs like a giant furry lizard.",
+          "sources": [
+            "Chameleon",
+            "Woolly Mammoth"
+          ]
+        }
+      ],
+      "strengths": [
+        "Can hide almost anywhere with color-changing fur",
+        "Very strong on land and dangerous in close combat",
+        "Deadly surprise attacks from the sky"
+      ],
+      "weaknesses": [
+        "Too huge to fit in tight caves or tunnels",
+        "Wings struggle in heavy storms or icy winds",
+        "Gets tired quickly if it dives and charges too often"
+      ],
+      "environment_affinities": {
+        "deep_ocean": -1,
+        "storm_coast": 2,
+        "volcanic_shore": 0,
+        "jungle_canyon": 1,
+        "frozen_ridge": 1,
+        "open_sky": 2,
+        "desert_ruins": 0,
+        "swamp": -1,
+        "city_harbor": 1
+      },
+      "sim_profile": {
+        "land_speed": 70,
+        "swim_speed": 40,
+        "flight_speed": 88,
+        "bite_force": 60,
+        "armor_rating": 75,
+        "intelligence": 62,
+        "endurance": 68,
+        "regeneration": 35,
+        "attack_range": 55,
+        "maneuverability": 58
+      },
+      "visual_spec": "A colossal quadruped titan standing taller than a house, with the shaggy bulk of a Woolly Mammoth and the sleek deadliness of a bird of prey. Its body is draped in thick, long fur that shifts color and pattern like a chameleon: mossy green and rock gray in forests, sandy tones in cliffs, stormy blue and slate near the sea. The fur looks soft but hides thick muscle. From its massive head curve two long ivory tusks, lightly ridged and slightly translucent at the tips, sometimes glowing faintly with reflected lightning during storms. The face mixes mammoth and falcon: a strong, hooked beak where a trunk would be, sharp but not bloody, with a short trunk behind the beak that splits into four Kraken-like tentacle tips used like fingers. Its eyes are large, golden falcon eyes set forward for hunting, with independently swiveling chameleon lids that can change color and show ring patterns when it is excited or angry. Huge wings rise from its shoulders, shaped like a Peregrine Falcon\u2019s but scaled up: powerful, pointed, and built for speed, covered in layered feathers that shimmer between dark charcoal, storm blue, and pale silver, sometimes breaking into striped patterns as its camouflage extends onto the wings. The underside of its body and inner legs have patches of smooth, rubbery Kraken skin, purplish and slightly shiny, with faint bioluminescent speckles that glow softly in the dark. Its trunk ends in tentacle tips with tiny suction pads, each able to grip rocks, branches, or prey. The tail is long, flexible, and prehensile like a chameleon\u2019s, furred on top and smooth underneath, coiling around cliff edges or tree trunks. Its legs are thick and mammoth-like with strong joints, ending in wide, clawed feet with hidden webbing between toes for paddling in water. When it uses Ink Mist Vanish, dark, swirling ink puffs out from glands along its underside and tentacle tips, forming a rolling fog around its legs that quickly blends with its shifting fur patterns, making its giant shape break up and vanish into the background. In motion, it can charge with thunderous, earth-shaking stomps or suddenly launch into the sky, wings beating with powerful, whooshing gusts as it climbs, then tucks in to dive like a streaking, color-changing meteor.",
+      "rarity": "Legendary",
+      "fun_fact": "When a Storm Mammothon is calm and sleepy, its fur turns soft pastel colors and slowly ripples like a sunset sky, making it look like a moving cloud hug."
+    }
+  },
+  "gpt-5-mini": {
+    "model": "gpt-5-mini",
+    "latency_s": 27.8,
+    "record": {
+      "name": "Tuskwing Kraken",
+      "title": "The Frostwind Leviathan",
+      "anatomy_plan": "Core body and heavy bones from the woolly mammoth make a huge, furry bulk with curved tusks for ramming and digging; broad, feathered falcon-style wings sprout from powerful chest muscles, sized for high-speed dives and long glides rather than long soaring; a ring of flexible kraken-like tentacles grows around the neck and jaw to grab and wrestle, each tentacle tipped with suction pads; skin and fur have chameleon-derived chromatophores and textured scales so the whole coat can change color and roughness; eyes can swivel independently like a chameleon's for wide vision.",
+      "core_stats": {
+        "power": 82,
+        "speed": 60,
+        "armor": 75,
+        "size": 90,
+        "special_name": "Camouflage",
+        "special": 85
+      },
+      "abilities": [
+        {
+          "name": "Plunge Grapple",
+          "blurb": "Rockets from the sky and wraps tentacles around targets to hold them tight during a thunderous dive!",
+          "sources": [
+            "Peregrine Falcon",
+            "Kraken"
+          ]
+        },
+        {
+          "name": "Glacier Cloak",
+          "blurb": "Shifts fur color and texture to blend into snowy cliffs and ice like a living iceberg.",
+          "sources": [
+            "Woolly Mammoth",
+            "Chameleon"
+          ]
+        },
+        {
+          "name": "Ink-Mist Mirage",
+          "blurb": "Blows a shimmering ink-cloud that hides it and paints the air with confusing colors.",
+          "sources": [
+            "Kraken",
+            "Chameleon"
+          ]
+        },
+        {
+          "name": "Sky-Tusk Charge",
+          "blurb": "Leans into a dive and slams forward with tusks to smash obstacles or knock foes away.",
+          "sources": [
+            "Woolly Mammoth",
+            "Peregrine Falcon"
+          ]
+        }
+      ],
+      "strengths": [
+        "Perfect ambusher from cliffs or harbors",
+        "Huge, hard-hitting and hard to stop",
+        "Masters camouflage and surprise attacks"
+      ],
+      "weaknesses": [
+        "Very heavy \u2014 needs height or strong wind to launch and is slow on flat ground",
+        "Thick fur overheats in hot deserts and volcanic places",
+        "Dense ink, mud, or heavy nets can foul its color-skins and tentacles"
+      ],
+      "environment_affinities": {
+        "deep_ocean": 0,
+        "storm_coast": 2,
+        "volcanic_shore": -1,
+        "jungle_canyon": 1,
+        "frozen_ridge": 2,
+        "open_sky": 1,
+        "desert_ruins": -2,
+        "swamp": 0,
+        "city_harbor": 2
+      },
+      "sim_profile": {
+        "land_speed": 30,
+        "swim_speed": 70,
+        "flight_speed": 60,
+        "bite_force": 75,
+        "armor_rating": 72,
+        "intelligence": 65,
+        "endurance": 85,
+        "regeneration": 35,
+        "attack_range": 85,
+        "maneuverability": 55
+      },
+      "visual_spec": "Imagine a creature the size of a mammoth with dense, shaggy fur that shifts color from frosted white to mossy green; two broad, powerful falcon-like wings with layered dark feathers fold along its flanks and can snap open for high-speed dives; a crown of eight thick, flexible tentacles circles its throat and jaw \u2014 each tentacle is slate-gray with iridescent suction pads that flash purples and blues when it squirts ink; long, curving tusks jut from the upper jaw, streaked where ink has stained them; its fur is mottled with patchy, scale-like chromatophore plates that ripple to match surroundings, and two golden, independently-rotating eyes peer from a broad head under a shadow mask like a falcon\u2019s; overall colors range from icy blue-grays and snow-white to sea-sheen blacks and moss greens, with wet-gloss ink highlights around the tentacles and throat.",
+      "rarity": "Legendary",
+      "fun_fact": "It can vanish into the snowy rocks by turning its fur white, then drop from the sky like a surprise snow-storm to grab things with its sticky tentacles!"
+    }
+  },
+  "gemini-3.1-pro-preview": {
+    "model": "gemini-3.1-pro-preview",
+    "latency_s": 28.3,
+    "record": {
+      "name": "Camo-Tusk Skykraken",
+      "title": "The Phantom Cloud Hunter",
+      "anatomy_plan": "It has a huge body covered in thick, color-changing fur, giant falcon wings for flying, a sharp beak flanked by mammoth tusks, and eight long tentacles instead of legs for grabbing.",
+      "core_stats": {
+        "power": 80,
+        "speed": 75,
+        "armor": 60,
+        "size": 85,
+        "special_name": "Camouflage",
+        "special": 95
+      },
+      "abilities": [
+        {
+          "name": "Meteor Grab",
+          "blurb": "Dives from the sky at super speed to snatch up food with its eight fuzzy tentacles!",
+          "sources": [
+            "Peregrine Falcon",
+            "Kraken"
+          ]
+        },
+        {
+          "name": "Cloud Cloak",
+          "blurb": "Its thick fluffy fur changes color to make it completely invisible against the sky and snow.",
+          "sources": [
+            "Chameleon",
+            "Woolly Mammoth"
+          ]
+        },
+        {
+          "name": "Freezing Ink-Storm",
+          "blurb": "Blasts a giant cloud of freezing black snow to blind bad guys and fly away safely!",
+          "sources": [
+            "Kraken",
+            "Woolly Mammoth"
+          ]
+        }
+      ],
+      "strengths": [
+        "Amazing at hiding in clouds",
+        "Super fast dives from the sky",
+        "Can grab things from super far away"
+      ],
+      "weaknesses": [
+        "Walks very slowly and clumsily on the ground",
+        "Thick fur makes it overheat quickly in deserts",
+        "A huge target if caught hovering in one place"
+      ],
+      "environment_affinities": {
+        "deep_ocean": -1,
+        "storm_coast": 1,
+        "volcanic_shore": -2,
+        "jungle_canyon": -1,
+        "frozen_ridge": 2,
+        "open_sky": 2,
+        "desert_ruins": -2,
+        "swamp": 0,
+        "city_harbor": 1
+      },
+      "sim_profile": {
+        "land_speed": 15,
+        "swim_speed": 40,
+        "flight_speed": 90,
+        "bite_force": 65,
+        "armor_rating": 50,
+        "intelligence": 70,
+        "endurance": 60,
+        "regeneration": 40,
+        "attack_range": 85,
+        "maneuverability": 55
+      },
+      "visual_spec": "A gigantic flying beast with massive falcon wings and a sharp beak placed between two giant curved mammoth tusks. Its body is covered in thick, fluffy fur that ripples with chameleon colors. Eight long, fuzzy tentacles trail beneath it, ending in sharp falcon talons.",
+      "rarity": "Epic",
+      "fun_fact": "It can change its fur color to look exactly like a giant floating thundercloud to scare off other monsters!"
+    }
+  }
+}
