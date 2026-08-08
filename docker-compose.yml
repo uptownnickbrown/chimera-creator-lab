@@ -1,0 +1,49 @@
+# Chimera Creator — local stack. SQLite is the dev database (single player, one
+# file), so no Postgres service is needed; the commented block below is the
+# Railway-shaped alternative when we want to rehearse the prod driver.
+
+services:
+  api:
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      # Override with a postgresql:// URL to use the Postgres service below.
+      DATABASE_URL: ${DATABASE_URL:-sqlite+aiosqlite:////data/chimera.db}
+      CHIMERA_ENV: ${CHIMERA_ENV:-dev}
+      CHIMERA_DATA_DIR: /content
+      CHIMERA_CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+    volumes:
+      - ./backend:/app          # live reload on edit
+      - ./data:/content:ro      # authored source creatures + environments (optional)
+      - apidata:/data           # the SQLite file survives rebuilds
+    ports: ["8000:8000"]
+
+  frontend:
+    build: ./frontend
+    environment:
+      VITE_PROXY_TARGET: http://api:8000
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+    ports: ["5173:5173"]
+    depends_on: [api]
+
+  # Uncomment (and point DATABASE_URL at it) to rehearse the Railway setup.
+  # postgres:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_USER: chimera
+  #     POSTGRES_PASSWORD: chimera
+  #     POSTGRES_DB: chimera
+  #   ports: ["5432:5432"]
+  #   volumes: [pgdata:/var/lib/postgresql/data]
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U chimera -d chimera"]
+  #     interval: 3s
+  #     timeout: 3s
+  #     retries: 10
+
+volumes:
+  apidata:
+  # pgdata:

@@ -1,0 +1,48 @@
+"""Runtime settings. Single-player game, so knobs stay few and env-driven."""
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass, field
+from functools import lru_cache
+from pathlib import Path
+
+# repo root = .../chimera-creator (backend/app/config.py -> up three)
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+@dataclass(frozen=True)
+class Settings:
+    # SQLite for dev/test; Railway injects a Postgres DATABASE_URL in prod.
+    database_url: str = field(
+        default_factory=lambda: _normalize_db_url(
+            os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./chimera.db")
+        )
+    )
+    env: str = field(default_factory=lambda: os.environ.get("CHIMERA_ENV", "dev"))
+    cors_origins: str = field(
+        default_factory=lambda: os.environ.get(
+            "CHIMERA_CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+        )
+    )
+    # Directory holding source_creatures.json / environments.json. Another agent
+    # owns these files; the app must boot fine before they land.
+    data_dir: Path = field(
+        default_factory=lambda: Path(os.environ.get("CHIMERA_DATA_DIR", str(REPO_ROOT / "data")))
+    )
+    player_name: str = field(default_factory=lambda: os.environ.get("CHIMERA_PLAYER", "Henry"))
+
+
+def _normalize_db_url(url: str) -> str:
+    """Accept the plain URLs hosting providers hand out and make them async."""
+    if url.startswith("postgres://"):
+        url = "postgresql+asyncpg://" + url[len("postgres://") :]
+    elif url.startswith("postgresql://"):
+        url = "postgresql+asyncpg://" + url[len("postgresql://") :]
+    elif url.startswith("sqlite:///"):
+        url = "sqlite+aiosqlite:///" + url[len("sqlite:///") :]
+    return url
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()

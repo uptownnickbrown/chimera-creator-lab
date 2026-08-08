@@ -1,0 +1,231 @@
+/* Typed client for the Chimera Creator API. No state library, no auth yet —
+   single player, one origin. Types mirror backend/app/schemas.py. */
+
+const BASE = import.meta.env.VITE_API_URL || "";
+
+export class ApiError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${BASE}/api${path}`, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!res.ok) {
+    let detail = res.statusText;
+    try {
+      const data = await res.json();
+      detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail);
+    } catch {
+      /* keep statusText */
+    }
+    throw new ApiError(res.status, detail);
+  }
+  const text = await res.text();
+  return (text ? JSON.parse(text) : null) as T;
+}
+
+// -- shapes -------------------------------------------------------------------
+
+export type ImageStatus = "pending" | "complete" | "failed";
+export type Rarity = "Uncommon" | "Rare" | "Epic" | "Legendary";
+export type CodexSort =
+  | "newest" | "biggest" | "fastest" | "strongest" | "winners" | "favorites";
+
+export interface CoreStats {
+  power: number;
+  speed: number;
+  armor: number;
+  size: number;
+  special_name: string;
+  special: number;
+}
+
+export interface Ability {
+  name: string;
+  blurb: string;
+  sources: string[];
+}
+
+export interface CreatureSummary {
+  id: number;
+  name: string;
+  title: string;
+  rarity: Rarity | string;
+  role: string;
+  sources: string[];
+  core_stats: Partial<CoreStats>;
+  image_status: ImageStatus;
+  hero_image_path: string | null;
+  thumb_path: string | null;
+  favorite: boolean;
+  wins: number;
+  losses: number;
+  championships: number;
+  created_at: string | null;
+}
+
+export interface CreatureDetail extends CreatureSummary {
+  abilities: Ability[];
+  strengths: string[];
+  weaknesses: string[];
+  environment_affinities: Record<string, number>;
+  fun_fact: string;
+  anatomy_plan: string;
+  visual_spec: string;
+  records: Record<string, string>;
+  win_rate: number;
+}
+
+export interface SourceCreature {
+  slug: string;
+  name: string;
+  category: string;
+  contribution: string;
+  blurb: string;
+  traits: string[];
+  tags: string[];
+  art: string | null;
+}
+
+export interface Environment {
+  slug: string;
+  name: string;
+  blurb: string;
+  art: string | null;
+}
+
+export interface LibraryResponse {
+  sources: SourceCreature[];
+  environments: Environment[];
+  loaded: boolean;
+}
+
+export interface BracketMatch {
+  id: string;
+  a: number | null;
+  b: number | null;
+  winner: number | null;
+  battle_id: number | null;
+  environment: string;
+  predicted: number | null;
+  prediction_correct: boolean | null;
+}
+
+export interface BracketRound {
+  name: string;
+  matches: BracketMatch[];
+}
+
+export interface TournamentView {
+  id: number;
+  name: string;
+  status: "setup" | "active" | "complete";
+  entrant_ids: number[];
+  rounds: BracketRound[];
+  champion_id: number | null;
+  entrants: CreatureSummary[];
+  created_at: string | null;
+  completed_at: string | null;
+}
+
+export interface BattleReason {
+  icon: string;
+  title: string;
+  blurb: string;
+}
+
+export interface BattleView {
+  battle_id: number;
+  match_id: string;
+  creature_a_id: number;
+  creature_b_id: number;
+  environment: string;
+  winner_id: number;
+  confidence: number;
+  reasons: BattleReason[];
+  narrative: string;
+  beats: string[];
+  health_remaining: { a: number; b: number };
+  predicted: number | null;
+  prediction_correct: boolean | null;
+  cached: boolean;
+}
+
+export interface ResolveResponse {
+  battle: BattleView;
+  tournament: TournamentView;
+}
+
+export interface ProfileView {
+  name: string;
+  avatar: string;
+  level: number;
+  xp: number;
+  xp_to_next: number;
+  settings: Record<string, unknown>;
+  total_creatures: number;
+  battles_won: number;
+  biggest_creature: CreatureSummary | null;
+  current_champion: CreatureSummary | null;
+  favorites: CreatureSummary[];
+}
+
+export interface HallRecord {
+  key: string;
+  label: string;
+  value: string;
+  creature: CreatureSummary | null;
+}
+
+export interface HallView {
+  champions: CreatureSummary[];
+  top_winners: CreatureSummary[];
+  records: HallRecord[];
+}
+
+// -- endpoints ----------------------------------------------------------------
+
+export const api = {
+  createCreature: (source_slugs: string[]) =>
+    request<{ creature_id: number; status: ImageStatus }>("POST", "/creatures", {
+      source_slugs,
+    }),
+  getCreature: (id: number) => request<CreatureDetail>("GET", `/creatures/${id}`),
+  listCreatures: (sort: CodexSort = "newest") =>
+    request<CreatureSummary[]>("GET", `/creatures?sort=${sort}`),
+  toggleFavorite: (id: number) =>
+    request<{ creature_id: number; favorite: boolean }>("POST", `/creatures/${id}/favorite`),
+  rerollName: (id: number) =>
+    request<{ creature_id: number; name: string; title: string }>(
+      "POST",
+      `/creatures/${id}/rename`,
+    ),
+
+  getLibrary: () => request<LibraryResponse>("GET", "/library"),
+
+  listTournaments: () => request<TournamentView[]>("GET", "/tournaments"),
+  createTournament: (entrant_ids: number[], name?: string) =>
+    request<TournamentView>("POST", "/tournaments", { entrant_ids, name }),
+  getTournament: (id: number) => request<TournamentView>("GET", `/tournaments/${id}`),
+  predict: (tournamentId: number, matchId: string, pick_id: number) =>
+    request<TournamentView>(
+      "POST",
+      `/tournaments/${tournamentId}/matches/${matchId}/predict`,
+      { pick_id },
+    ),
+  resolve: (tournamentId: number, matchId: string) =>
+    request<ResolveResponse>(
+      "POST",
+      `/tournaments/${tournamentId}/matches/${matchId}/resolve`,
+    ),
+
+  getProfile: () => request<ProfileView>("GET", "/profile"),
+  getHall: () => request<HallView>("GET", "/hall"),
+};
