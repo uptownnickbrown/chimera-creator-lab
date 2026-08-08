@@ -37,7 +37,14 @@
       "apex",
       "legendary"
     ],
-    "visual_hint": "obsidian and ember-red scales, molten glow between plates, tattered membrane wings, smoke curling from jaws"
+    "visual_hint": "obsidian and ember-red scales, molten glow between plates, tattered membrane wings, smoke curling from jaws",
+    "aliases": [
+      "draggon",
+      "dragen",
+      "fire dragon",
+      "wyvern",
+      "drake"
+    ]
   },
   {
     "slug": "phoenix",
@@ -75,7 +82,14 @@
       "light",
       "legendary"
     ],
-    "visual_hint": "bird silhouette of gold and crimson fire, feathers trailing sparks, heat shimmer around the body"
+    "visual_hint": "bird silhouette of gold and crimson fire, feathers trailing sparks, heat shimmer around the body",
+    "aliases": [
+      "fenix",
+      "feenix",
+      "firebird",
+      "fire bird",
+      "phenix"
+    ]
   },
   {
     "slug": "basilisk",
@@ -113,7 +127,14 @@
       "reptile",
       "legendary"
     ],
-    "visual_hint": "olive-black serpent with a bone crown, glowing amber eyes, stone dust cracking off nearby rocks"
+    "visual_hint": "olive-black serpent with a bone crown, glowing amber eyes, stone dust cracking off nearby rocks",
+    "aliases": [
+      "cockatrice",
+      "serpent king",
+      "basalisk",
+      "snake king",
+      "basilisk lizard"
+    ]
   },
   {
     "slug": "kraken",
@@ -150,7 +171,14 @@
       "deep-sea",
       "legendary"
     ],
-    "visual_hint": "slate-purple mottled hide, barnacle-crusted arms breaching through storm swells, ink clouding the water"
+    "visual_hint": "slate-purple mottled hide, barnacle-crusted arms breaching through storm swells, ink clouding the water",
+    "aliases": [
+      "giant squid",
+      "sea monster",
+      "krakken",
+      "craken",
+      "tentacle monster"
+    ]
   },
   {
     "slug": "griffin",
@@ -190,7 +218,13 @@
       "hybrid",
       "legendary"
     ],
-    "visual_hint": "golden-brown feathered head and chest fading into tawny fur, huge banded wings, sunlit cliff edge"
+    "visual_hint": "golden-brown feathered head and chest fading into tawny fur, huge banded wings, sunlit cliff edge",
+    "aliases": [
+      "gryphon",
+      "griffon",
+      "grifin",
+      "eagle lion"
+    ]
   },
   {
     "slug": "unicorn",
@@ -228,7 +262,13 @@
       "horn",
       "legendary"
     ],
-    "visual_hint": "pearl-white coat with faint aurora shimmer, iridescent spiral horn, soft light pooling at the hooves"
+    "visual_hint": "pearl-white coat with faint aurora shimmer, iridescent spiral horn, soft light pooling at the hooves",
+    "aliases": [
+      "unicorne",
+      "yunicorn",
+      "horned horse",
+      "magic horse"
+    ]
   },
   {
     "slug": "hydra",
@@ -268,7 +308,13 @@
       "swamp",
       "legendary"
     ],
-    "visual_hint": "bog-green scaled bulk half-submerged, nine dripping necks, acid steaming where spit lands"
+    "visual_hint": "bog-green scaled bulk half-submerged, nine dripping necks, acid steaming where spit lands",
+    "aliases": [
+      "hidra",
+      "many headed snake",
+      "multi headed serpent",
+      "hydra monster"
+    ]
   },
   {
     "slug": "cerberus",
@@ -306,7 +352,14 @@
       "canine",
       "legendary"
     ],
-    "visual_hint": "coal-black shaggy hound, three heads with ember eyes, smoke curling from all three mouths"
+    "visual_hint": "coal-black shaggy hound, three heads with ember eyes, smoke curling from all three mouths",
+    "aliases": [
+      "three headed dog",
+      "hellhound",
+      "hell dog",
+      "serberus",
+      "cerebrus"
+    ]
   },
   {
     "slug": "pegasus",
@@ -345,7 +398,13 @@
       "noble",
       "legendary"
     ],
-    "visual_hint": "white horse with layered feathered wings, cloud vapor trailing from hooves, sunrise sky"
+    "visual_hint": "white horse with layered feathered wings, cloud vapor trailing from hooves, sunrise sky",
+    "aliases": [
+      "winged horse",
+      "flying horse",
+      "pegasis",
+      "pegusus"
+    ]
   },
   {
     "slug": "yeti",
@@ -384,7 +443,14 @@
       "mountain",
       "legendary"
     ],
-    "visual_hint": "shaggy blue-white fur crusted with frost, broad flat face, whiteout blizzard behind it"
+    "visual_hint": "shaggy blue-white fur crusted with frost, broad flat face, whiteout blizzard behind it",
+    "aliases": [
+      "abominable snowman",
+      "bigfoot",
+      "sasquatch",
+      "snow monster",
+      "yetti"
+    ]
   },
   {
     "slug": "minotaur",
@@ -422,7 +488,13 @@
       "brawler",
       "legendary"
     ],
-    "visual_hint": "bronze-hided bull-man with iron-banded horns, torchlit stone corridor, dust kicked up mid-charge"
+    "visual_hint": "bronze-hided bull-man with iron-banded horns, torchlit stone corridor, dust kicked up mid-charge",
+    "aliases": [
+      "bull man",
+      "maze monster",
+      "minataur",
+      "minotor"
+    ]
   },
   {
     "slug": "sphinx",
@@ -461,7 +533,13 @@
       "guardian",
       "legendary"
     ],
-    "visual_hint": "sun-bleached tawny lion body, folded golden wings, weathered sandstone temple, low desert light"
+    "visual_hint": "sun-bleached tawny lion body, folded golden wings, weathered sandstone temple, low desert light",
+    "aliases": [
+      "spinx",
+      "sphynx",
+      "riddle monster",
+      "lion woman"
+    ]
   },
   {
     "slug": "thunderbird",
@@ -499,7 +577,13 @@
       "apex",
       "legendary"
     ],
-    "visual_hint": "slate-grey giant eagle wreathed in cloud, forked lightning arcing between feathers, rain sheeting off wings"
+    "visual_hint": "slate-grey giant eagle wreathed in cloud, forked lightning arcing between feathers, rain sheeting off wings",
+    "aliases": [
+      "thunder bird",
+      "storm bird",
+      "lightning bird",
+      "thunderbrid"
+    ]
   },
   {
     "slug": "leviathan",
@@ -536,7 +620,13 @@
       "apex",
       "legendary"
     ],
-    "visual_hint": "barnacled blue-black plated leviathan breaching, waterfalls pouring off its ridged spine, tiny waves for scale"
+    "visual_hint": "barnacled blue-black plated leviathan breaching, waterfalls pouring off its ridged spine, tiny waves for scale",
+    "aliases": [
+      "sea monster",
+      "ocean beast",
+      "leviathin",
+      "levithan"
+    ]
   },
   {
     "slug": "chimera",
@@ -576,7 +666,13 @@
       "multi-head",
       "legendary"
     ],
-    "visual_hint": "tawny lion body, shaggy grey goat head, green serpent tail mid-strike, embers glowing in the lion's mane"
+    "visual_hint": "tawny lion body, shaggy grey goat head, green serpent tail mid-strike, embers glowing in the lion's mane",
+    "aliases": [
+      "chimaera",
+      "kimera",
+      "chimeara",
+      "three headed beast"
+    ]
   },
   {
     "slug": "werewolf",
@@ -615,7 +711,14 @@
       "canine",
       "legendary"
     ],
-    "visual_hint": "coarse charcoal fur, silver moonlight rimming the shoulders, breath steaming, misty pine forest"
+    "visual_hint": "coarse charcoal fur, silver moonlight rimming the shoulders, breath steaming, misty pine forest",
+    "aliases": [
+      "wolf man",
+      "wolfman",
+      "lycan",
+      "were wolf",
+      "werwolf"
+    ]
   },
   {
     "slug": "cyclops",
@@ -653,7 +756,13 @@
       "melee",
       "legendary"
     ],
-    "visual_hint": "sun-cracked grey-brown skin, single amber eye, boulder hefted overhead, volcanic island cave mouth"
+    "visual_hint": "sun-cracked grey-brown skin, single amber eye, boulder hefted overhead, volcanic island cave mouth",
+    "aliases": [
+      "one eyed giant",
+      "one eye monster",
+      "cyclopse",
+      "siclops"
+    ]
   },
   {
     "slug": "stone-golem",
@@ -690,7 +799,13 @@
       "earth",
       "legendary"
     ],
-    "visual_hint": "granite slabs bound by glowing amber seams, moss in the joints, dust falling with every step"
+    "visual_hint": "granite slabs bound by glowing amber seams, moss in the joints, dust falling with every step",
+    "aliases": [
+      "golem",
+      "rock monster",
+      "stone man",
+      "gollum"
+    ]
   },
   {
     "slug": "sea-serpent",
@@ -728,7 +843,14 @@
       "reptile",
       "legendary"
     ],
-    "visual_hint": "emerald-and-pearl scaled coils arching from grey swells, spiny dorsal crest, spray blowing sideways"
+    "visual_hint": "emerald-and-pearl scaled coils arching from grey swells, spiny dorsal crest, spray blowing sideways",
+    "aliases": [
+      "serpent",
+      "sea snake",
+      "loch ness monster",
+      "nessie",
+      "water dragon"
+    ]
   },
   {
     "slug": "flame-salamander",
@@ -767,7 +889,13 @@
       "heat-proof",
       "legendary"
     ],
-    "visual_hint": "matte black lizard veined with molten orange, heat haze rising, glowing lava crust underfoot"
+    "visual_hint": "matte black lizard veined with molten orange, heat haze rising, glowing lava crust underfoot",
+    "aliases": [
+      "fire salamander",
+      "salamander",
+      "fire lizard",
+      "flame lizard"
+    ]
   },
   {
     "slug": "tyrannosaurus-rex",
@@ -803,7 +931,16 @@
       "dinosaur",
       "predator"
     ],
-    "visual_hint": "muddy olive-and-rust hide with sparse quills, scarred snout, steam from nostrils in a misty floodplain"
+    "visual_hint": "muddy olive-and-rust hide with sparse quills, scarred snout, steam from nostrils in a misty floodplain",
+    "aliases": [
+      "t rex",
+      "t-rex",
+      "trex",
+      "rex",
+      "tyrannosaurus",
+      "tyranosaurus",
+      "tirex"
+    ]
   },
   {
     "slug": "triceratops",
@@ -839,7 +976,14 @@
       "dinosaur",
       "charge"
     ],
-    "visual_hint": "dusty ochre hide, scarred cream frill, dry grassland, horns lowered mid-charge"
+    "visual_hint": "dusty ochre hide, scarred cream frill, dry grassland, horns lowered mid-charge",
+    "aliases": [
+      "tricerotops",
+      "triceratop",
+      "trike",
+      "three horn",
+      "tricerratops"
+    ]
   },
   {
     "slug": "stegosaurus",
@@ -874,7 +1018,13 @@
       "dinosaur",
       "tail-weapon"
     ],
-    "visual_hint": "grey-green hide, red-flushed back plates, dusty fern plain, tail spikes mid-swing"
+    "visual_hint": "grey-green hide, red-flushed back plates, dusty fern plain, tail spikes mid-swing",
+    "aliases": [
+      "stego",
+      "stegasaurus",
+      "stegosaur",
+      "plate back dinosaur"
+    ]
   },
   {
     "slug": "velociraptor",
@@ -911,7 +1061,14 @@
       "pack",
       "dinosaur"
     ],
-    "visual_hint": "rusty-brown plumage with banded tail, alert yellow eye, wind-blown sand, claw raised"
+    "visual_hint": "rusty-brown plumage with banded tail, alert yellow eye, wind-blown sand, claw raised",
+    "aliases": [
+      "raptor",
+      "velosiraptor",
+      "veloceraptor",
+      "velocirapter",
+      "velociraptor dinosaur"
+    ]
   },
   {
     "slug": "brachiosaurus",
@@ -946,7 +1103,14 @@
       "dinosaur",
       "herbivore"
     ],
-    "visual_hint": "warm grey-brown pebbled skin, head above the canopy, dust cloud at the feet, wide river valley"
+    "visual_hint": "warm grey-brown pebbled skin, head above the canopy, dust cloud at the feet, wide river valley",
+    "aliases": [
+      "brachio",
+      "brontosaurus",
+      "longneck",
+      "long neck",
+      "brachiasaurus"
+    ]
   },
   {
     "slug": "ankylosaurus",
@@ -981,7 +1145,14 @@
       "dinosaur",
       "defensive"
     ],
-    "visual_hint": "mud-caked knobbly armour in olive and tan, club tail cocked, low camera angle, forest edge"
+    "visual_hint": "mud-caked knobbly armour in olive and tan, club tail cocked, low camera angle, forest edge",
+    "aliases": [
+      "ankylo",
+      "ankilosaurus",
+      "club tail dinosaur",
+      "tank dinosaur",
+      "ankylosaur"
+    ]
   },
   {
     "slug": "spinosaurus",
@@ -1018,7 +1189,14 @@
       "dinosaur",
       "apex"
     ],
-    "visual_hint": "wet slate-blue and cream hide, red-striped sail, half-submerged in a muddy river, ripples spreading"
+    "visual_hint": "wet slate-blue and cream hide, red-striped sail, half-submerged in a muddy river, ripples spreading",
+    "aliases": [
+      "spino",
+      "sail back",
+      "spinosaurous",
+      "spinosaur",
+      "sail dinosaur"
+    ]
   },
   {
     "slug": "quetzalcoatlus",
@@ -1056,7 +1234,15 @@
       "giant",
       "reach"
     ],
-    "visual_hint": "pale bone-white fuzzy pterosaur, dark crest, enormous wings backlit by a low sun over dry flats"
+    "visual_hint": "pale bone-white fuzzy pterosaur, dark crest, enormous wings backlit by a low sun over dry flats",
+    "aliases": [
+      "quetzalcoatl",
+      "pterodactyl",
+      "pterosaur",
+      "flying dinosaur",
+      "quetzal",
+      "teradactyl"
+    ]
   },
   {
     "slug": "microraptor",
@@ -1093,7 +1279,13 @@
       "small",
       "dinosaur"
     ],
-    "visual_hint": "iridescent blue-black raven-like plumage, four feathered limbs spread, dappled forest light"
+    "visual_hint": "iridescent blue-black raven-like plumage, four feathered limbs spread, dappled forest light",
+    "aliases": [
+      "micro raptor",
+      "four winged dinosaur",
+      "mikroraptor",
+      "tiny raptor"
+    ]
   },
   {
     "slug": "mosasaurus",
@@ -1128,7 +1320,14 @@
       "apex",
       "ambush"
     ],
-    "visual_hint": "deep indigo back fading to silver belly, scarred snout, breaching upward through a shaft of sunlight"
+    "visual_hint": "deep indigo back fading to silver belly, scarred snout, breaching upward through a shaft of sunlight",
+    "aliases": [
+      "mosasaur",
+      "sea lizard",
+      "mosasaurous",
+      "mosasarus",
+      "ocean dinosaur"
+    ]
   },
   {
     "slug": "plesiosaurus",
@@ -1163,7 +1362,14 @@
       "agile",
       "marine-reptile"
     ],
-    "visual_hint": "mottled teal-and-cream marine reptile, neck curved mid-strike, sunlit shallow sea, fish scattering"
+    "visual_hint": "mottled teal-and-cream marine reptile, neck curved mid-strike, sunlit shallow sea, fish scattering",
+    "aliases": [
+      "plesiosaur",
+      "loch ness monster",
+      "nessie",
+      "elasmosaurus",
+      "plesiosaurous"
+    ]
   },
   {
     "slug": "megalodon",
@@ -1198,7 +1404,15 @@
       "apex",
       "colossal"
     ],
-    "visual_hint": "leaden grey back, white belly, rows of triangular teeth, murky blue open ocean, scale silhouette of a whale"
+    "visual_hint": "leaden grey back, white belly, rows of triangular teeth, murky blue open ocean, scale silhouette of a whale",
+    "aliases": [
+      "meg",
+      "megladon",
+      "megaladon",
+      "giant shark",
+      "megalodon shark",
+      "mega shark"
+    ]
   },
   {
     "slug": "dunkleosteus",
@@ -1233,7 +1447,14 @@
       "aquatic",
       "ancient"
     ],
-    "visual_hint": "bronze-grey bony head plates, blade jaws parted, silty green ancient sea, shafts of light"
+    "visual_hint": "bronze-grey bony head plates, blade jaws parted, silty green ancient sea, shafts of light",
+    "aliases": [
+      "dunkle",
+      "armored fish",
+      "dunkleosteous",
+      "dunkleosaurus",
+      "armor head fish"
+    ]
   },
   {
     "slug": "woolly-mammoth",
@@ -1268,7 +1489,15 @@
       "strength",
       "ice-age"
     ],
-    "visual_hint": "russet-brown shaggy coat rimed with frost, ivory curved tusks, blue-white snowfield, breath fogging"
+    "visual_hint": "russet-brown shaggy coat rimed with frost, ivory curved tusks, blue-white snowfield, breath fogging",
+    "aliases": [
+      "mammoth",
+      "wooly mammoth",
+      "wooly mamoth",
+      "wolly mammoth",
+      "mastodon",
+      "ice age elephant"
+    ]
   },
   {
     "slug": "saber-toothed-cat",
@@ -1306,7 +1535,16 @@
       "strength",
       "ice-age"
     ],
-    "visual_hint": "tawny-and-cream muscled cat with faint rosettes, ivory sabres bared, cold grassland at dusk"
+    "visual_hint": "tawny-and-cream muscled cat with faint rosettes, ivory sabres bared, cold grassland at dusk",
+    "aliases": [
+      "sabertooth",
+      "saber tooth",
+      "saber-toothed tiger",
+      "sabre tooth tiger",
+      "saber toothed tiger",
+      "sabertooth tiger",
+      "smilodon"
+    ]
   },
   {
     "slug": "giant-ground-sloth",
@@ -1344,7 +1582,13 @@
       "armored",
       "ice-age"
     ],
-    "visual_hint": "coarse brown shaggy fur, pale hooked claws, reared upright against a cold woodland sky"
+    "visual_hint": "coarse brown shaggy fur, pale hooked claws, reared upright against a cold woodland sky",
+    "aliases": [
+      "ground sloth",
+      "giant sloth",
+      "megatherium",
+      "mega sloth"
+    ]
   },
   {
     "slug": "dire-wolf",
@@ -1381,7 +1625,13 @@
       "endurance",
       "ice-age"
     ],
-    "visual_hint": "smoky grey-brown coat with a heavy ruff, breath steaming, snow-dusted plain, pack shapes behind"
+    "visual_hint": "smoky grey-brown coat with a heavy ruff, breath steaming, snow-dusted plain, pack shapes behind",
+    "aliases": [
+      "direwolf",
+      "giant wolf",
+      "ice age wolf",
+      "dyre wolf"
+    ]
   },
   {
     "slug": "terror-bird",
@@ -1417,7 +1667,13 @@
       "flightless",
       "predator"
     ],
-    "visual_hint": "slate-and-rust plumage, huge pale hooked beak, dust trailing from clawed feet on golden grassland"
+    "visual_hint": "slate-and-rust plumage, huge pale hooked beak, dust trailing from clawed feet on golden grassland",
+    "aliases": [
+      "terrorbird",
+      "killer bird",
+      "phorusrhacos",
+      "terror birds"
+    ]
   },
   {
     "slug": "titanoboa",
@@ -1453,7 +1709,14 @@
       "ambush",
       "colossal"
     ],
-    "visual_hint": "matte olive and charcoal banded coils, water beading on scales, steaming tropical swamp"
+    "visual_hint": "matte olive and charcoal banded coils, water beading on scales, steaming tropical swamp",
+    "aliases": [
+      "serpent",
+      "titan boa",
+      "giant snake",
+      "giant boa",
+      "titanaboa"
+    ]
   },
   {
     "slug": "arthropleura",
@@ -1491,7 +1754,13 @@
       "many-legged",
       "ancient"
     ],
-    "visual_hint": "glossy chestnut armour plates with pale leg banding, giant ferns, damp mossy forest floor"
+    "visual_hint": "glossy chestnut armour plates with pale leg banding, giant ferns, damp mossy forest floor",
+    "aliases": [
+      "giant millipede",
+      "giant centipede",
+      "millipede",
+      "arthropluera"
+    ]
   },
   {
     "slug": "dodo",
@@ -1527,7 +1796,13 @@
       "gentle",
       "island"
     ],
-    "visual_hint": "soft blue-grey plumage, pale hooked beak, sunny island forest clearing, fallen fruit"
+    "visual_hint": "soft blue-grey plumage, pale hooked beak, sunny island forest clearing, fallen fruit",
+    "aliases": [
+      "dodo bird",
+      "dodobird",
+      "doedoe",
+      "raphus"
+    ]
   },
   {
     "slug": "glyptodon",
@@ -1562,7 +1837,13 @@
       "defensive",
       "ice-age"
     ],
-    "visual_hint": "mosaic bone dome in weathered tan and grey, stubby legs, spiked tail raised, dry riverbank"
+    "visual_hint": "mosaic bone dome in weathered tan and grey, stubby legs, spiked tail raised, dry riverbank",
+    "aliases": [
+      "glyptodont",
+      "giant armadillo",
+      "armadillo",
+      "glyptadon"
+    ]
   },
   {
     "slug": "gigantopithecus",
@@ -1598,7 +1879,14 @@
       "primate",
       "giant"
     ],
-    "visual_hint": "coarse dark auburn fur, massive shoulders, misty bamboo forest, low green light"
+    "visual_hint": "coarse dark auburn fur, massive shoulders, misty bamboo forest, low green light",
+    "aliases": [
+      "bigfoot",
+      "sasquatch",
+      "giant ape",
+      "king kong",
+      "gigantopithicus"
+    ]
   },
   {
     "slug": "therizinosaurus",
@@ -1633,7 +1921,14 @@
       "dinosaur",
       "herbivore"
     ],
-    "visual_hint": "shaggy dun-and-cream feather coat, enormous pale curved claws spread wide, hazy forest clearing"
+    "visual_hint": "shaggy dun-and-cream feather coat, enormous pale curved claws spread wide, hazy forest clearing",
+    "aliases": [
+      "therizino",
+      "therizinosaur",
+      "scythe claws",
+      "claw dinosaur",
+      "long claw dinosaur"
+    ]
   },
   {
     "slug": "ammonite",
@@ -1668,7 +1963,14 @@
       "tentacles",
       "ancient"
     ],
-    "visual_hint": "pearly ribbed spiral shell with amber banding, small tentacles fanned, deep blue-green ancient sea"
+    "visual_hint": "pearly ribbed spiral shell with amber banding, small tentacles fanned, deep blue-green ancient sea",
+    "aliases": [
+      "ammonite shell",
+      "spiral shell",
+      "ancient shell",
+      "nautilus",
+      "amonite"
+    ]
   },
   {
     "slug": "great-white-shark",
@@ -1703,7 +2005,14 @@
       "ambush",
       "apex"
     ],
-    "visual_hint": "steel-grey back, chalk-white underside, breaching through spray in cold green water"
+    "visual_hint": "steel-grey back, chalk-white underside, breaching through spray in cold green water",
+    "aliases": [
+      "shark",
+      "great white",
+      "white shark",
+      "jaws",
+      "grate white shark"
+    ]
   },
   {
     "slug": "orca",
@@ -1740,7 +2049,14 @@
       "sonar",
       "apex"
     ],
-    "visual_hint": "wet black and cream markings, tall fin cutting a grey swell, mountains and mist behind"
+    "visual_hint": "wet black and cream markings, tall fin cutting a grey swell, mountains and mist behind",
+    "aliases": [
+      "killer whale",
+      "orca whale",
+      "killerwhale",
+      "black and white whale",
+      "orka"
+    ]
   },
   {
     "slug": "octopus",
@@ -1779,7 +2095,13 @@
       "grappler",
       "aquatic"
     ],
-    "visual_hint": "mottled rust-to-white colour rippling across skin, coiled arms on a rock ledge, clear reef water"
+    "visual_hint": "mottled rust-to-white colour rippling across skin, coiled arms on a rock ledge, clear reef water",
+    "aliases": [
+      "octapus",
+      "octopuss",
+      "eight arms",
+      "inkfish"
+    ]
   },
   {
     "slug": "electric-eel",
@@ -1815,7 +2137,13 @@
       "ambush",
       "stun"
     ],
-    "visual_hint": "glistening olive-brown eel with a yellow belly, faint blue electric arcs in tea-dark river water"
+    "visual_hint": "glistening olive-brown eel with a yellow belly, faint blue electric arcs in tea-dark river water",
+    "aliases": [
+      "eel",
+      "shock eel",
+      "electric fish",
+      "zapping eel"
+    ]
   },
   {
     "slug": "mantis-shrimp",
@@ -1854,7 +2182,13 @@
       "small",
       "aquatic"
     ],
-    "visual_hint": "electric green and coral-red segmented armour, gold stalked eyes, bright reef sand, cavitation bubble"
+    "visual_hint": "electric green and coral-red segmented armour, gold stalked eyes, bright reef sand, cavitation bubble",
+    "aliases": [
+      "mantis",
+      "punch shrimp",
+      "boxer shrimp",
+      "peacock mantis shrimp"
+    ]
   },
   {
     "slug": "anglerfish",
@@ -1890,7 +2224,13 @@
       "trap",
       "aquatic"
     ],
-    "visual_hint": "matte black wrinkled skin, glassy needle teeth, single blue-green glowing lure in pitch-dark water"
+    "visual_hint": "matte black wrinkled skin, glassy needle teeth, single blue-green glowing lure in pitch-dark water",
+    "aliases": [
+      "angler fish",
+      "angler",
+      "lantern fish",
+      "deep sea light fish"
+    ]
   },
   {
     "slug": "pufferfish",
@@ -1926,7 +2266,14 @@
       "defensive",
       "aquatic"
     ],
-    "visual_hint": "sandy-gold speckled fish fully inflated, pale spines erect, huge eyes, sunlit shallow reef"
+    "visual_hint": "sandy-gold speckled fish fully inflated, pale spines erect, huge eyes, sunlit shallow reef",
+    "aliases": [
+      "puffer fish",
+      "puffer",
+      "blowfish",
+      "balloon fish",
+      "fugu"
+    ]
   },
   {
     "slug": "swordfish",
@@ -1961,7 +2308,12 @@
       "aquatic",
       "predator"
     ],
-    "visual_hint": "gunmetal-blue back, silver flank, long flat bill, motion blur through deep blue water"
+    "visual_hint": "gunmetal-blue back, silver flank, long flat bill, motion blur through deep blue water",
+    "aliases": [
+      "sword fish",
+      "broadbill",
+      "sword nose fish"
+    ]
   },
   {
     "slug": "narwhal",
@@ -1997,7 +2349,13 @@
       "aquatic",
       "sensory"
     ],
-    "visual_hint": "grey-and-cream marbled whale, ivory spiral tusk breaking through a crack in blue sea ice"
+    "visual_hint": "grey-and-cream marbled whale, ivory spiral tusk breaking through a crack in blue sea ice",
+    "aliases": [
+      "narwhale",
+      "narwal",
+      "unicorn whale",
+      "sea unicorn"
+    ]
   },
   {
     "slug": "blue-whale",
@@ -2032,7 +2390,13 @@
       "aquatic",
       "gentle"
     ],
-    "visual_hint": "mottled blue-grey giant with pleated throat expanded, krill cloud, shafts of light in open blue water"
+    "visual_hint": "mottled blue-grey giant with pleated throat expanded, krill cloud, shafts of light in open blue water",
+    "aliases": [
+      "blue wale",
+      "biggest animal",
+      "giant whale",
+      "great blue whale"
+    ]
   },
   {
     "slug": "colossal-squid",
@@ -2067,7 +2431,13 @@
       "vision",
       "aquatic"
     ],
-    "visual_hint": "translucent pinkish-white mantle, enormous dark eye reflecting a lamp, hooked arms in black water"
+    "visual_hint": "translucent pinkish-white mantle, enormous dark eye reflecting a lamp, hooked arms in black water",
+    "aliases": [
+      "squid",
+      "giant squid",
+      "colosal squid",
+      "architeuthis"
+    ]
   },
   {
     "slug": "lobster",
@@ -2104,7 +2474,12 @@
       "regeneration",
       "aquatic"
     ],
-    "visual_hint": "deep blue-black speckled shell with orange joints, claws raised, dark rocky reef and kelp"
+    "visual_hint": "deep blue-black speckled shell with orange joints, claws raised, dark rocky reef and kelp",
+    "aliases": [
+      "lobstar",
+      "rock lobster",
+      "clawed lobster"
+    ]
   },
   {
     "slug": "saltwater-crocodile",
@@ -2142,7 +2517,15 @@
       "aquatic",
       "apex"
     ],
-    "visual_hint": "olive-black scaled hide beaded with water, only eyes and nostrils above a muddy river surface"
+    "visual_hint": "olive-black scaled hide beaded with water, only eyes and nostrils above a muddy river surface",
+    "aliases": [
+      "crocodile",
+      "croc",
+      "saltie",
+      "alligator",
+      "gator",
+      "giant crocodile"
+    ]
   },
   {
     "slug": "komodo-dragon",
@@ -2181,7 +2564,14 @@
       "tracking",
       "reptile"
     ],
-    "visual_hint": "grey-brown beaded hide, yellow forked tongue extended, dry golden island scrub, harsh sun"
+    "visual_hint": "grey-brown beaded hide, yellow forked tongue extended, dry golden island scrub, harsh sun",
+    "aliases": [
+      "komodo",
+      "komodo lizard",
+      "monitor lizard",
+      "giant lizard",
+      "comodo dragon"
+    ]
   },
   {
     "slug": "king-cobra",
@@ -2219,7 +2609,13 @@
       "intimidation",
       "reptile"
     ],
-    "visual_hint": "olive-bronze scales with pale banding, hood flared, head at eye level, dim green jungle backdrop"
+    "visual_hint": "olive-bronze scales with pale banding, hood flared, head at eye level, dim green jungle backdrop",
+    "aliases": [
+      "cobra",
+      "king kobra",
+      "hooded snake",
+      "spitting cobra"
+    ]
   },
   {
     "slug": "chameleon",
@@ -2258,7 +2654,13 @@
       "small",
       "reptile"
     ],
-    "visual_hint": "teal-to-amber colour banding shifting across scales, turret eye, curled tail on a mossy branch"
+    "visual_hint": "teal-to-amber colour banding shifting across scales, turret eye, curled tail on a mossy branch",
+    "aliases": [
+      "camelion",
+      "chamelion",
+      "kameleon",
+      "color changing lizard"
+    ]
   },
   {
     "slug": "poison-dart-frog",
@@ -2296,7 +2698,14 @@
       "small",
       "amphibian"
     ],
-    "visual_hint": "glossy cobalt-blue frog with black spots on a rain-wet green leaf, jungle bokeh"
+    "visual_hint": "glossy cobalt-blue frog with black spots on a rain-wet green leaf, jungle bokeh",
+    "aliases": [
+      "frog",
+      "dart frog",
+      "poison frog",
+      "poison dart",
+      "posion dart frog"
+    ]
   },
   {
     "slug": "axolotl",
@@ -2333,7 +2742,14 @@
       "small",
       "amphibian"
     ],
-    "visual_hint": "translucent pink-white salamander, coral-red feathery gills, dark still lake water, gentle green plants"
+    "visual_hint": "translucent pink-white salamander, coral-red feathery gills, dark still lake water, gentle green plants",
+    "aliases": [
+      "axalotl",
+      "axolotal",
+      "walking fish",
+      "mexican salamander",
+      "axolot"
+    ]
   },
   {
     "slug": "tiger",
@@ -2372,7 +2788,11 @@
       "ambush",
       "predator"
     ],
-    "visual_hint": "deep orange coat with heavy black stripes, wet shoulders, tall shadowed grass, amber eyes locked forward"
+    "visual_hint": "deep orange coat with heavy black stripes, wet shoulders, tall shadowed grass, amber eyes locked forward",
+    "aliases": [
+      "tigger",
+      "bengal tiger"
+    ]
   },
   {
     "slug": "lion",
@@ -2410,7 +2830,11 @@
       "claws",
       "predator"
     ],
-    "visual_hint": "tawny gold coat, heavy russet-black mane catching low sun, dry savannah dust, roar mid-bellow"
+    "visual_hint": "tawny gold coat, heavy russet-black mane catching low sun, dry savannah dust, roar mid-bellow",
+    "aliases": [
+      "king of the jungle",
+      "lioness"
+    ]
   },
   {
     "slug": "cheetah",
@@ -2447,7 +2871,11 @@
       "predator",
       "lightweight"
     ],
-    "visual_hint": "sandy gold coat with crisp black spots, spine flexed mid-stride, dust and grass blurring past"
+    "visual_hint": "sandy gold coat with crisp black spots, spine flexed mid-stride, dust and grass blurring past",
+    "aliases": [
+      "cheeta",
+      "fastest animal"
+    ]
   },
   {
     "slug": "gorilla",
@@ -2484,7 +2912,12 @@
       "intimidation",
       "primate"
     ],
-    "visual_hint": "coal-black fur with a silver saddle, misty green mountain forest, chest mid-beat"
+    "visual_hint": "coal-black fur with a silver saddle, misty green mountain forest, chest mid-beat",
+    "aliases": [
+      "gorila",
+      "silverback",
+      "ape"
+    ]
   },
   {
     "slug": "grizzly-bear",
@@ -2523,7 +2956,13 @@
       "endurance",
       "predator"
     ],
-    "visual_hint": "grizzled brown fur with pale tips, shoulder hump prominent, standing in a salmon river, spray flying"
+    "visual_hint": "grizzled brown fur with pale tips, shoulder hump prominent, standing in a salmon river, spray flying",
+    "aliases": [
+      "grizzly",
+      "bear",
+      "brown bear",
+      "grizly bear"
+    ]
   },
   {
     "slug": "polar-bear",
@@ -2562,7 +3001,13 @@
       "swimmer",
       "apex"
     ],
-    "visual_hint": "cream-white fur backlit on blue ice, black nose and eyes, breath fogging, arctic twilight"
+    "visual_hint": "cream-white fur backlit on blue ice, black nose and eyes, breath fogging, arctic twilight",
+    "aliases": [
+      "ice bear",
+      "white bear",
+      "snow bear",
+      "poler bear"
+    ]
   },
   {
     "slug": "rhinoceros",
@@ -2599,7 +3044,13 @@
       "charge",
       "strength"
     ],
-    "visual_hint": "grey plated hide caked in dried mud, head lowered, horn forward, dust cloud on dry savannah"
+    "visual_hint": "grey plated hide caked in dried mud, head lowered, horn forward, dust cloud on dry savannah",
+    "aliases": [
+      "rhino",
+      "rhinoceras",
+      "horn nose",
+      "rino"
+    ]
   },
   {
     "slug": "hippopotamus",
@@ -2637,7 +3088,13 @@
       "territorial",
       "strength"
     ],
-    "visual_hint": "slick grey-pink hide, mouth gaping wide, river water sheeting off, reed banks behind"
+    "visual_hint": "slick grey-pink hide, mouth gaping wide, river water sheeting off, reed banks behind",
+    "aliases": [
+      "hippo",
+      "hipo",
+      "river horse",
+      "hippopotomus"
+    ]
   },
   {
     "slug": "elephant",
@@ -2677,7 +3134,13 @@
       "sound",
       "colossal"
     ],
-    "visual_hint": "deeply wrinkled grey hide, dust on the back, ears spread wide, tusks catching golden savannah light"
+    "visual_hint": "deeply wrinkled grey hide, dust on the back, ears spread wide, tusks catching golden savannah light",
+    "aliases": [
+      "elefant",
+      "african elephant",
+      "tusker",
+      "elephent"
+    ]
   },
   {
     "slug": "bison",
@@ -2714,7 +3177,12 @@
       "cold",
       "herd"
     ],
-    "visual_hint": "dark chocolate wool over the shoulders, frost on the muzzle, snow spray, wide grey prairie"
+    "visual_hint": "dark chocolate wool over the shoulders, frost on the muzzle, snow spray, wide grey prairie",
+    "aliases": [
+      "buffalo",
+      "american bison",
+      "bufalo"
+    ]
   },
   {
     "slug": "moose",
@@ -2752,7 +3220,12 @@
       "cold",
       "wading"
     ],
-    "visual_hint": "dark brown coat, pale legs, huge palmate antlers dripping, misty lake shallows at dawn"
+    "visual_hint": "dark brown coat, pale legs, huge palmate antlers dripping, misty lake shallows at dawn",
+    "aliases": [
+      "elk",
+      "moose deer",
+      "mose"
+    ]
   },
   {
     "slug": "wolverine",
@@ -2791,7 +3264,12 @@
       "cold",
       "endurance"
     ],
-    "visual_hint": "dark brown fur with tan flank stripes, frosted muzzle, snarling over a snowbank in low winter light"
+    "visual_hint": "dark brown fur with tan flank stripes, frosted muzzle, snarling over a snowbank in low winter light",
+    "aliases": [
+      "glutton",
+      "wolverene",
+      "carcajou"
+    ]
   },
   {
     "slug": "honey-badger",
@@ -2830,7 +3308,12 @@
       "claws",
       "tough"
     ],
-    "visual_hint": "black body with a bold silver-white mantle, dust, teeth bared, dry thornbush country"
+    "visual_hint": "black body with a bold silver-white mantle, dust, teeth bared, dry thornbush country",
+    "aliases": [
+      "ratel",
+      "honeybadger",
+      "hunny badger"
+    ]
   },
   {
     "slug": "pangolin",
@@ -2868,7 +3351,13 @@
       "reach",
       "nocturnal"
     ],
-    "visual_hint": "bronze-brown overlapping scales, curled tight into a ball, dry earth and moonlight"
+    "visual_hint": "bronze-brown overlapping scales, curled tight into a ball, dry earth and moonlight",
+    "aliases": [
+      "scaly anteater",
+      "pengolin",
+      "pangoline",
+      "scale animal"
+    ]
   },
   {
     "slug": "tardigrade",
@@ -2907,7 +3396,13 @@
       "resistant",
       "regeneration"
     ],
-    "visual_hint": "translucent plump segmented body with tiny clawed legs, glassy microscope lighting, wet moss fibres"
+    "visual_hint": "translucent plump segmented body with tiny clawed legs, glassy microscope lighting, wet moss fibres",
+    "aliases": [
+      "water bear",
+      "moss piglet",
+      "tardigrad",
+      "tardygrade"
+    ]
   },
   {
     "slug": "porcupine",
@@ -2945,7 +3440,12 @@
       "counterattack",
       "nocturnal"
     ],
-    "visual_hint": "black-and-cream banded quills fanned into a huge halo, small dark eye, dry forest floor at night"
+    "visual_hint": "black-and-cream banded quills fanned into a huge halo, small dark eye, dry forest floor at night",
+    "aliases": [
+      "porkupine",
+      "porcupin",
+      "quill animal"
+    ]
   },
   {
     "slug": "skunk",
@@ -2984,7 +3484,12 @@
       "defensive",
       "nocturnal"
     ],
-    "visual_hint": "jet-black fur with a crisp white back stripe, tail flared upright, moonlit grass"
+    "visual_hint": "jet-black fur with a crisp white back stripe, tail flared upright, moonlit grass",
+    "aliases": [
+      "skunck",
+      "stinky animal",
+      "stink spray animal"
+    ]
   },
   {
     "slug": "kangaroo",
@@ -3022,7 +3527,13 @@
       "endurance",
       "marsupial"
     ],
-    "visual_hint": "red-brown muscled marsupial mid-leap, tail extended, red dust and low silver scrub"
+    "visual_hint": "red-brown muscled marsupial mid-leap, tail extended, red dust and low silver scrub",
+    "aliases": [
+      "kangeroo",
+      "roo",
+      "boxing kangaroo",
+      "kangaru"
+    ]
   },
   {
     "slug": "platypus",
@@ -3060,7 +3571,13 @@
       "aquatic",
       "weird"
     ],
-    "visual_hint": "dense chocolate-brown waterproof fur, slate-grey bill, ripples spreading on a dark creek"
+    "visual_hint": "dense chocolate-brown waterproof fur, slate-grey bill, ripples spreading on a dark creek",
+    "aliases": [
+      "platipus",
+      "duck billed platypus",
+      "duck mole",
+      "platypuss"
+    ]
   },
   {
     "slug": "sloth",
@@ -3097,7 +3614,12 @@
       "stealth",
       "slow"
     ],
-    "visual_hint": "shaggy grey fur tinged green with algae, long curved claws over a branch, humid dappled canopy"
+    "visual_hint": "shaggy grey fur tinged green with algae, long curved claws over a branch, humid dappled canopy",
+    "aliases": [
+      "sloath",
+      "slow sloth",
+      "three toed sloth"
+    ]
   },
   {
     "slug": "bat",
@@ -3134,7 +3656,12 @@
       "nocturnal",
       "agility"
     ],
-    "visual_hint": "chestnut fur, translucent amber wing membranes lit from behind, star-dark sky, cave mouth"
+    "visual_hint": "chestnut fur, translucent amber wing membranes lit from behind, star-dark sky, cave mouth",
+    "aliases": [
+      "vampire bat",
+      "fruit bat",
+      "batt"
+    ]
   },
   {
     "slug": "eagle",
@@ -3173,7 +3700,12 @@
       "vision",
       "raptor"
     ],
-    "visual_hint": "dark umber plumage, golden nape, yellow talons spread wide, wings braked against a bright mountain sky"
+    "visual_hint": "dark umber plumage, golden nape, yellow talons spread wide, wings braked against a bright mountain sky",
+    "aliases": [
+      "bald eagle",
+      "egle",
+      "eagel"
+    ]
   },
   {
     "slug": "peregrine-falcon",
@@ -3210,7 +3742,13 @@
       "impact",
       "raptor"
     ],
-    "visual_hint": "slate-blue back, barred cream chest, wings tucked into a teardrop, motion streaks against cloud"
+    "visual_hint": "slate-blue back, barred cream chest, wings tucked into a teardrop, motion streaks against cloud",
+    "aliases": [
+      "falcon",
+      "peregrine",
+      "fastest bird",
+      "pereguine falcon"
+    ]
   },
   {
     "slug": "owl",
@@ -3249,7 +3787,12 @@
       "nocturnal",
       "raptor"
     ],
-    "visual_hint": "cream-and-cocoa barred plumage, huge dark eyes, wings spread in silent glide over moonlit snow"
+    "visual_hint": "cream-and-cocoa barred plumage, huge dark eyes, wings spread in silent glide over moonlit snow",
+    "aliases": [
+      "barn owl",
+      "hoot owl",
+      "owel"
+    ]
   },
   {
     "slug": "ostrich",
@@ -3286,7 +3829,13 @@
       "flightless",
       "vision"
     ],
-    "visual_hint": "black-and-white plumes over pink bare legs, mid-stride at speed, heat shimmer on dry plains"
+    "visual_hint": "black-and-white plumes over pink bare legs, mid-stride at speed, heat shimmer on dry plains",
+    "aliases": [
+      "ostrige",
+      "ostritch",
+      "biggest bird",
+      "ostrach"
+    ]
   },
   {
     "slug": "cassowary",
@@ -3323,7 +3872,13 @@
       "flightless",
       "jungle"
     ],
-    "visual_hint": "coarse black plumage, cobalt-blue neck, scarlet wattles, tall tan casque, dark rainforest interior"
+    "visual_hint": "coarse black plumage, cobalt-blue neck, scarlet wattles, tall tan casque, dark rainforest interior",
+    "aliases": [
+      "casowary",
+      "cassoary",
+      "dangerous bird",
+      "helmet bird"
+    ]
   },
   {
     "slug": "hummingbird",
@@ -3360,7 +3915,13 @@
       "small",
       "speed"
     ],
-    "visual_hint": "emerald back with a magenta iridescent throat, wings blurred to a haze, hovering by a red flower"
+    "visual_hint": "emerald back with a magenta iridescent throat, wings blurred to a haze, hovering by a red flower",
+    "aliases": [
+      "humming bird",
+      "hummer",
+      "tiny bird",
+      "humingbird"
+    ]
   },
   {
     "slug": "raven",
@@ -3399,7 +3960,12 @@
       "mimicry",
       "trickster"
     ],
-    "visual_hint": "oil-slick black plumage with blue-violet sheen, heavy beak, perched on frosted stone, keen pale-ringed eye"
+    "visual_hint": "oil-slick black plumage with blue-violet sheen, heavy beak, perched on frosted stone, keen pale-ringed eye",
+    "aliases": [
+      "crow",
+      "black bird",
+      "ravin"
+    ]
   },
   {
     "slug": "tarantula",
@@ -3438,7 +4004,13 @@
       "small",
       "arachnid"
     ],
-    "visual_hint": "velvet black body with rust-orange leg hairs, fangs raised, silk-lined burrow in warm earth"
+    "visual_hint": "velvet black body with rust-orange leg hairs, fangs raised, silk-lined burrow in warm earth",
+    "aliases": [
+      "spider",
+      "big spider",
+      "tarantual",
+      "tarrantula"
+    ]
   },
   {
     "slug": "scorpion",
@@ -3477,7 +4049,12 @@
       "nocturnal",
       "arachnid"
     ],
-    "visual_hint": "sand-gold armoured segments, tail arched high, faint blue fluorescence under moonlight, desert rock"
+    "visual_hint": "sand-gold armoured segments, tail arched high, faint blue fluorescence under moonlight, desert rock",
+    "aliases": [
+      "scorpian",
+      "skorpion",
+      "stinger tail"
+    ]
   },
   {
     "slug": "hercules-beetle",
@@ -3516,7 +4093,14 @@
       "small",
       "insect"
     ],
-    "visual_hint": "olive-yellow wing cases with black spots, huge glossy black horn, damp bark, humid jungle light"
+    "visual_hint": "olive-yellow wing cases with black spots, huge glossy black horn, damp bark, humid jungle light",
+    "aliases": [
+      "hercules",
+      "rhino beetle",
+      "rhinoceros beetle",
+      "strongest bug",
+      "herkules beetle"
+    ]
   },
   {
     "slug": "wolf",
@@ -3554,7 +4138,11 @@
       "bite",
       "tracking"
     ],
-    "visual_hint": "grizzled grey-and-cream coat, breath steaming, amber eyes forward, snowy pine forest at dusk"
+    "visual_hint": "grizzled grey-and-cream coat, breath steaming, amber eyes forward, snowy pine forest at dusk",
+    "aliases": [
+      "gray wolf",
+      "grey wolf"
+    ]
   },
   {
     "slug": "kitsune",
@@ -3593,7 +4181,13 @@
       "agility",
       "legendary"
     ],
-    "visual_hint": "snow-white fox standing side-on in full view, nine tails fanned behind it glowing pale blue at the tips, moonlit bamboo grove"
+    "visual_hint": "snow-white fox standing side-on in full view, nine tails fanned behind it glowing pale blue at the tips, moonlit bamboo grove",
+    "aliases": [
+      "nine tailed fox",
+      "fox spirit",
+      "magic fox",
+      "kitsoon"
+    ]
   },
   {
     "slug": "roc",
@@ -3632,7 +4226,13 @@
       "wind",
       "legendary"
     ],
-    "visual_hint": "russet and gold giant eagle in full flight with both wings spread across the frame, talons open, a whole mountain range tiny below"
+    "visual_hint": "russet and gold giant eagle in full flight with both wings spread across the frame, talons open, a whole mountain range tiny below",
+    "aliases": [
+      "rukh",
+      "giant eagle",
+      "roc bird",
+      "giant roc"
+    ]
   },
   {
     "slug": "qilin",
@@ -3670,7 +4270,13 @@
       "noble",
       "legendary"
     ],
-    "visual_hint": "jade-and-gold scaled deer-beast standing in full profile, branching antlers, green flame curling around every hoof, misty valley behind"
+    "visual_hint": "jade-and-gold scaled deer-beast standing in full profile, branching antlers, green flame curling around every hoof, misty valley behind",
+    "aliases": [
+      "kirin",
+      "chinese unicorn",
+      "kylin",
+      "dragon horse"
+    ]
   },
   {
     "slug": "world-turtle",
@@ -3708,7 +4314,13 @@
       "earth",
       "legendary"
     ],
-    "visual_hint": "barnacled grey-green turtle riding high in the water with the whole shell and all four flippers in view, forests and waterfalls on its back, tiny sailing ship for scale"
+    "visual_hint": "barnacled grey-green turtle riding high in the water with the whole shell and all four flippers in view, forests and waterfalls on its back, tiny sailing ship for scale",
+    "aliases": [
+      "giant turtle",
+      "world tortoise",
+      "akupara",
+      "turtle island"
+    ]
   },
   {
     "slug": "fenrir",
@@ -3746,7 +4358,13 @@
       "canine",
       "legendary"
     ],
-    "visual_hint": "storm-grey shaggy wolf standing full-body on a snowy ridge, snapped silver chains hanging from its neck, pine trees tiny at its paws"
+    "visual_hint": "storm-grey shaggy wolf standing full-body on a snowy ridge, snapped silver chains hanging from its neck, pine trees tiny at its paws",
+    "aliases": [
+      "giant wolf",
+      "fenris",
+      "fenrir wolf",
+      "wolf god"
+    ]
   },
   {
     "slug": "couatl",
@@ -3785,7 +4403,14 @@
       "guardian",
       "legendary"
     ],
-    "visual_hint": "emerald-and-scarlet feathered serpent stretched full length across a bright sky, wings fanned wide, prism sparkles running along every feather"
+    "visual_hint": "emerald-and-scarlet feathered serpent stretched full length across a bright sky, wings fanned wide, prism sparkles running along every feather",
+    "aliases": [
+      "quetzalcoatl",
+      "feathered serpent",
+      "feathered snake",
+      "winged snake",
+      "coatl"
+    ]
   },
   {
     "slug": "storm-djinn",
@@ -3824,7 +4449,14 @@
       "ranged",
       "legendary"
     ],
-    "visual_hint": "towering whirlwind giant of ochre sand and grey cloud with a clear head-to-base shape and both arms raised, twin amber eyes, moonlit dunes below"
+    "visual_hint": "towering whirlwind giant of ochre sand and grey cloud with a clear head-to-base shape and both arms raised, twin amber eyes, moonlit dunes below",
+    "aliases": [
+      "djinn",
+      "genie",
+      "jinn",
+      "storm genie",
+      "wind spirit"
+    ]
   },
   {
     "slug": "behemoth",
@@ -3862,7 +4494,13 @@
       "impact",
       "legendary"
     ],
-    "visual_hint": "stone-grey mountain of a beast shown head to tail, blunt curved horns, cracked ground spreading from one raised foot, dust plume rising"
+    "visual_hint": "stone-grey mountain of a beast shown head to tail, blunt curved horns, cracked ground spreading from one raised foot, dust plume rising",
+    "aliases": [
+      "giant beast",
+      "behemot",
+      "land titan",
+      "behemoth monster"
+    ]
   },
   {
     "slug": "treant",
@@ -3900,7 +4538,14 @@
       "armored",
       "legendary"
     ],
-    "visual_hint": "towering oak-bodied giant standing clear of the smaller trees, mossy bark, two glowing amber eyes in the trunk, thick roots lifted mid-step"
+    "visual_hint": "towering oak-bodied giant standing clear of the smaller trees, mossy bark, two glowing amber eyes in the trunk, thick roots lifted mid-step",
+    "aliases": [
+      "ent",
+      "tree man",
+      "tree monster",
+      "walking tree",
+      "treeant"
+    ]
   },
   {
     "slug": "frost-giant",
@@ -3938,7 +4583,13 @@
       "giant",
       "legendary"
     ],
-    "visual_hint": "pale blue-skinned giant standing at full height in clear view, frost-white beard, ice plates on the shoulders, white breath streaming, frozen fjord behind"
+    "visual_hint": "pale blue-skinned giant standing at full height in clear view, frost-white beard, ice plates on the shoulders, white breath streaming, frozen fjord behind",
+    "aliases": [
+      "ice giant",
+      "jotunn",
+      "snow giant",
+      "frost troll"
+    ]
   },
   {
     "slug": "dimetrodon",
@@ -3975,7 +4626,13 @@
       "ancient",
       "bite"
     ],
-    "visual_hint": "sandy-tan reptile with dark bands shown whole and side-on, tall red-veined sail catching low sunlight, fern-lined riverbank"
+    "visual_hint": "sandy-tan reptile with dark bands shown whole and side-on, tall red-veined sail catching low sunlight, fern-lined riverbank",
+    "aliases": [
+      "sail back",
+      "dimetradon",
+      "sail lizard",
+      "dimetrodont"
+    ]
   },
   {
     "slug": "elasmotherium",
@@ -4012,7 +4669,13 @@
       "cold",
       "ice-age"
     ],
-    "visual_hint": "shaggy chestnut woolly rhino shown side-on head to tail, one huge grey horn on the forehead, breath fogging over frosted steppe grass"
+    "visual_hint": "shaggy chestnut woolly rhino shown side-on head to tail, one huge grey horn on the forehead, breath fogging over frosted steppe grass",
+    "aliases": [
+      "siberian unicorn",
+      "giant rhino",
+      "woolly rhino",
+      "elasmothere"
+    ]
   },
   {
     "slug": "paraceratherium",
@@ -4049,7 +4712,13 @@
       "strength",
       "herbivore"
     ],
-    "visual_hint": "grey-brown hornless rhino giant shown head to tail, long neck raised above a lone tree, dry open plain, small deer nearby for scale"
+    "visual_hint": "grey-brown hornless rhino giant shown head to tail, long neck raised above a lone tree, dry open plain, small deer nearby for scale",
+    "aliases": [
+      "giant rhino",
+      "indricotherium",
+      "paracerathere",
+      "tallest mammal"
+    ]
   },
   {
     "slug": "short-faced-bear",
@@ -4086,7 +4755,13 @@
       "strength",
       "ice-age"
     ],
-    "visual_hint": "tawny-brown bear standing four-square in full view, unusually long legs, short blunt muzzle, cold golden grassland"
+    "visual_hint": "tawny-brown bear standing four-square in full view, unusually long legs, short blunt muzzle, cold golden grassland",
+    "aliases": [
+      "arctodus",
+      "giant bear",
+      "cave bear",
+      "shortface bear"
+    ]
   },
   {
     "slug": "haasts-eagle",
@@ -4124,7 +4799,14 @@
       "impact",
       "predator"
     ],
-    "visual_hint": "slate-and-rust eagle with wings fully spread, huge yellow talons thrown forward, green mountain valley behind"
+    "visual_hint": "slate-and-rust eagle with wings fully spread, huge yellow talons thrown forward, green mountain valley behind",
+    "aliases": [
+      "haasts eagle",
+      "haast eagle",
+      "giant eagle",
+      "maori eagle",
+      "harpagornis"
+    ]
   },
   {
     "slug": "elephant-bird",
@@ -4160,7 +4842,13 @@
       "herbivore",
       "island"
     ],
-    "visual_hint": "shaggy dark-brown flightless bird shown at full height, thick grey legs, small head, sunny island forest clearing with a huge pale egg beside it"
+    "visual_hint": "shaggy dark-brown flightless bird shown at full height, thick grey legs, small head, sunny island forest clearing with a huge pale egg beside it",
+    "aliases": [
+      "aepyornis",
+      "giant ostrich",
+      "vorompatra",
+      "big egg bird"
+    ]
   },
   {
     "slug": "diprotodon",
@@ -4197,7 +4885,13 @@
       "herbivore",
       "ice-age"
     ],
-    "visual_hint": "shaggy grey-brown giant wombat shown side-on in full view, blunt muzzle, thick clawed feet, red dusty scrubland"
+    "visual_hint": "shaggy grey-brown giant wombat shown side-on in full view, blunt muzzle, thick clawed feet, red dusty scrubland",
+    "aliases": [
+      "giant wombat",
+      "giant marsupial",
+      "diprotodont",
+      "diprotadon"
+    ]
   },
   {
     "slug": "thylacine",
@@ -4234,7 +4928,13 @@
       "marsupial",
       "tracking"
     ],
-    "visual_hint": "sandy-tan marsupial hunter shown in full profile, sixteen dark stripes across the back, stiff tapering tail, dry eucalyptus woodland"
+    "visual_hint": "sandy-tan marsupial hunter shown in full profile, sixteen dark stripes across the back, stiff tapering tail, dry eucalyptus woodland",
+    "aliases": [
+      "tasmanian tiger",
+      "tasmanian wolf",
+      "thylacene",
+      "thylasine"
+    ]
   },
   {
     "slug": "entelodont",
@@ -4271,7 +4971,13 @@
       "charge",
       "ancient"
     ],
-    "visual_hint": "dark bristly boar-like giant shown side-on head to tail, knobbed cheek bones, long heavy skull, muddy floodplain with scattered trees"
+    "visual_hint": "dark bristly boar-like giant shown side-on head to tail, knobbed cheek bones, long heavy skull, muddy floodplain with scattered trees",
+    "aliases": [
+      "hell pig",
+      "terminator pig",
+      "killer pig",
+      "daeodon"
+    ]
   },
   {
     "slug": "basilosaurus",
@@ -4306,7 +5012,13 @@
       "ancient",
       "agile"
     ],
-    "visual_hint": "slate-brown whale with a pale belly, whole snaky body curving in a long S across bright turquoise shallows, tiny hind flippers clearly visible"
+    "visual_hint": "slate-brown whale with a pale belly, whole snaky body curving in a long S across bright turquoise shallows, tiny hind flippers clearly visible",
+    "aliases": [
+      "ancient whale",
+      "zeuglodon",
+      "basilosaur",
+      "snake whale"
+    ]
   },
   {
     "slug": "livyatan",
@@ -4341,7 +5053,13 @@
       "bite",
       "sonar"
     ],
-    "visual_hint": "dark slate whale shown full length from snout to tail fluke in clear blue water, huge blocky forehead, giant teeth visible in the open jaw"
+    "visual_hint": "dark slate whale shown full length from snout to tail fluke in clear blue water, huge blocky forehead, giant teeth visible in the open jaw",
+    "aliases": [
+      "livyathan",
+      "giant sperm whale",
+      "ancient sperm whale",
+      "leviathan whale"
+    ]
   },
   {
     "slug": "helicoprion",
@@ -4376,7 +5094,13 @@
       "ancient",
       "piercing"
     ],
-    "visual_hint": "steel-blue shark-like fish shown whole from the side, spiral saw of white teeth clear in the open lower jaw, sunlit ancient sea"
+    "visual_hint": "steel-blue shark-like fish shown whole from the side, spiral saw of white teeth clear in the open lower jaw, sunlit ancient sea",
+    "aliases": [
+      "buzzsaw shark",
+      "buzz saw shark",
+      "spiral tooth shark",
+      "helicoprian"
+    ]
   },
   {
     "slug": "anomalocaris",
@@ -4411,7 +5135,13 @@
       "ancient",
       "vision"
     ],
-    "visual_hint": "coral-pink and cream swimmer shown fully side-on, two segmented spiny arms reaching forward, stalked eyes, rows of side flaps, pale ancient seabed"
+    "visual_hint": "coral-pink and cream swimmer shown fully side-on, two segmented spiny arms reaching forward, stalked eyes, rows of side flaps, pale ancient seabed",
+    "aliases": [
+      "weird shrimp",
+      "cambrian shrimp",
+      "ancient shrimp",
+      "anomalocarus"
+    ]
   },
   {
     "slug": "opabinia",
@@ -4446,7 +5176,13 @@
       "ancient",
       "small"
     ],
-    "visual_hint": "small amber-and-teal segmented creature shown whole from the side, five stalked eyes on top, long trunk-like nozzle stretched forward, pale seabed"
+    "visual_hint": "small amber-and-teal segmented creature shown whole from the side, five stalked eyes on top, long trunk-like nozzle stretched forward, pale seabed",
+    "aliases": [
+      "five eyed creature",
+      "five eyes",
+      "vacuum nose",
+      "opabina"
+    ]
   },
   {
     "slug": "hallucigenia",
@@ -4481,7 +5217,13 @@
       "ancient",
       "small"
     ],
-    "visual_hint": "tiny cream-and-rust tube-bodied animal shown side-on and whole, seven pairs of dark spines standing up, thin clawed legs, sponge-covered ancient seabed"
+    "visual_hint": "tiny cream-and-rust tube-bodied animal shown side-on and whole, seven pairs of dark spines standing up, thin clawed legs, sponge-covered ancient seabed",
+    "aliases": [
+      "spiky worm",
+      "spike worm",
+      "halucigenia",
+      "weird worm"
+    ]
   },
   {
     "slug": "meganeura",
@@ -4519,7 +5261,13 @@
       "vision",
       "insect"
     ],
-    "visual_hint": "iridescent green-and-bronze giant dragonfly with all four wings spread, huge dark eyes, hovering in the open above giant ferns"
+    "visual_hint": "iridescent green-and-bronze giant dragonfly with all four wings spread, huge dark eyes, hovering in the open above giant ferns",
+    "aliases": [
+      "giant dragonfly",
+      "dragonfly",
+      "griffinfly",
+      "meganura"
+    ]
   },
   {
     "slug": "jaekelopterus",
@@ -4556,7 +5304,13 @@
       "aquatic",
       "arthropod"
     ],
-    "visual_hint": "glossy bronze-black sea scorpion shown whole from above, long spined claws spread wide, paddle legs out, green ancient river bed"
+    "visual_hint": "glossy bronze-black sea scorpion shown whole from above, long spined claws spread wide, paddle legs out, green ancient river bed",
+    "aliases": [
+      "sea scorpion",
+      "giant sea scorpion",
+      "eurypterid",
+      "jaekelopterous"
+    ]
   },
   {
     "slug": "sarcosuchus",
@@ -4593,7 +5347,13 @@
       "aquatic",
       "ambush"
     ],
-    "visual_hint": "olive-and-charcoal armoured crocodile shown fully on a sunlit sandy riverbank, whole body from snout bump to tail tip, bony back plates catching the light"
+    "visual_hint": "olive-and-charcoal armoured crocodile shown fully on a sunlit sandy riverbank, whole body from snout bump to tail tip, bony back plates catching the light",
+    "aliases": [
+      "supercroc",
+      "super croc",
+      "giant crocodile",
+      "sarcosuchous"
+    ]
   },
   {
     "slug": "carnotaurus",
@@ -4629,7 +5389,13 @@
       "dinosaur",
       "charge"
     ],
-    "visual_hint": "rust-red dinosaur with a cream underside shown full body mid-stride, two blunt horns above the eyes, bumpy hide, dusty open plain"
+    "visual_hint": "rust-red dinosaur with a cream underside shown full body mid-stride, two blunt horns above the eyes, bumpy hide, dusty open plain",
+    "aliases": [
+      "carno",
+      "meat bull",
+      "bull dinosaur",
+      "carnotaurous"
+    ]
   },
   {
     "slug": "parasaurolophus",
@@ -4667,7 +5433,14 @@
       "dinosaur",
       "herbivore"
     ],
-    "visual_hint": "olive-and-cream duckbill dinosaur shown side-on head to tail, long backswept tube crest with orange stripes, head raised mid-call, wide river plain"
+    "visual_hint": "olive-and-cream duckbill dinosaur shown side-on head to tail, long backswept tube crest with orange stripes, head raised mid-call, wide river plain",
+    "aliases": [
+      "parasaur",
+      "duck bill dinosaur",
+      "trumpet dinosaur",
+      "crest dinosaur",
+      "parasaurolophous"
+    ]
   },
   {
     "slug": "pachycephalosaurus",
@@ -4703,7 +5476,14 @@
       "dinosaur",
       "charge"
     ],
-    "visual_hint": "tan-and-brown dinosaur shown full body side-on, thick pink-tinged bone dome ringed with knobby spikes, head lowered mid-charge, autumn woodland"
+    "visual_hint": "tan-and-brown dinosaur shown full body side-on, thick pink-tinged bone dome ringed with knobby spikes, head lowered mid-charge, autumn woodland",
+    "aliases": [
+      "pachy",
+      "dome head",
+      "head butt dinosaur",
+      "pachysephalosaurus",
+      "pachycephalosaur"
+    ]
   },
   {
     "slug": "utahraptor",
@@ -4740,7 +5520,13 @@
       "dinosaur",
       "grip"
     ],
-    "visual_hint": "heavyset raptor in barred rust-and-black feathers shown whole side-on, one huge curved foot claw raised, powerful arms, sandy river valley"
+    "visual_hint": "heavyset raptor in barred rust-and-black feathers shown whole side-on, one huge curved foot claw raised, powerful arms, sandy river valley",
+    "aliases": [
+      "raptor",
+      "utah raptor",
+      "giant raptor",
+      "utahrapter"
+    ]
   },
   {
     "slug": "iguanodon",
@@ -4777,7 +5563,13 @@
       "dinosaur",
       "piercing"
     ],
-    "visual_hint": "warm brown-and-cream dinosaur shown in full profile, one hand raised with the pale thumb spike clearly visible, open fern meadow"
+    "visual_hint": "warm brown-and-cream dinosaur shown in full profile, one hand raised with the pale thumb spike clearly visible, open fern meadow",
+    "aliases": [
+      "iguanadon",
+      "thumb spike dinosaur",
+      "iguanodont",
+      "iguanidon"
+    ]
   },
   {
     "slug": "castoroides",
@@ -4815,7 +5607,13 @@
       "ice-age",
       "grip"
     ],
-    "visual_hint": "shaggy chestnut giant beaver shown whole on a mossy bank, big orange front teeth, broad flat tail behind it, reedy lake edge"
+    "visual_hint": "shaggy chestnut giant beaver shown whole on a mossy bank, big orange front teeth, broad flat tail behind it, reedy lake edge",
+    "aliases": [
+      "castoroides",
+      "beaver",
+      "mega beaver",
+      "bear beaver"
+    ]
   },
   {
     "slug": "platybelodon",
@@ -4852,7 +5650,13 @@
       "herbivore",
       "ancient"
     ],
-    "visual_hint": "grey-brown short-trunked elephant shown fully side-on, broad flat shovel jaw clear in view, standing on a green swampy shore"
+    "visual_hint": "grey-brown short-trunked elephant shown fully side-on, broad flat shovel jaw clear in view, standing on a green swampy shore",
+    "aliases": [
+      "shovel tusker",
+      "shovel tusk elephant",
+      "spoon tusk",
+      "platybelodont"
+    ]
   },
   {
     "slug": "bombardier-beetle",
@@ -4890,7 +5694,13 @@
       "insect",
       "small"
     ],
-    "visual_hint": "glossy blue-black beetle with a rust-orange head shown large and clear on a pale stone, tail tipped up, small puff of hot spray behind"
+    "visual_hint": "glossy blue-black beetle with a rust-orange head shown large and clear on a pale stone, tail tipped up, small puff of hot spray behind",
+    "aliases": [
+      "bombardier",
+      "spray beetle",
+      "boom beetle",
+      "chemical beetle"
+    ]
   },
   {
     "slug": "thorny-devil",
@@ -4927,7 +5737,13 @@
       "survival",
       "reptile"
     ],
-    "visual_hint": "ochre-and-cream spiky lizard shown whole from the side on bright red sand, every cone spine crisp, false-head bump visible behind the neck"
+    "visual_hint": "ochre-and-cream spiky lizard shown whole from the side on bright red sand, every cone spine crisp, false-head bump visible behind the neck",
+    "aliases": [
+      "thorny dragon",
+      "spiky lizard",
+      "thorn devil",
+      "moloch"
+    ]
   },
   {
     "slug": "gila-monster",
@@ -4965,7 +5781,13 @@
       "survival",
       "reptile"
     ],
-    "visual_hint": "black-and-orange beaded lizard shown at full length on warm desert stone, thick tail, blunt head raised, cactus scrub behind"
+    "visual_hint": "black-and-orange beaded lizard shown at full length on warm desert stone, thick tail, blunt head raised, cactus scrub behind",
+    "aliases": [
+      "gila",
+      "heela monster",
+      "gila lizard",
+      "venomous lizard"
+    ]
   },
   {
     "slug": "secretary-bird",
@@ -5003,7 +5825,13 @@
       "predator",
       "flying"
     ],
-    "visual_hint": "grey-and-black long-legged bird shown head to toe, orange face patch, quill crest fanned, one foot raised mid-stomp, golden savanna"
+    "visual_hint": "grey-and-black long-legged bird shown head to toe, orange face patch, quill crest fanned, one foot raised mid-stomp, golden savanna",
+    "aliases": [
+      "secretary",
+      "kick bird",
+      "snake stomping bird",
+      "secratary bird"
+    ]
   },
   {
     "slug": "shoebill",
@@ -5040,7 +5868,13 @@
       "predator",
       "wading"
     ],
-    "visual_hint": "slate-grey stork standing tall and fully visible on open marsh grass, giant pale shoe-shaped bill with a hooked tip, bright pale sky"
+    "visual_hint": "slate-grey stork standing tall and fully visible on open marsh grass, giant pale shoe-shaped bill with a hooked tip, bright pale sky",
+    "aliases": [
+      "shoebill stork",
+      "shoe bill",
+      "shoebill bird",
+      "death stare bird"
+    ]
   },
   {
     "slug": "harpy-eagle",
@@ -5078,7 +5912,13 @@
       "jungle",
       "grip"
     ],
-    "visual_hint": "grey-and-white eagle perched in full view on a bare branch, black crest feathers raised, enormous yellow talons gripping, green rainforest behind"
+    "visual_hint": "grey-and-white eagle perched in full view on a bare branch, black crest feathers raised, enormous yellow talons gripping, green rainforest behind",
+    "aliases": [
+      "harpy",
+      "jungle eagle",
+      "harpie eagle",
+      "harpy hawk"
+    ]
   },
   {
     "slug": "peacock",
@@ -5116,7 +5956,13 @@
       "flying",
       "warning-colors"
     ],
-    "visual_hint": "iridescent blue peacock shown head-on with the full train fanned wide, hundreds of green-gold eye spots, crest of spikes, sunlit green lawn"
+    "visual_hint": "iridescent blue peacock shown head-on with the full train fanned wide, hundreds of green-gold eye spots, crest of spikes, sunlit green lawn",
+    "aliases": [
+      "peacok",
+      "pea cock",
+      "peafowl",
+      "fan tail bird"
+    ]
   },
   {
     "slug": "archerfish",
@@ -5152,7 +5998,12 @@
       "aquatic",
       "small"
     ],
-    "visual_hint": "silver fish with black wedge bars shown whole and side-on in bright shallow water, thin jet of water arcing up from its mouth, mangrove roots behind"
+    "visual_hint": "silver fish with black wedge bars shown whole and side-on in bright shallow water, thin jet of water arcing up from its mouth, mangrove roots behind",
+    "aliases": [
+      "archer fish",
+      "spitting fish",
+      "water gun fish"
+    ]
   },
   {
     "slug": "flying-fish",
@@ -5188,7 +6039,12 @@
       "aquatic",
       "small"
     ],
-    "visual_hint": "steel-blue fish with a silver belly shown fully in the air above the waves, both wing fins spread wide, spray trailing from its tail"
+    "visual_hint": "steel-blue fish with a silver belly shown fully in the air above the waves, both wing fins spread wide, spray trailing from its tail",
+    "aliases": [
+      "flyingfish",
+      "gliding fish",
+      "jumping fish"
+    ]
   },
   {
     "slug": "sawfish",
@@ -5224,7 +6080,13 @@
       "electro-sense",
       "predator"
     ],
-    "visual_hint": "olive-grey sawfish shown whole from above in clear sunlit shallows, long toothed saw snout in sharp detail, pale sandy bottom"
+    "visual_hint": "olive-grey sawfish shown whole from above in clear sunlit shallows, long toothed saw snout in sharp detail, pale sandy bottom",
+    "aliases": [
+      "saw fish",
+      "saw shark",
+      "sawtooth fish",
+      "carpenter shark"
+    ]
   },
   {
     "slug": "hammerhead-shark",
@@ -5260,7 +6122,13 @@
       "vision",
       "predator"
     ],
-    "visual_hint": "bronze-grey shark shown whole from a front-side angle, wide hammer head with an eye at each tip, clear blue water over a sandy reef floor"
+    "visual_hint": "bronze-grey shark shown whole from a front-side angle, wide hammer head with an eye at each tip, clear blue water over a sandy reef floor",
+    "aliases": [
+      "hammerhead",
+      "hammer head",
+      "hammer shark",
+      "hamerhead"
+    ]
   },
   {
     "slug": "manta-ray",
@@ -5296,7 +6164,14 @@
       "intelligence",
       "gentle"
     ],
-    "visual_hint": "black-backed white-bellied manta shown whole from the front, both wings fully spread, head fins curled forward, sunbeams in clear blue water"
+    "visual_hint": "black-backed white-bellied manta shown whole from the front, both wings fully spread, head fins curled forward, sunbeams in clear blue water",
+    "aliases": [
+      "manta",
+      "ray",
+      "stingray",
+      "devil ray",
+      "manta rey"
+    ]
   },
   {
     "slug": "portuguese-man-o-war",
@@ -5332,7 +6207,14 @@
       "reach",
       "colony"
     ],
-    "visual_hint": "translucent blue-violet float with a pink crest riding on a calm surface, long ribbon tentacles trailing clearly below in sunlit water, whole colony in view"
+    "visual_hint": "translucent blue-violet float with a pink crest riding on a calm surface, long ribbon tentacles trailing clearly below in sunlit water, whole colony in view",
+    "aliases": [
+      "jellyfish",
+      "man o war",
+      "man of war",
+      "bluebottle",
+      "blue bottle"
+    ]
   },
   {
     "slug": "immortal-jellyfish",
@@ -5368,7 +6250,13 @@
       "aquatic",
       "small"
     ],
-    "visual_hint": "crystal-clear jellyfish bell shown whole and glowing, vivid red core, fine tentacles fanned out, deep blue water behind"
+    "visual_hint": "crystal-clear jellyfish bell shown whole and glowing, vivid red core, fine tentacles fanned out, deep blue water behind",
+    "aliases": [
+      "jellyfish",
+      "immortal jelly",
+      "forever jellyfish",
+      "turritopsis"
+    ]
   },
   {
     "slug": "coconut-crab",
@@ -5406,7 +6294,13 @@
       "grip",
       "island"
     ],
-    "visual_hint": "deep blue and rust-orange giant crab shown fully on pale sand, one oversized claw raised over a split coconut, palm trunks behind"
+    "visual_hint": "deep blue and rust-orange giant crab shown fully on pale sand, one oversized claw raised over a split coconut, palm trunks behind",
+    "aliases": [
+      "crab",
+      "robber crab",
+      "giant crab",
+      "palm thief"
+    ]
   },
   {
     "slug": "pistol-shrimp",
@@ -5444,7 +6338,13 @@
       "small",
       "stun"
     ],
-    "visual_hint": "candy-striped orange-and-white shrimp shown whole side-on, one enormous claw cocked open, a tiny bright bubble at the claw tip, coral gravel"
+    "visual_hint": "candy-striped orange-and-white shrimp shown whole side-on, one enormous claw cocked open, a tiny bright bubble at the claw tip, coral gravel",
+    "aliases": [
+      "snapping shrimp",
+      "pistol",
+      "snapper shrimp",
+      "gun shrimp"
+    ]
   },
   {
     "slug": "horseshoe-crab",
@@ -5482,7 +6382,13 @@
       "survival",
       "defensive"
     ],
-    "visual_hint": "glossy chestnut horseshoe shell shown whole from above on wet sand, long spike tail straight out behind, small eyes visible on the dome"
+    "visual_hint": "glossy chestnut horseshoe shell shown whole from above on wet sand, long spike tail straight out behind, small eyes visible on the dome",
+    "aliases": [
+      "horse shoe crab",
+      "horseshoe",
+      "helmet crab",
+      "blue blood crab"
+    ]
   },
   {
     "slug": "star-nosed-mole",
@@ -5520,7 +6426,13 @@
       "speed",
       "nocturnal"
     ],
-    "visual_hint": "velvet-black mole shown whole on dark soil, bright pink star of nose rays spread wide, broad pink digging hands, tunnel mouth behind"
+    "visual_hint": "velvet-black mole shown whole on dark soil, bright pink star of nose rays spread wide, broad pink digging hands, tunnel mouth behind",
+    "aliases": [
+      "mole",
+      "star nose mole",
+      "star mole",
+      "starnosed mole"
+    ]
   },
   {
     "slug": "naked-mole-rat",
@@ -5557,7 +6469,13 @@
       "small",
       "colony"
     ],
-    "visual_hint": "pink wrinkled hairless rodent shown whole and side-on at a tunnel mouth, big pale buck teeth, sandy soil, warm light"
+    "visual_hint": "pink wrinkled hairless rodent shown whole and side-on at a tunnel mouth, big pale buck teeth, sandy soil, warm light",
+    "aliases": [
+      "mole rat",
+      "naked mole",
+      "sand puppy",
+      "naked molerat"
+    ]
   },
   {
     "slug": "musk-ox",
@@ -5594,7 +6512,13 @@
       "herd",
       "defensive"
     ],
-    "visual_hint": "shaggy dark-brown ox shown side-on in full view, long skirt of hair almost touching the snow, pale down-curving horns, frosty tundra"
+    "visual_hint": "shaggy dark-brown ox shown side-on in full view, long skirt of hair almost touching the snow, pale down-curving horns, frosty tundra",
+    "aliases": [
+      "muskox",
+      "arctic ox",
+      "shaggy ox",
+      "musk oxe"
+    ]
   },
   {
     "slug": "ibex",
@@ -5632,7 +6556,13 @@
       "agility",
       "mountain"
     ],
-    "visual_hint": "tawny mountain goat shown whole standing on a narrow ledge, huge ridged horns sweeping back, dark beard, vast rock face behind"
+    "visual_hint": "tawny mountain goat shown whole standing on a narrow ledge, huge ridged horns sweeping back, dark beard, vast rock face behind",
+    "aliases": [
+      "mountain goat",
+      "wild goat",
+      "ibix",
+      "cliff goat"
+    ]
   },
   {
     "slug": "giraffe",
@@ -5669,7 +6599,13 @@
       "vision",
       "herbivore"
     ],
-    "visual_hint": "orange-and-cream patchwork giraffe shown head to hoof, long neck upright beside a flat-topped acacia, golden savanna light"
+    "visual_hint": "orange-and-cream patchwork giraffe shown head to hoof, long neck upright beside a flat-topped acacia, golden savanna light",
+    "aliases": [
+      "giraf",
+      "jiraffe",
+      "long neck animal",
+      "girafe"
+    ]
   },
   {
     "slug": "hyena",
@@ -5706,7 +6642,13 @@
       "endurance",
       "sound"
     ],
-    "visual_hint": "spotted sandy-and-black hyena shown whole side-on, sloping back, massive muzzle, dusty golden savanna at dawn"
+    "visual_hint": "spotted sandy-and-black hyena shown whole side-on, sloping back, massive muzzle, dusty golden savanna at dawn",
+    "aliases": [
+      "hyena",
+      "laughing hyena",
+      "hiena",
+      "hyeena"
+    ]
   },
   {
     "slug": "snow-leopard",
@@ -5744,7 +6686,13 @@
       "mountain",
       "ambush"
     ],
-    "visual_hint": "pale grey cat with dark rosettes shown full-body mid-leap between snowy rocks, enormous plumed tail streaming behind, cold blue mountain light"
+    "visual_hint": "pale grey cat with dark rosettes shown full-body mid-leap between snowy rocks, enormous plumed tail streaming behind, cold blue mountain light",
+    "aliases": [
+      "ghost cat",
+      "mountain leopard",
+      "snow cat",
+      "snowleopard"
+    ]
   },
   {
     "slug": "sea-otter",
@@ -5781,7 +6729,12 @@
       "aquatic",
       "grip"
     ],
-    "visual_hint": "rich brown otter shown whole floating on its back at the surface, stone held on its chest, paws up, kelp fronds around it"
+    "visual_hint": "rich brown otter shown whole floating on its back at the surface, stone held on its chest, paws up, kelp fronds around it",
+    "aliases": [
+      "otter",
+      "river otter",
+      "oter"
+    ]
   },
   {
     "slug": "walrus",
@@ -5818,7 +6771,12 @@
       "sensory",
       "aquatic"
     ],
-    "visual_hint": "wrinkled cinnamon-brown walrus shown whole on blue-white ice, long ivory tusks and bushy whiskers clear, calm arctic sea behind"
+    "visual_hint": "wrinkled cinnamon-brown walrus shown whole on blue-white ice, long ivory tusks and bushy whiskers clear, calm arctic sea behind",
+    "aliases": [
+      "wallrus",
+      "walruss",
+      "tusk seal"
+    ]
   },
   {
     "slug": "emperor-penguin",
@@ -5855,7 +6813,13 @@
       "endurance",
       "survival"
     ],
-    "visual_hint": "black-and-white penguin with orange-gold neck patches standing at full height on bright antarctic ice, flippers held slightly out, blue ice cliffs behind"
+    "visual_hint": "black-and-white penguin with orange-gold neck patches standing at full height on bright antarctic ice, flippers held slightly out, blue ice cliffs behind",
+    "aliases": [
+      "penguin",
+      "pengiun",
+      "pengwin",
+      "emperer penguin"
+    ]
   },
   {
     "slug": "alligator-snapping-turtle",
@@ -5892,7 +6856,13 @@
       "trap",
       "ambush"
     ],
-    "visual_hint": "moss-green spiked-shell turtle shown whole and side-on on a sunlit riverbank, ridged shell clear, hooked beak open showing the pink lure"
+    "visual_hint": "moss-green spiked-shell turtle shown whole and side-on on a sunlit riverbank, ridged shell clear, hooked beak open showing the pink lure",
+    "aliases": [
+      "turtle",
+      "snapping turtle",
+      "alligator turtle",
+      "snapper turtle"
+    ]
   },
   {
     "slug": "mudskipper",
@@ -5930,7 +6900,13 @@
       "small",
       "survival"
     ],
-    "visual_hint": "speckled brown-and-blue fish propped fully upright on wet mud on its front fins, big periscope eyes on top of the head, mangrove roots behind"
+    "visual_hint": "speckled brown-and-blue fish propped fully upright on wet mud on its front fins, big periscope eyes on top of the head, mangrove roots behind",
+    "aliases": [
+      "walking fish",
+      "mud skipper",
+      "land fish",
+      "mudskiper"
+    ]
   },
   {
     "slug": "lungfish",
@@ -5968,6 +6944,11 @@
       "aquatic",
       "resistant"
     ],
-    "visual_hint": "olive-brown eel-shaped fish shown whole and side-on in shallow clear water, thread-thin fins spread, head lifted to the surface for a gulp of air"
+    "visual_hint": "olive-brown eel-shaped fish shown whole and side-on in shallow clear water, thread-thin fins spread, head lifted to the surface for a gulp of air",
+    "aliases": [
+      "lung fish",
+      "air breathing fish",
+      "lungefish"
+    ]
   }
 ]
