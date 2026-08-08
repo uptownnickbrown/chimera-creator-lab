@@ -108,17 +108,21 @@ async def generate_thumb(creature: Creature) -> str | None:
     return f"/media/creatures/{creature.id}_thumb.png"
 
 
-async def generate_championship_art(winner: Creature, loser: Creature) -> str | None:
+async def generate_championship_art(fa: Creature, fb: Creature) -> str | None:
     """Finals key art via images.edit with both hero cutouts (bakeoff-validated
-    for two-creature identity preservation). Championship only, never blocking:
-    None simply means the ceremony uses the standard composited finale.
+    for two-creature identity preservation).
+
+    Generated when the FINALISTS are known (semifinals complete), before the
+    winner is — so the scene is a neutral titanic clash, and the ~74s render
+    hides inside the final prediction + battle. Championship only, never
+    blocking: None simply means the ceremony uses the composited finale.
     """
     from . import ai
 
     if not ai.ai_enabled():
         return None
-    a = _media_dir() / f"{winner.id}.png"
-    b = _media_dir() / f"{loser.id}.png"
+    a = _media_dir() / f"{fa.id}.png"
+    b = _media_dir() / f"{fb.id}.png"
     if not (a.exists() and b.exists()):
         return None
 
@@ -126,23 +130,25 @@ async def generate_championship_art(winner: Creature, loser: Creature) -> str | 
         "Epic cinematic championship key art for a AAA monster game, child-"
         "friendly (no gore, no blood). The FIRST attached creature and the "
         "SECOND attached creature clash mid-battle in a futuristic holographic "
-        "arena at night, violet and cyan energy, sparks and spray flying. "
-        "Keep BOTH creatures' designs EXACTLY as shown in the attached images "
-        "— same anatomy, colors, plates, proportions. First creature "
-        "triumphant in the foreground. No text or watermarks."
+        "grand arena at night — gold championship light beams, violet and "
+        "cyan energy, sparks and spray flying, both titans rearing at each "
+        "other in a perfectly balanced duel, neither winning. Keep BOTH "
+        "creatures' designs EXACTLY as shown in the attached images — same "
+        "anatomy, colors, plates, proportions. No text or watermarks."
     )
     try:
         resp = await ai.client().images.edit(
             model=ai.IMAGE_MODEL,
-            image=[(f"{winner.id}.png", io.BytesIO(a.read_bytes()), "image/png"),
-                   (f"{loser.id}.png", io.BytesIO(b.read_bytes()), "image/png")],
+            image=[(f"{fa.id}.png", io.BytesIO(a.read_bytes()), "image/png"),
+                   (f"{fb.id}.png", io.BytesIO(b.read_bytes()), "image/png")],
             prompt=prompt, size=KEYART_SIZE, quality="high", output_format="png",
         )
         png = base64.b64decode(resp.data[0].b64_json)
-        path = _media_dir() / f"final_{winner.id}_{loser.id}.png"
+        lo, hi = sorted((fa.id, fb.id))
+        path = _media_dir() / f"final_{lo}_{hi}.png"
         path.write_bytes(png)
-        return f"/media/creatures/final_{winner.id}_{loser.id}.png"
+        return f"/media/creatures/final_{lo}_{hi}.png"
     except Exception as exc:  # noqa: BLE001 - ceremony must never block
         log.warning("images: championship art failed (%s vs %s): %s",
-                    winner.id, loser.id, str(exc)[:200])
+                    fa.id, fb.id, str(exc)[:200])
         return None

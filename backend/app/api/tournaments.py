@@ -1,6 +1,7 @@
 """Bracket mode: predict -> simulate -> explain -> advance -> crown (spec §7, §15)."""
 from __future__ import annotations
 
+import asyncio
 import copy
 from datetime import UTC, datetime
 
@@ -19,6 +20,7 @@ from ..schemas import (
     ResolveResponse,
     TournamentView,
 )
+from ..services import ai, images
 from ..services import battle as battle_svc
 from ..services import tournament as bracket_svc
 from .common import XP_CORRECT_PREDICTION, award_xp, get_profile, summary
@@ -216,6 +218,15 @@ async def resolve(
 
     bracket_svc.advance(bracket, round_index, match_index, winner_id)
 
+    # Semifinals just completed -> both finalists known: pre-generate the
+    # championship key art now so the ~74s render hides inside the final
+    # prediction + battle and the ceremony never waits (AI_CONTRACTS §3).
+    final = bracket["rounds"][-1]["matches"][0]
+    if (final.get("a") and final.get("b") and final.get("winner") is None
+            and not bracket.get("final_art") and ai.ai_enabled()):
+        bracket["final_art"] = "pending"
+        asyncio.create_task(_final_art_task(t.id, final["a"], final["b"]))
+
     if bracket_svc.is_complete(bracket):
         t.status = TournamentStatus.complete
         t.champion_id = bracket_svc.champion_id(bracket)
@@ -233,3 +244,20 @@ async def resolve(
         battle=_battle_view(row, match, cached=cached),
         tournament=await _view(db, t),
     )
+
+
+async def _final_art_task(tournament_id: int, a_id: int, b_id: int) -> None:
+    """Background finals key-art render; owns its session (request one closes)."""
+    from ..db import session_factory
+
+    async with session_factory()() as db:
+        fa = await db.get(Creature, a_id)
+        fb = await db.get(Creature, b_id)
+        t = await db.get(Tournament, tournament_id)
+        if not (fa and fb and t):
+            return
+        path = await images.generate_championship_art(fa, fb)
+        bracket = copy.deepcopy(t.bracket)
+        bracket["final_art"] = path  # None -> ceremony uses composited finale
+        t.bracket = bracket
+        await db.commit()
