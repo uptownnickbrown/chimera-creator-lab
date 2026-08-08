@@ -22,6 +22,8 @@ log = logging.getLogger("chimera.library")
 
 _sources: list[SourceCreature] = []
 _environments: list[Environment] = []
+_raw_sources: dict[str, dict] = {}
+_raw_environments: dict[str, dict] = {}
 _loaded = False
 
 
@@ -117,7 +119,7 @@ def _coerce_environment(rec: dict) -> Environment | None:
 
 def load_library(data_dir: Path | None = None) -> None:
     """Read the data files into memory. Called once at startup; idempotent."""
-    global _sources, _environments, _loaded
+    global _sources, _environments, _raw_sources, _raw_environments, _loaded
     data_dir = data_dir or get_settings().data_dir
 
     src_records = _read_json_list(data_dir / "source_creatures.json", "sources", "creatures")
@@ -125,6 +127,15 @@ def load_library(data_dir: Path | None = None) -> None:
 
     _sources = [s for s in (_coerce_source(r) for r in src_records) if s]
     _environments = [e for e in (_coerce_environment(r) for r in env_records) if e]
+    # Raw records keep the full authored detail (traits dict, scale, sim
+    # block, advantages_hint...) for AI prompt enrichment; keys are the
+    # normalized slugs the coerced objects carry.
+    _raw_sources = {
+        s.slug: r for s, r in zip((_coerce_source(r) for r in src_records), src_records) if s
+    }
+    _raw_environments = {
+        e.slug: r for e, r in zip((_coerce_environment(r) for r in env_records), env_records) if e
+    }
     _loaded = bool(_sources or _environments)
 
     if _loaded:
@@ -154,6 +165,16 @@ def is_loaded() -> bool:
 
 def source_by_slug(slug: str) -> SourceCreature | None:
     return next((s for s in _sources if s.slug == slug), None)
+
+
+def raw_source(slug: str) -> dict:
+    """Full authored record for AI prompt enrichment ({} when unauthored)."""
+    return _raw_sources.get(slug, {})
+
+
+def raw_environment(slug: str) -> dict:
+    """Full authored environment (sim block + advantages_hint) for battles."""
+    return _raw_environments.get(slug, {})
 
 
 def display_name(slug: str) -> str:

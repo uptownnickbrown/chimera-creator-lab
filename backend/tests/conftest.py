@@ -9,6 +9,8 @@ from httpx import ASGITransport, AsyncClient
 async def client(tmp_path, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", f"sqlite+aiosqlite:///{tmp_path / 'test.db'}")
     monkeypatch.setenv("CHIMERA_DATA_DIR", str(tmp_path / "data"))  # deliberately absent
+    monkeypatch.setenv("CHIMERA_MEDIA_DIR", str(tmp_path / "media"))
+    monkeypatch.setenv("CHIMERA_STUB_AI", "1")  # tests never touch the network
 
     from app import config
     from app import db as dbmod

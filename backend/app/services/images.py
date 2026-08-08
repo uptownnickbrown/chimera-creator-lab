@@ -1,58 +1,148 @@
-"""Hero-image pipeline — INTERFACE ONLY, nothing implemented yet.
+"""Hero-image pipeline (docs/AI_CONTRACTS.md §1B, §3).
 
-Per ARCHITECTURE.md the runtime hero render is gpt-image-1.5 with
-`background=transparent`, quality high, 1536x1024, ~50s. It is the only model
-in the bakeoff with native alpha, which matters for translucent flame/lightning
-/spray edges that a chroma key destroys.
+gpt-image-1.5 with `background=transparent` — the only bakeoff model with
+native alpha, which matters for translucent flame/lightning/spray edges that
+a chroma key destroys. OpenAI-only by decision; on repeated failure we mark
+the row `failed` and the UI offers a friendly retry ("the lab is recharging").
 
-Contract for whoever implements this:
-- Creature rows are created with `image_status = pending`; text is already
-  saved, so a failure here must never lose the record. Retry once, then fall
-  back to gemini-3.1-flash-image, then mark `failed` and move on.
-- Write the PNG under `frontend/public/assets/creatures/<id>.png` (committed art,
-  Agora-style) and store the web path on the row.
-- Images contain ZERO text — the UI renders all typography.
+Files land in the backend-owned media dir (served at /media by the API, so
+prod does not depend on writing into the frontend image). A creature row is
+created with image_status=pending; the text record is already saved, so
+nothing here may ever lose a creature.
 """
 from __future__ import annotations
 
+import asyncio
+import base64
+import io
 import logging
 
+from ..config import get_settings
 from ..models import Creature
 
 log = logging.getLogger("chimera.images")
 
 HERO_SIZE = "1536x1024"
-HERO_MODEL = "gpt-image-1.5"
-FALLBACK_MODEL = "gemini-3.1-flash-image"
-ASSET_DIR = "frontend/public/assets/creatures"
+KEYART_SIZE = "1536x1024"
+THUMB_PX = 512
+
+HERO_STYLE = (
+    "Epic realistic fantasy creature concept art for a AAA video game. "
+    "Cinematic dramatic lighting, hyper-detailed textures, museum-quality "
+    "creature design. The creature is ONE coherent invented species. Full "
+    "body visible, dynamic three-quarter hero pose, not touching the image "
+    "edges. Fierce and epic but suitable for a 7-year-old: no gore, no "
+    "blood. Absolutely no text, letters, numbers, logos, or watermarks. "
+    "Transparent background. Creature description: "
+)
+
+
+def _media_dir():
+    d = get_settings().media_dir / "creatures"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+async def _render(prompt: str, *, quality: str, size: str = HERO_SIZE) -> bytes:
+    from . import ai
+
+    resp = await ai.client().images.generate(
+        model=ai.IMAGE_MODEL, prompt=prompt, size=size, quality=quality,
+        background="transparent", output_format="png",
+    )
+    return base64.b64decode(resp.data[0].b64_json)
 
 
 async def generate_hero(creature: Creature) -> str | None:
-    """Render the transparent-background hero PNG; return its web path.
+    """Render the transparent hero PNG; return its web path or None.
 
-    TODO: call gpt-image-1.5 with `creature.visual_spec`, background=transparent,
-    quality=high, size=HERO_SIZE. On success write the file and return
-    "/assets/creatures/<id>.png". On failure retry once, then FALLBACK_MODEL,
-    then return None so the caller can set image_status=failed.
+    Attempts: high → high (retry) → medium (verified fast path). None only
+    after all three fail; caller sets image_status=failed.
     """
-    log.info("images: generate_hero not implemented yet (creature=%s)", creature.id)
+    from . import ai
+
+    if not ai.ai_enabled():
+        log.info("images: AI disabled — no hero for creature %s", creature.id)
+        return None
+
+    prompt = HERO_STYLE + (creature.visual_spec or creature.name)
+    for attempt, quality in enumerate(("high", "high", "medium"), 1):
+        try:
+            png = await _render(prompt, quality=quality)
+            path = _media_dir() / f"{creature.id}.png"
+            path.write_bytes(png)
+            log.info("images: hero for %s (%s, attempt %d, %dKB)",
+                     creature.id, quality, attempt, len(png) // 1024)
+            return f"/media/creatures/{creature.id}.png"
+        except Exception as exc:  # noqa: BLE001 - API errors: log and retry
+            log.warning("images: hero attempt %d (%s) failed for %s: %s",
+                        attempt, quality, creature.id, str(exc)[:200])
+            await asyncio.sleep(2 * attempt)
     return None
+
+
+def _thumb_from_hero_bytes(hero_png: bytes) -> bytes:
+    """Alpha-aware square crop biased toward the creature's head (top third)."""
+    from PIL import Image
+
+    img = Image.open(io.BytesIO(hero_png)).convert("RGBA")
+    bbox = img.getchannel("A").point(lambda a: 255 if a > 20 else 0).getbbox()
+    if bbox:
+        img = img.crop(bbox)
+    side = min(img.width, img.height)
+    left = (img.width - side) // 2
+    img = img.crop((left, 0, left + side, side))
+    img = img.resize((THUMB_PX, THUMB_PX), Image.LANCZOS)
+    out = io.BytesIO()
+    img.save(out, "PNG")
+    return out.getvalue()
 
 
 async def generate_thumb(creature: Creature) -> str | None:
-    """Derive the codex thumbnail crop from the hero PNG (Pillow, square crop).
-
-    TODO: alpha-bbox the hero, square-crop around the head, resize to 512px.
-    """
-    log.info("images: generate_thumb not implemented yet (creature=%s)", creature.id)
-    return None
+    """Derive the codex thumbnail from the saved hero PNG. Local, instant."""
+    hero = _media_dir() / f"{creature.id}.png"
+    if not hero.exists():
+        return None
+    thumb = _media_dir() / f"{creature.id}_thumb.png"
+    thumb.write_bytes(await asyncio.to_thread(_thumb_from_hero_bytes, hero.read_bytes()))
+    return f"/media/creatures/{creature.id}_thumb.png"
 
 
 async def generate_championship_art(winner: Creature, loser: Creature) -> str | None:
-    """Championship-final key art only (ARCHITECTURE.md: not per-battle).
-
-    TODO: gpt-image-1.5 images.edit with both hero cutouts as reference images,
-    which the bakeoff validated for two-creature identity preservation.
+    """Finals key art via images.edit with both hero cutouts (bakeoff-validated
+    for two-creature identity preservation). Championship only, never blocking:
+    None simply means the ceremony uses the standard composited finale.
     """
-    log.info("images: championship art not implemented yet (%s vs %s)", winner.id, loser.id)
-    return None
+    from . import ai
+
+    if not ai.ai_enabled():
+        return None
+    a = _media_dir() / f"{winner.id}.png"
+    b = _media_dir() / f"{loser.id}.png"
+    if not (a.exists() and b.exists()):
+        return None
+
+    prompt = (
+        "Epic cinematic championship key art for a AAA monster game, child-"
+        "friendly (no gore, no blood). The FIRST attached creature and the "
+        "SECOND attached creature clash mid-battle in a futuristic holographic "
+        "arena at night, violet and cyan energy, sparks and spray flying. "
+        "Keep BOTH creatures' designs EXACTLY as shown in the attached images "
+        "— same anatomy, colors, plates, proportions. First creature "
+        "triumphant in the foreground. No text or watermarks."
+    )
+    try:
+        resp = await ai.client().images.edit(
+            model=ai.IMAGE_MODEL,
+            image=[(f"{winner.id}.png", io.BytesIO(a.read_bytes()), "image/png"),
+                   (f"{loser.id}.png", io.BytesIO(b.read_bytes()), "image/png")],
+            prompt=prompt, size=KEYART_SIZE, quality="high", output_format="png",
+        )
+        png = base64.b64decode(resp.data[0].b64_json)
+        path = _media_dir() / f"final_{winner.id}_{loser.id}.png"
+        path.write_bytes(png)
+        return f"/media/creatures/final_{winner.id}_{loser.id}.png"
+    except Exception as exc:  # noqa: BLE001 - ceremony must never block
+        log.warning("images: championship art failed (%s vs %s): %s",
+                    winner.id, loser.id, str(exc)[:200])
+        return None

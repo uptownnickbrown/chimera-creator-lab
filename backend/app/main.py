@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .api import creatures, library, profile, tournaments
 from .config import get_settings
@@ -41,6 +42,10 @@ app.include_router(creatures.router)
 app.include_router(tournaments.router)
 app.include_router(library.router)
 app.include_router(profile.router)
+
+_media = get_settings().media_dir
+_media.mkdir(parents=True, exist_ok=True)
+app.mount("/media", StaticFiles(directory=_media), name="media")
 
 
 @app.get("/health")

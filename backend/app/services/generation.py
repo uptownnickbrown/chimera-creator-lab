@@ -26,13 +26,14 @@ from ..schemas import (
     CreatureRecord,
     EnvironmentAffinities,
     SimProfile,
+    Strict,
 )
 from . import library
 
 log = logging.getLogger("chimera.generation")
 
-#: Flip to False when the real gpt-5.1 path lands.
-IS_STUB = True
+# The real gpt-5.1 path runs whenever ai.ai_enabled(); the deterministic
+# local stub covers tests and keyless dev.
 
 
 def _rng(*parts: str) -> random.Random:
@@ -245,29 +246,101 @@ def build_stub_record(sources: list[str], nonce: str = "") -> CreatureRecord:
     )
 
 
+SYSTEM_PROMPT = (
+    "You are the creature engine for Chimera Creator, a game where a "
+    "7-year-old fuses four real, extinct, or mythical creatures into one "
+    "spectacular new species. Invent ONE coherent species — never four "
+    "animals stitched together. Map each source to body systems in the "
+    "anatomy plan. The best abilities fuse TWO sources (Shark + Electric Eel "
+    "= Thunder Bite), never one source alone restated. Every creature needs "
+    "real weaknesses that follow from its body — resist 'awesome at "
+    "everything'. Stats are 0-100 with an honest spread, not all 90s; size "
+    "must reflect the actual fused anatomy. environment_affinities must "
+    "follow from the anatomy (a deep-sea build should suffer in desert "
+    "ruins). visual_spec must be a complete physical description an image "
+    "model can paint: body plan, colors, textures, signature features from "
+    "all four sources — no lore, no text-in-image instructions. "
+    "Kid-readable language everywhere: short, punchy, epic but never gory "
+    "(defeated/knocked out, never killed; no blood). Names must be "
+    "pronounceable by a child, exciting, and hint at 1-2 component traits."
+)
+
+
+def _source_briefs(slugs: list[str]) -> str:
+    lines = []
+    for slug in slugs:
+        raw = library.raw_source(slug)
+        if raw:
+            traits = raw.get("traits") or {}
+            head = (
+                f"{raw.get('name', slug)} [{raw.get('category', '?')}] — "
+                f"scale {raw.get('scale', '?')}/10 ({raw.get('real_size', '?')})"
+            )
+            moves = ", ".join(raw.get("movement_types") or [])
+            bits = [
+                head,
+                f"iconic: {traits.get('iconic_appearance', '?')}",
+                f"weapon: {traits.get('signature_weapon', '?')}",
+                f"movement: {traits.get('movement', '?')} ({moves})",
+                f"defense: {traits.get('defense', '?')}",
+            ]
+            if traits.get("mythic_power"):
+                bits.append(f"mythic power: {traits['mythic_power']}")
+            bits.append(f"looks: {raw.get('visual_hint', '?')}")
+            lines.append("- " + "; ".join(bits))
+        else:
+            lines.append(f"- {library.display_name(slug)}")
+    return "\n".join(lines)
+
+
 async def generate_creature(sources: list[str]) -> CreatureRecord:
     """Produce a full creature record from four source slugs.
 
-    REAL IMPLEMENTATION (todo): gpt-5.1 chat.completions with
-    response_format=json_schema built from `CreatureRecord`, system prompt from
-    spec §10 + §23 safety rules, ~16s. Degrade to gemini-3-flash, then to
-    `build_stub_record` — never leave the player without a creature.
+    Real path: gpt-5.1 structured output (docs/AI_CONTRACTS.md §1, ~16s),
+    enriched with the authored library traits so interpretation stays stable.
+    Stub path (tests / keyless dev): deterministic local record.
     """
-    if IS_STUB:
+    from . import ai
+
+    if not ai.ai_enabled():
         log.info("generation: STUB record for %s", sources)
         return build_stub_record(sources)
-    raise NotImplementedError("real gpt-5.1 generation not wired yet")  # pragma: no cover
+
+    user = (
+        "Create a chimera fused from exactly these four sources:\n"
+        f"{_source_briefs(sources)}\n\n"
+        "Remember: one coherent species, fused abilities, honest weaknesses."
+    )
+    record = await ai.structured(SYSTEM_PROMPT, user, CreatureRecord, name="chimera")
+    log.info("generation: gpt-5.1 record %r for %s", record.name, sources)
+    return record
+
+
+class _NameOnly(Strict):
+    name: str
+    title: str
 
 
 async def reroll_name(sources: list[str], current_name: str) -> tuple[str, str]:
-    """Name reroll (spec §11). Deterministic chain: same input -> same next name.
+    """Name reroll (spec §11): new name/title only, stats untouched."""
+    from . import ai
 
-    Walks the nonce until the name actually changes — a reroll that hands back
-    the name you just rejected reads as a broken button.
-    """
-    record = build_stub_record(sources, nonce=f"reroll:{current_name}")
-    for attempt in range(1, 12):
-        if record.name != current_name:
-            break
-        record = build_stub_record(sources, nonce=f"reroll:{current_name}:{attempt}")
-    return record.name, record.title
+    if not ai.ai_enabled():
+        record = build_stub_record(sources, nonce=f"reroll:{current_name}")
+        for attempt in range(1, 12):
+            if record.name != current_name:
+                break
+            record = build_stub_record(sources, nonce=f"reroll:{current_name}:{attempt}")
+        return record.name, record.title
+
+    names = ", ".join(library.display_name(s) for s in sources)
+    result = await ai.structured(
+        SYSTEM_PROMPT,
+        f"A chimera fused from {names} is currently named {current_name!r}. "
+        "Give it a DIFFERENT species name (and matching epic title) in the "
+        "same universe style — pronounceable by a 7-year-old, hinting at its "
+        "components. Do not reuse the current name or a trivial variant.",
+        _NameOnly,
+        name="rename",
+    )
+    return result.name, result.title

@@ -30,6 +30,11 @@ class Settings:
         default_factory=lambda: Path(os.environ.get("CHIMERA_DATA_DIR", str(REPO_ROOT / "data")))
     )
     player_name: str = field(default_factory=lambda: os.environ.get("CHIMERA_PLAYER", "Henry"))
+    # Backend-owned generated media (hero renders, thumbs, finals key art),
+    # served at /media. On Railway this should point at a persistent volume.
+    media_dir: Path = field(
+        default_factory=lambda: Path(os.environ.get("CHIMERA_MEDIA_DIR", str(REPO_ROOT / "media")))
+    )
 
 
 def _normalize_db_url(url: str) -> str:

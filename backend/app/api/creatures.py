@@ -1,6 +1,7 @@
 """Creature creation and the Codex (spec §7 MAKE/REVEAL/COLLECT, §14)."""
 from __future__ import annotations
 
+import asyncio
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -17,7 +18,7 @@ from ..schemas import (
     FavoriteResponse,
     RenameResponse,
 )
-from ..services import generation, library
+from ..services import ai, generation, images, library
 from .common import XP_CREATE, award_xp, detail, get_creature, get_profile, summary
 
 router = APIRouter(prefix="/api/creatures", tags=["creatures"])
@@ -61,16 +62,55 @@ async def create_creature(
         visual_spec=record.visual_spec,
         anatomy_plan=record.anatomy_plan,
         fun_fact=record.fun_fact,
-        # STUB: with no image pipeline wired, the reveal would otherwise poll
-        # forever. Real impl sets `pending` here and flips it from the render task.
-        image_status=ImageStatus.complete,
+        # AI-enabled: pending until the background render task flips it.
+        # Stub mode has no image pipeline, so complete immediately or the
+        # reveal screen would poll forever.
+        image_status=ImageStatus.pending if ai.ai_enabled() else ImageStatus.complete,
         records={},
     )
     db.add(creature)
     await db.flush()
 
     award_xp(await get_profile(db), XP_CREATE)
+    if creature.image_status == ImageStatus.pending:
+        asyncio.create_task(_render_hero_task(creature.id))
     return CreateCreatureResponse(creature_id=creature.id, status=creature.image_status.value)
+
+
+async def _render_hero_task(creature_id: int) -> None:
+    """Background hero render. Owns its own session: the request session is
+    closed by the time this runs, and a crash here must never touch the
+    already-committed text record."""
+    from ..db import session_factory
+
+    async with session_factory()() as db:
+        creature = await db.get(Creature, creature_id)
+        if creature is None:
+            return
+        hero = await images.generate_hero(creature)
+        if hero:
+            creature.hero_image_path = hero
+            creature.thumb_path = await images.generate_thumb(creature)
+            creature.image_status = ImageStatus.complete
+        else:
+            creature.image_status = ImageStatus.failed
+        await db.commit()
+
+
+@router.post("/{creature_id}/retry-image", response_model=CreateCreatureResponse)
+async def retry_image(creature_id: int, db: AsyncSession = Depends(get_db)) -> CreateCreatureResponse:
+    """The friendly 'lab is recharging' retry button."""
+    creature = await db.get(Creature, creature_id)
+    if creature is None:
+        raise HTTPException(status_code=404, detail="No such creature")
+    if creature.image_status == ImageStatus.pending:
+        return CreateCreatureResponse(creature_id=creature.id, status="pending")
+    if not ai.ai_enabled():
+        raise HTTPException(status_code=409, detail="Image generation is offline")
+    creature.image_status = ImageStatus.pending
+    await db.flush()
+    asyncio.create_task(_render_hero_task(creature.id))
+    return CreateCreatureResponse(creature_id=creature.id, status="pending")
 
 
 @router.get("", response_model=list[CreatureSummary])

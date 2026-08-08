@@ -24,8 +24,6 @@ from . import library
 
 log = logging.getLogger("chimera.battle")
 
-IS_STUB = True
-
 MAX_HEALTH = 1000
 
 
@@ -155,6 +153,86 @@ def _narrative(winner: Creature, loser: Creature, environment: str) -> str:
     )
 
 
+# -- the real engine (docs/AI_CONTRACTS.md §2) --------------------------------
+
+BATTLE_SYSTEM = (
+    "You are the battle judge for Chimera Creator, a game for a 7-year-old. "
+    "Given two creature profiles and an environment, decide who probably "
+    "wins and why. NEVER decide by comparing stat totals — reason about "
+    "concrete interactions: mobility in this terrain, reach, armor versus "
+    "the opponent's weapons, stamina, elemental effects, whether one can "
+    "force the fight into its preferred zone, and each creature's listed "
+    "weaknesses. The environment must matter. Reasons: exactly three, each "
+    "kid-readable (title 4 words max, blurb 12 words max), each naming a "
+    "concrete trait or environment interaction. Beats: 4-6 short dramatic "
+    "sentences (opening, first advantage, counter, turning point, finisher). "
+    "Narrative: 2-3 sentences, epic monster action, never gory — creatures "
+    "are defeated, knocked out, driven back; nothing dies or bleeds. "
+    "Health: the loser ends at 0; the winner keeps 150-950 of 1000 "
+    "proportional to how close the fight was. Confidence 0.5-0.97."
+)
+
+
+def _profile_block(label: str, c: Creature) -> str:
+    import json
+
+    return (
+        f"CREATURE {label} — {c.name!r} (id {c.id})\n"
+        f"core stats: {json.dumps(c.core_stats)}\n"
+        f"abilities: {json.dumps(c.abilities)}\n"
+        f"strengths: {c.strengths}\nweaknesses: {c.weaknesses}\n"
+        f"hidden sim profile: {json.dumps(c.sim_profile)}\n"
+        f"environment affinities (-2..+2): {json.dumps(c.environment_affinities)}\n"
+    )
+
+
+def _environment_block(environment: str) -> str:
+    import json
+
+    raw = library.raw_environment(environment)
+    name = library.display_name(environment)
+    if not raw:
+        return f"ENVIRONMENT: {name}"
+    return (
+        f"ENVIRONMENT: {raw.get('name', name)}\n"
+        f"conditions: {json.dumps(raw.get('sim', {}))}\n"
+        f"known dynamics: {raw.get('advantages_hint', '')}"
+    )
+
+
+async def _resolve_llm(lo: Creature, hi: Creature, environment: str, key: str) -> BattleResult:
+    from . import ai
+
+    user = (
+        f"{_profile_block('A', lo)}\n{_profile_block('B', hi)}\n"
+        f"{_environment_block(environment)}\n\n"
+        f"Decide the battle. Set winner_slug_or_id to the winner's id as a "
+        f"string: {lo.id!r} for creature A or {hi.id!r} for creature B. "
+        "health_remaining.a belongs to creature A, health_remaining.b to "
+        "creature B; the loser's health is 0."
+    )
+    result = await ai.structured(BATTLE_SYSTEM, user, BattleResult, name="battle")
+
+    valid = {str(lo.id), str(hi.id)}
+    if result.winner_slug_or_id not in valid:
+        by_name = {lo.name: str(lo.id), hi.name: str(hi.id)}
+        fixed = by_name.get(result.winner_slug_or_id)
+        if fixed is None:
+            raise ValueError(f"winner {result.winner_slug_or_id!r} is neither creature")
+        result.winner_slug_or_id = fixed
+    # The loser is at 0 by contract; enforce it so the UI never shows a
+    # half-dead winner on both sides.
+    if result.winner_slug_or_id == str(lo.id):
+        result.health_remaining.b = 0
+        result.health_remaining.a = max(150, min(950, result.health_remaining.a))
+    else:
+        result.health_remaining.a = 0
+        result.health_remaining.b = max(150, min(950, result.health_remaining.b))
+    log.info("battle: gpt-5.1 resolve %s -> winner %s (%.2f)",
+             key, result.winner_slug_or_id, result.confidence)
+    return result
+
+
 # -- the engine ---------------------------------------------------------------
 
 async def resolve_battle(a: Creature, b: Creature, environment: str) -> BattleResult:
@@ -169,11 +247,17 @@ async def resolve_battle(a: Creature, b: Creature, environment: str) -> BattleRe
     in the prompt (spec §20 steps 1-6). Falls back to this local scorer whenever
     the model is unavailable — a tournament must never strand.
     """
+    from . import ai
+
     lo, hi = canonical_pair(a, b)
     key = canonical_key(a.id, b.id, environment)
 
-    if not IS_STUB:  # pragma: no cover - real path not wired yet
-        raise NotImplementedError("real gpt-5.1 battle engine not wired yet")
+    if ai.ai_enabled():
+        try:
+            return await _resolve_llm(lo, hi, environment, key)
+        except Exception as exc:  # noqa: BLE001 - a tournament must never strand
+            log.warning("battle: LLM resolve failed for %s (%s) — local fallback",
+                        key, str(exc)[:200])
 
     log.info("battle: STUB resolve %s", key)
 

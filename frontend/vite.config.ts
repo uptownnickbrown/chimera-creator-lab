@@ -13,6 +13,11 @@ export default defineConfig({
         target: process.env.VITE_PROXY_TARGET || "http://localhost:8000",
         changeOrigin: true,
       },
+      // Generated creature media (hero renders, thumbs) is backend-owned.
+      "/media": {
+        target: process.env.VITE_PROXY_TARGET || "http://localhost:8000",
+        changeOrigin: true,
+      },
     },
   },
 });
