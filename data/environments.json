@@ -1,0 +1,164 @@
+[
+  {
+    "slug": "storm-coast",
+    "name": "Storm Coast",
+    "kid_properties": [
+      { "icon": "wave", "label": "Lots of water" },
+      { "icon": "lightning", "label": "Lightning storm" }
+    ],
+    "sim": {
+      "water": "shallow-coastal",
+      "terrain": "rocky shore, tide pools, sea stacks",
+      "airspace": "open but storm-turbulent",
+      "temperature": "cool",
+      "cover": "low rocks",
+      "hazards": ["lightning strikes", "crashing waves", "riptides"]
+    },
+    "advantages_hint": "electric and aquatic creatures thrive; amphibious fighters can use both zones; fire powers are damped by rain and spray; fliers are battered by gusts and risk lightning; heavy land bruisers slip on wet rock",
+    "visual_hint": "night storm over black rocks, forked lightning, huge waves exploding on sea stacks, driving rain, cold blue-white light"
+  },
+  {
+    "slug": "deep-ocean",
+    "name": "Deep Ocean",
+    "kid_properties": [
+      { "icon": "depth", "label": "Very deep water" },
+      { "icon": "dark", "label": "Pitch dark" }
+    ],
+    "sim": {
+      "water": "deep",
+      "terrain": "open water column above an abyssal plain",
+      "airspace": "none",
+      "temperature": "freezing",
+      "cover": "darkness only",
+      "hazards": ["crushing pressure", "no light", "no air to breathe"]
+    },
+    "advantages_hint": "deep-sea swimmers, sonar users and glowing lures dominate; anything that needs air or sunlight tires fast; fire is useless; fliers and land creatures are almost helpless; armor helps against pressure but weight drags",
+    "visual_hint": "near-black blue water, faint bioluminescent motes drifting, one shaft of dim light from far above, vast empty depth"
+  },
+  {
+    "slug": "volcanic-shore",
+    "name": "Volcanic Shore",
+    "kid_properties": [
+      { "icon": "fire", "label": "Rivers of lava" },
+      { "icon": "smoke", "label": "Choking ash" }
+    ],
+    "sim": {
+      "water": "shallow",
+      "terrain": "cracked basalt, lava flows, steaming black-sand beach",
+      "airspace": "open but full of hot updrafts and ash",
+      "temperature": "scorching",
+      "cover": "lava spires and boulders",
+      "hazards": ["lava flows", "falling ash", "toxic fumes", "sudden steam bursts"]
+    },
+    "advantages_hint": "fire and heat-proof creatures thrive and can even be strengthened; cold-adapted and thick-furred creatures overheat quickly; fliers get free lift from thermals but ash clogs breathing; water creatures are stranded in scalding shallows",
+    "visual_hint": "orange lava veins across black rock, glowing sea steam where lava meets water, ash haze, ember sparks rising, red-lit sky"
+  },
+  {
+    "slug": "jungle-canyon",
+    "name": "Jungle Canyon",
+    "kid_properties": [
+      { "icon": "leaf", "label": "Thick jungle" },
+      { "icon": "cliff", "label": "Steep cliffs" }
+    ],
+    "sim": {
+      "water": "shallow",
+      "terrain": "narrow gorge, vine-covered walls, river running through the floor",
+      "airspace": "tight and enclosed above the canopy gap",
+      "temperature": "hot and humid",
+      "cover": "dense — vines, ferns, huge tree trunks",
+      "hazards": ["falling rocks", "tangling vines", "slippery mud", "narrow footing"]
+    },
+    "advantages_hint": "climbers, ambushers and camouflaged stalkers thrive; venom and stealth pay off in close quarters; giant creatures can barely turn between the walls; big fliers have no room for wings, though gliders can drop from the rim",
+    "visual_hint": "deep green gorge with sunbeams cutting through mist, hanging vines, waterfall down a mossy cliff, river below"
+  },
+  {
+    "slug": "frozen-ridge",
+    "name": "Frozen Ridge",
+    "kid_properties": [
+      { "icon": "snow", "label": "Freezing cold" },
+      { "icon": "wind", "label": "Howling wind" }
+    ],
+    "sim": {
+      "water": "none",
+      "terrain": "wind-scoured ice ridge, crevasses, deep snow drifts",
+      "airspace": "open with violent crosswinds",
+      "temperature": "freezing",
+      "cover": "ice blocks and snow banks",
+      "hazards": ["blizzard whiteout", "hidden crevasses", "black ice", "avalanche"]
+    },
+    "advantages_hint": "furred and blubbered cold specialists thrive; white creatures vanish in the snow; fire creatures burn energy fast just staying warm; heavy creatures crack thin ice; fliers get thrown around by crosswinds; cold-blooded reptiles slow right down",
+    "visual_hint": "blue-white glacial ridge under a pale sky, spindrift blowing off the crest, deep shadowed crevasses, low arctic sun"
+  },
+  {
+    "slug": "open-sky",
+    "name": "Open Sky",
+    "kid_properties": [
+      { "icon": "cloud", "label": "Nothing but sky" },
+      { "icon": "wind", "label": "Strong winds" }
+    ],
+    "sim": {
+      "water": "none",
+      "terrain": "no ground at all — cloud towers and open air",
+      "airspace": "unlimited in every direction",
+      "temperature": "cold and thin",
+      "cover": "cloud banks",
+      "hazards": ["thin air", "long falls", "sudden downdrafts"]
+    },
+    "advantages_hint": "true fliers own this arena and can dictate every exchange; gliders survive by trading height for speed; anything that cannot fly must cling, grapple or fall; thin air punishes heavy bodies and big lungs",
+    "visual_hint": "towering sunlit cloud canyons, deep blue above, distant land far below, streaming vapour trails, brilliant high-altitude light"
+  },
+  {
+    "slug": "desert-ruins",
+    "name": "Desert Ruins",
+    "kid_properties": [
+      { "icon": "sun", "label": "Burning hot" },
+      { "icon": "ruins", "label": "Broken stone maze" }
+    ],
+    "sim": {
+      "water": "none",
+      "terrain": "sun-baked sand, toppled columns, half-buried stone corridors",
+      "airspace": "open, with dust devils and thermals",
+      "temperature": "scorching by day",
+      "cover": "broken walls and shaded arches",
+      "hazards": ["sandstorms", "collapsing masonry", "no water", "blinding glare"]
+    },
+    "advantages_hint": "burrowers, heat-tolerant reptiles and desert runners thrive; sand-coloured creatures ambush from cover; water-dependent and thick-furred creatures dry out fast; giant creatures cannot fit through the ruined corridors; fliers see everything but find little shade",
+    "visual_hint": "gold sandstone ruins half-swallowed by dunes, hard blue shadows, blowing sand veil, heat shimmer, long low sun"
+  },
+  {
+    "slug": "swamp",
+    "name": "Swamp",
+    "kid_properties": [
+      { "icon": "mud", "label": "Sinking mud" },
+      { "icon": "mist", "label": "Thick fog" }
+    ],
+    "sim": {
+      "water": "shallow",
+      "terrain": "black water, sucking mud, cypress roots and floating mats",
+      "airspace": "cluttered with low branches and hanging moss",
+      "temperature": "warm and muggy",
+      "cover": "reeds, roots and fog",
+      "hazards": ["sinking mud", "tangled roots", "poor visibility", "biting insect clouds"]
+    },
+    "advantages_hint": "amphibious ambushers, venom users and mud-camouflaged lurkers thrive; regeneration shines in a long grinding fight; heavy armored creatures sink and bog down; fire sputters in the wet; fast runners lose all their speed; fliers snag on low branches",
+    "visual_hint": "green-black still water, cypress knees, hanging moss, low mist glowing in shafts of dim light, ripples spreading"
+  },
+  {
+    "slug": "city-harbor",
+    "name": "City Harbor",
+    "kid_properties": [
+      { "icon": "crane", "label": "Docks and cranes" },
+      { "icon": "water", "label": "Deep harbor water" }
+    ],
+    "sim": {
+      "water": "deep",
+      "terrain": "concrete piers, shipping containers, gantry cranes, moored hulls",
+      "airspace": "open above the water but crowded with cranes and cables",
+      "temperature": "mild",
+      "cover": "container stacks and warehouse rows",
+      "hazards": ["falling containers", "steel cables", "oil-slick water", "narrow gaps between piers"]
+    },
+    "advantages_hint": "climbers, clever problem-solvers and creatures comfortable in both water and on land thrive; big swimmers can strike at the piers; containers give great cover to ambushers; colossal creatures smash their own footing away; fliers must dodge cranes and cables",
+    "visual_hint": "night harbor with sodium-orange dock lights, stacked containers, crane silhouettes, dark reflective water, drifting fog"
+  }
+]
