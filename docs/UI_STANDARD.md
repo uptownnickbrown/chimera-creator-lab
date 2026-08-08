@@ -8,9 +8,15 @@ judged by the integration lead, not the implementing agent.
 
 ## The core principle
 
-The pregenerated art IS the interface. CSS exists to arrange and frame
-painted assets, never to substitute for them. If a surface looks like a CSS
-rectangle, it is wrong.
+Quality and vibe over technology (Nick, direct quote: "I care about quality
+and vibe, not technology"). There is nothing wrong with HTML/CSS — there is
+everything wrong with half-assed. A CSS surface is welcome when it is
+CRAFTED: layered gradients, bevel light, glow, depth, considered spacing —
+indistinguishable in care from the painted assets beside it. A CSS surface
+is wrong when it looks like a default rectangle someone stopped working on.
+When a painted asset would sell the fantasy harder than code can, make the
+asset — the pipeline is one script away. Every pixel earns its place; be
+proud of every screen.
 
 ## Layer stack (every screen, bottom to top)
 
