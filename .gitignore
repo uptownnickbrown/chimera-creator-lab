@@ -1,0 +1,30 @@
+.env
+
+# python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+backend/chimera.db
+*.db
+
+# node / build output
+node_modules/
+dist/
+*.tsbuildinfo
+
+# bakeoff scratch (keep results.json / text_results.json / review/)
+research/bakeoff/raw/
+research/bakeoff/cutout/
+
+# macOS
+.DS_Store
+
+# NOTE: frontend/public/assets/ stays TRACKED — pregenerated art is committed
+# (Agora convention). Do not add it here.
+
+# asset pipeline raw renders (regenerable, large)
+scripts/raw/
+research/bakeoff/review/*.png
