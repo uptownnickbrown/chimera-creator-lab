@@ -58,6 +58,20 @@ REF_AVATAR = RAW_DIR / "avatar_henry_a.png"       # produced by this script
 
 NO_PROPS = "No trophies, no statues, no gold objects, no creatures. "
 
+# Portraits kept drifting into painted mini-scenes (snow fields, waves, lava
+# pools, cloud banks) instead of clean cutouts. This is appended to every
+# source-part prompt.
+PORTRAIT_ISOLATION = (
+    " CRITICAL: this is a cut-out sprite of the creature ALONE. Do not paint "
+    "any scenery, environment, habitat, ground, floor, terrain, rock, water, "
+    "waves, snow, lava, sand, clouds, sky, mist, smoke, dust, moon, or cast "
+    "shadow. No base, no platform, no pedestal, no rectangular backdrop panel, "
+    "no vignette. Everything that is not the creature's own body must be "
+    "completely empty and fully transparent, right up to its silhouette. "
+    "Effects like fire or lightning are allowed only where they touch the "
+    "creature's own body. Transparent background."
+)
+
 ICON_STYLE = (
     "Bold glowing holographic sigil icon for a game interface. A single SOLID "
     "FILLED silhouette shape built from thick chunky simple forms — absolutely "
@@ -108,6 +122,26 @@ def cutout(slot, raw, prompt, size="1024x1024", refs=(), out=None, **fkw) -> Job
 
 
 # --------------------------------------------------------------- families ---
+# A few visual_hints in the data describe the animal hidden in its habitat
+# ("only eyes above the surface"). That is great flavour text but useless as a
+# fusion-part portrait, so the hint is rewritten for these slugs only.
+HINT_OVERRIDES = {
+    "saltwater-crocodile":
+        "olive-black scaled hide beaded with glistening water, massive "
+        "armoured tail and enormous toothy jaws held open, the whole animal "
+        "out in the open in full view",
+    "spinosaurus":
+        "wet slate-blue and cream hide, tall red-striped sail along its back, "
+        "long crocodilian jaws, standing upright in full view",
+    "hydra":
+        "bog-green scaled bulk, nine dripping serpentine necks fanned out and "
+        "rearing high, acid steaming from the jaws, whole body in full view",
+    "megalodon":
+        "colossal shark, leaden grey back and white belly, jaws gaping to show "
+        "rows of triangular teeth, entire body in full view",
+}
+
+
 def family_parts() -> list[Job]:
     jobs = []
     for c in PARTS:
@@ -119,8 +153,9 @@ def family_parts() -> list[Job]:
             if power:
                 extra = (f" Show its legendary power visibly in the pose and "
                          f"effects: {power}.")
-        prompt = (PORTRAIT_STYLE + "Creature: " + c["name"] + ". " +
-                  c["visual_hint"] + "." + extra + " Transparent background.")
+        hint = HINT_OVERRIDES.get(c["slug"], c["visual_hint"])
+        prompt = (PORTRAIT_STYLE + "Creature: " + c["name"] + ". " + hint +
+                  "." + extra + PORTRAIT_ISOLATION)
         jobs.append(cutout(f"parts/{c['slug']}", f"part_{c['slug']}", prompt,
                            refs=(REF_PART,)))
     return jobs
