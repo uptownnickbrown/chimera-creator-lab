@@ -25,7 +25,36 @@ async def lifespan(app: FastAPI):
         await create_all()
     # Authored content is optional at boot — load_library logs and shrugs.
     library_svc.load_library()
+    await _sweep_orphans()
     yield
+
+
+async def _sweep_orphans() -> None:
+    """In-flight generation tasks die with the process; on boot, any row still
+    generating/pending is an orphan. Mark it failed so the UI's retry button
+    can rescue it instead of polling a ghost forever."""
+    from sqlalchemy import update
+
+    from .db import session_factory
+    from .models import Creature, ImageStatus, RecordStatus
+
+    async with session_factory()() as db:
+        rec = await db.execute(
+            update(Creature)
+            .where(Creature.record_status == RecordStatus.generating)
+            .values(record_status=RecordStatus.failed, image_status=ImageStatus.failed)
+        )
+        img = await db.execute(
+            update(Creature)
+            .where(Creature.record_status == RecordStatus.complete,
+                   Creature.image_status == ImageStatus.pending)
+            .values(image_status=ImageStatus.failed)
+        )
+        await db.commit()
+        if rec.rowcount or img.rowcount:
+            logging.getLogger("chimera").info(
+                "orphan sweep: %d records, %d images marked failed for retry",
+                rec.rowcount, img.rowcount)
 
 
 app = FastAPI(title="Chimera Creator API", version="0.1.0", lifespan=lifespan)
