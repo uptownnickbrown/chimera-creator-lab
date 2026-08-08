@@ -28,3 +28,6 @@ research/bakeoff/cutout/
 # asset pipeline raw renders (regenerable, large)
 scripts/raw/
 research/bakeoff/review/*.png
+
+# runtime-generated creature media (backend-owned, served at /media)
+media/
