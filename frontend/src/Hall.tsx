@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import type { Go } from "./App";
 import { api, type HallView } from "./api";
-import { Asset, Badge, Btn, CreatureCard, Empty, Loading, Panel } from "./ui";
+import { Asset, Badge, Btn, CreatureCard, CreatureImg, Empty, Loading, Panel } from "./ui";
 
 export function Hall({ go }: { go: Go }) {
   const [hall, setHall] = useState<HallView | null>(null);
@@ -48,7 +48,7 @@ export function Hall({ go }: { go: Go }) {
                 <li key={c.id}>
                   <button type="button" onClick={() => go({ name: "codex", id: c.id })}>
                     <span className="rank__n num">{i + 1}</span>
-                    <Asset slot={`creatures/${c.id}`} label={c.name} className="rank__art" />
+                    <CreatureImg creature={c} className="rank__art" />
                     <span className="rank__name">{c.name.toUpperCase()}</span>
                     <span className="rank__wins num">{c.wins}W</span>
                   </button>

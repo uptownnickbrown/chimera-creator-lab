@@ -1,16 +1,30 @@
-/* Screen 3 — Creation Reveal (spec §17, §7 REVEAL). The record lands first; the
-   hero render resolves inside the fusion animation, so we poll image_status. */
-import { useEffect, useRef, useState } from "react";
+/* Screen 3 — Creation Reveal (spec §17, §7 REVEAL).
+
+   One component owns the whole tail of the creation flow: it polls the staged
+   backend, plays the Fusion Wait while the record streams and the hero render
+   cooks, then detonates the reveal the moment the finished PNG has decoded.
+   The creature is the star — panels frame it, they never crowd it. */
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Go } from "./App";
 import { api, type CreatureDetail } from "./api";
-import { Asset, Badge, Btn, Loading, Panel, RarityBadge, Stage, StatRow } from "./ui";
+import { FusionWait } from "./FusionWait";
+import { Asset, Badge, Btn, CreatureImg, Panel, RarityBadge, StatRow } from "./ui";
 
 const POLL_MS = 1500;
+/** White-out length; the reveal mounts underneath it and is lit as it clears. */
+const FLASH_MS = 300;
 
 export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
   const [creature, setCreature] = useState<CreatureDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [heroReady, setHeroReady] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const [flashing, setFlashing] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   const timer = useRef<number | null>(null);
+  /* Did we ever show the wait? A codex revisit lands already-complete and must
+     not fire a white-out at a child who did not ask for one. */
+  const waited = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -20,7 +34,11 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
         const row = await api.getCreature(creatureId);
         if (cancelled) return;
         setCreature(row);
-        if (row.image_status === "pending") {
+        const settled =
+          row.record_status !== "generating" &&
+          (row.image_status === "complete" || row.image_status === "failed");
+        if (!settled) {
+          waited.current = true;
           timer.current = setTimeout(poll, POLL_MS) as unknown as number;
         }
       } catch {
@@ -33,56 +51,163 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
       cancelled = true;
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [creatureId]);
+  }, [creatureId, retrying]);
+
+  /* FINAL RENDER is a real stage: decode the hero before anyone sees it, so the
+     creature never pops in half-drawn behind the flash. */
+  const hero = creature?.image_status === "complete" ? creature.hero_image_path : null;
+  useEffect(() => {
+    if (!hero) return;
+    let dead = false;
+    const img = new Image();
+    img.onload = () => !dead && setHeroReady(true);
+    img.onerror = () => !dead && setHeroReady(true); // <MediaImg> owns the fallback
+    img.src = hero;
+    return () => {
+      dead = true;
+    };
+  }, [hero]);
+
+  useEffect(() => {
+    if (!heroReady || revealed) return;
+    if (!waited.current) {
+      setRevealed(true); // straight from the Codex: no chamber, no flash
+      return;
+    }
+    setFlashing(true);
+    const a = setTimeout(() => setRevealed(true), 140);
+    const b = setTimeout(() => setFlashing(false), FLASH_MS + 420);
+    return () => {
+      clearTimeout(a);
+      clearTimeout(b);
+    };
+  }, [heroReady, revealed]);
+
+  const retryImage = useCallback(async () => {
+    if (!creature) return;
+    try {
+      await api.retryImage(creature.id);
+      setRetrying((n) => !n); // restart the poll loop
+    } catch {
+      setError("The lab could not restart the render. Try again in a moment.");
+    }
+  }, [creature]);
 
   if (error) return <div className="error">{error}</div>;
-  if (!creature) return <Loading label="OPENING THE FUSION CHAMBER" />;
 
-  const rendering = creature.image_status === "pending";
+  const recordFailed = creature?.record_status === "failed";
+  const imageFailed = creature?.image_status === "failed";
+
+  if (recordFailed) {
+    return (
+      <div className="rv__recharge">
+        <p className="eyebrow">FUSION INTERRUPTED</p>
+        <h1 className="display">THE LAB IS RECHARGING</h1>
+        <p className="lede">
+          That splice did not take. Nothing is lost — pick four parts and fuse again.
+        </p>
+        <Btn accent="cyan" size="lg" onClick={() => go({ name: "lab" })}>
+          BACK TO THE FUSION LAB
+        </Btn>
+      </div>
+    );
+  }
+
+  /* Still cooking (or the render failed and there is nothing to reveal yet). */
+  if (!revealed && !imageFailed) {
+    return (
+      <>
+        {flashing && <div className="rv__flash" aria-hidden="true" />}
+        <FusionWait creature={creature} creatureId={creatureId} heroReady={heroReady} />
+      </>
+    );
+  }
+
+  if (!creature) return null;
+
+  const title = creature.title || creature.role;
 
   return (
-    <div className="reveal">
-      <section className="reveal__hero">
-        <div className="reveal__intro">
-          <p className="eyebrow">NEW CHIMERA</p>
-          <h1 className="display display--xl">CREATED!</h1>
-          <div className="rule" />
-          <p className="lede">Your fusion is complete. A brand new chimera is born!</p>
+    <>
+      {flashing && <div className="rv__flash" aria-hidden="true" />}
+      <div className="rv">
+        <section className="rv__intro">
+          <p className="eyebrow rv-in" style={anim(0)}>
+            NEW CHIMERA
+          </p>
+          <h1 className="display display--xl rv-in" style={anim(60)}>
+            CREATED!
+          </h1>
+          <div className="rule rv-in" style={anim(120)} />
+          <p className="lede rv-in" style={anim(160)}>
+            Your fusion is complete. A brand new chimera is born!
+          </p>
 
-          <h2 className="reveal__name">{creature.name.toUpperCase()}</h2>
-          <div className="reveal__badges">
+          <h2 className="rv__name rv-in" style={anim(380)}>
+            {creature.name.toUpperCase()}
+          </h2>
+          <div className="rv__badges rv-stamp" style={anim(760)}>
             <RarityBadge rarity={creature.rarity} />
-            {creature.image_status === "failed" && <Badge tone="red">ART PENDING</Badge>}
+            {imageFailed && <Badge tone="red">ART PENDING</Badge>}
           </div>
-          <p className="reveal__role">{creature.role || creature.title}</p>
-        </div>
+          {title && (
+            <p className="rv__title rv-in" style={anim(460)}>
+              {title}
+            </p>
+          )}
 
-        <Stage creature={creature} fusing={rendering} caption="RENDERING" />
+          {creature.fun_fact && (
+            <div className="rv__topfact rv-in" style={anim(1500)}>
+              <Asset slot="icons/fact_fun" label="" className="fact__icon" />
+              <div>
+                <div className="fact__title">TOP FACT</div>
+                <div className="fact__blurb">{creature.fun_fact}</div>
+              </div>
+            </div>
+          )}
+        </section>
 
-        <div className="reveal__side">
+        <section className="rv__stage">
+          <div className="rv__platform">
+            <Asset slot="lab/platform" label="" />
+          </div>
+          <div className={`rv__hero${imageFailed ? " is-empty" : ""}`} style={anim(120)}>
+            {imageFailed ? (
+              <div className="rv__recharge rv__recharge--inline">
+                <p className="eyebrow">RENDER PAUSED</p>
+                <h2 className="display">THE PAINT POTS RAN DRY</h2>
+                <p className="lede">
+                  {creature.name || "Your chimera"} is safely saved. The lab can try the
+                  picture again.
+                </p>
+                <Btn accent="cyan" size="lg" onClick={retryImage}>
+                  TRY THE RENDER AGAIN
+                </Btn>
+              </div>
+            ) : (
+              <CreatureImg creature={creature} prefer="hero" />
+            )}
+          </div>
+        </section>
+
+        <aside className="rv__side">
+          <div className="rv__side-scroll">
           <Panel title="TOP FACTS" accent="cyan">
             {creature.strengths.map((s, i) => (
-              <div className="fact" key={`s${i}`}>
-                <Asset slot={`icons/fact_strength`} label="" className="fact__icon" />
+              <div className="fact rv-cascade" key={`s${i}`} style={anim(1150 + i * 110)}>
+                <Asset slot="icons/fact_strength" label="" className="fact__icon" />
                 <div>
                   <div className="fact__title">STRENGTH</div>
                   <div className="fact__blurb">{s}</div>
                 </div>
               </div>
             ))}
-            <div className="fact">
-              <Asset slot="icons/fact_fun" label="" className="fact__icon" />
-              <div>
-                <div className="fact__title">DID YOU KNOW</div>
-                <div className="fact__blurb">{creature.fun_fact}</div>
-              </div>
-            </div>
           </Panel>
 
           <Panel title="AWESOME ABILITIES" accent="purple">
-            {creature.abilities.map((a) => (
-              <div className="ability" key={a.name}>
-                <Asset slot={`icons/ability`} label="" className="ability__icon" />
+            {creature.abilities.map((a, i) => (
+              <div className="ability rv-cascade" key={a.name} style={anim(1250 + i * 130)}>
+                <Asset slot="icons/ability_generic" label="" className="ability__icon" />
                 <div>
                   <div className="ability__name">{a.name.toUpperCase()}</div>
                   <div className="ability__blurb">{a.blurb}</div>
@@ -90,46 +215,47 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
               </div>
             ))}
           </Panel>
-        </div>
-      </section>
+          </div>
+        </aside>
 
-      <section className="reveal__lower">
-        <Panel title="FUSED FROM" accent="cyan">
+        <Panel title="FUSED FROM" accent="cyan" className="rv__fused rv-slide">
           <div className="fused">
             {creature.sources.map((slug, i) => (
               <div className="fused__item" key={slug}>
                 {i > 0 && <span className="fused__plus">+</span>}
-                <Asset slot={`sources/${slug}`} label={slug} className="fused__art" />
+                <Asset slot={`parts/${slug}`} label={slug} className="fused__art" />
                 <span className="fused__name">{slug.replace(/[_-]/g, " ").toUpperCase()}</span>
               </div>
             ))}
           </div>
         </Panel>
 
-        <Panel title="CHIMERA STATS" accent="teal">
+        <Panel title="CHIMERA STATS" accent="teal" className="rv__stats rv-slide">
           <StatRow stats={creature.core_stats} />
+          {creature.weaknesses.length > 0 && (
+            <div className="rv__watch">
+              <span className="rv__watch-key">WATCH OUT FOR</span>
+              <span className="rv__watch-text">{creature.weaknesses.join(" · ")}</span>
+            </div>
+          )}
         </Panel>
 
-        <Panel title="WATCH OUT FOR" accent="gold">
-          <ul className="bullets">
-            {creature.weaknesses.map((w, i) => (
-              <li key={i}>{w}</li>
-            ))}
-          </ul>
-        </Panel>
-      </section>
-
-      <footer className="reveal__foot">
-        <Btn accent="purple" size="lg" onClick={() => go({ name: "codex", id: creature.id })}>
-          ADD TO CODEX
-        </Btn>
-        <Btn accent="cyan" size="lg" onClick={() => go({ name: "lab" })}>
-          MAKE ANOTHER
-        </Btn>
-        <Btn accent="gold" size="lg" onClick={() => go({ name: "arena" })}>
-          ENTER BRACKET
-        </Btn>
-      </footer>
-    </div>
+        <footer className="rv__foot rv-in" style={anim(1700)}>
+          <Btn accent="purple" size="lg" onClick={() => go({ name: "codex", id: creature.id })}>
+            ADD TO CODEX
+          </Btn>
+          <Btn accent="cyan" size="lg" onClick={() => go({ name: "lab" })}>
+            MAKE ANOTHER
+          </Btn>
+          <Btn accent="gold" size="lg" onClick={() => go({ name: "arena" })}>
+            ENTER BRACKET
+          </Btn>
+        </footer>
+      </div>
+    </>
   );
+}
+
+function anim(delayMs: number): CSSProperties {
+  return { animationDelay: `${delayMs}ms` };
 }

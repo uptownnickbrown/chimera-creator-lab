@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Go } from "./App";
 import { api, type CodexSort, type CreatureDetail, type CreatureSummary } from "./api";
-import { Asset, Badge, Btn, CreatureCard, Empty, Loading, Panel, RarityBadge, StatRow } from "./ui";
+import { Asset, Badge, Btn, CreatureCard, CreatureImg, Empty, Loading, Panel, RarityBadge, StatRow } from "./ui";
 
 const SORTS: { key: CodexSort; label: string }[] = [
   { key: "newest", label: "ALL" },
@@ -115,11 +115,7 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
               <RarityBadge rarity={selected.rarity} />
               <span className="muted">{selected.role}</span>
             </div>
-            <Asset
-              slot={`creatures/${selected.id}`}
-              label={selected.name}
-              className="detail__art"
-            />
+            <CreatureImg creature={selected} prefer="hero" className="detail__art" />
             <div className="detail__record">
               <div>
                 <div className="detail__k">WINS</div>

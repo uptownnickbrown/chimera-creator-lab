@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Go } from "./App";
 import { ApiError, api, type CreatureSummary, type TournamentView } from "./api";
-import { Asset, Badge, Btn, CreatureCard, Empty, Loading, Panel } from "./ui";
+import { Asset, Badge, Btn, CreatureCard, CreatureImg, Empty, Loading, Panel } from "./ui";
 
 const ENTRANTS = 8;
 
@@ -212,7 +212,7 @@ function BracketBoard({ go, tournamentId }: { go: Go; tournamentId: number }) {
               return (
                 <div className={`match${m.winner ? " is-done" : ""}`} key={m.id}>
                   <div className="match__env">
-                    <Asset slot={`environments/${m.environment}`} label="" className="match__envart" />
+                    <Asset slot={`env/${m.environment}`} label="" className="match__envart" />
                     {m.environment.replace(/_/g, " ").toUpperCase()}
                   </div>
 
@@ -228,11 +228,7 @@ function BracketBoard({ go, tournamentId }: { go: Go; tournamentId: number }) {
                       onClick={() => c && open && predict(m.id, c.id)}
                       disabled={!c || !open || busy === m.id}
                     >
-                      <Asset
-                        slot={c ? `creatures/${c.id}` : "ui/tbd"}
-                        label={c ? c.name : "TBD"}
-                        className="fighter__art"
-                      />
+                      <CreatureImg creature={c} className="fighter__art" />
                       <span className="fighter__name">{c ? c.name.toUpperCase() : "TBD"}</span>
                       {c && m.predicted === c.id && <Badge tone="purple">YOUR PICK</Badge>}
                       {c && m.winner === c.id && <Badge tone="gold">WINNER</Badge>}

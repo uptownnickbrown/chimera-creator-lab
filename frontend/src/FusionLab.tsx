@@ -2,8 +2,9 @@
    Browsing is visual: four slots, a scroller of big cards, and Randomize. */
 import { useEffect, useMemo, useState } from "react";
 import type { Go } from "./App";
-import { api, ApiError, type SourceCreature } from "./api";
+import { api, ApiError, getLibraryCached, type SourceCreature } from "./api";
 import { Asset, Btn, Empty, Loading, Panel, Stage } from "./ui";
+import { stashPicks } from "./FusionWait";
 
 /* PLACEHOLDER — delete once data/source_creatures.json is authored. The real
    library comes from GET /api/library; this only exists so the create -> reveal
@@ -47,8 +48,7 @@ export function FusionLab({ go }: { go: Go }) {
   const [category, setCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    api
-      .getLibrary()
+    getLibraryCached()
       .then((lib) => {
         if (lib.sources.length) {
           setSources(lib.sources);
@@ -115,6 +115,9 @@ export function FusionLab({ go }: { go: Go }) {
     setError(null);
     try {
       const out = await api.createCreature(chosen.map((c) => c.slug));
+      // Hand the four portraits straight to the Fusion Wait so they are already
+      // on screen when the chamber opens — no second of empty chamber.
+      stashPicks(out.creature_id, chosen);
       go({ name: "reveal", id: out.creature_id });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "The fusion chamber is offline.");
@@ -159,7 +162,7 @@ export function FusionLab({ go }: { go: Go }) {
               <span className="slot__index num">{i + 1}</span>
               {pick ? (
                 <>
-                  <Asset slot={`sources/${pick.slug}`} label={pick.name} className="slot__art" />
+                  <Asset slot={`parts/${pick.slug}`} label={pick.name} className="slot__art" />
                   <span className="slot__name">{pick.name.toUpperCase()}</span>
                   <span className="slot__state">SELECTED</span>
                 </>
@@ -183,7 +186,7 @@ export function FusionLab({ go }: { go: Go }) {
             <div className="adds" key={i}>
               {pick ? (
                 <>
-                  <Asset slot={`sources/${pick.slug}`} label={pick.name} className="adds__art" />
+                  <Asset slot={`parts/${pick.slug}`} label={pick.name} className="adds__art" />
                   <div>
                     <div className="adds__name">{pick.name.toUpperCase()}</div>
                     <div className="adds__blurb">{pick.contribution || "Adds its own wild traits."}</div>
@@ -232,7 +235,7 @@ export function FusionLab({ go }: { go: Go }) {
                 onClick={() => place(s)}
                 disabled={ready && !takenSlugs.has(s.slug)}
               >
-                <Asset slot={`sources/${s.slug}`} label={s.name} className="pcard__art" />
+                <Asset slot={`parts/${s.slug}`} label={s.name} className="pcard__art" />
                 <span className="pcard__name">{s.name.toUpperCase()}</span>
                 <span className="pcard__cat">{s.category.toUpperCase()}</span>
               </button>

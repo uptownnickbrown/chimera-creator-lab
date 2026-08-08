@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Go } from "./App";
 import { api, type BattleView, type CreatureSummary, type TournamentView } from "./api";
-import { Asset, Badge, Btn, Loading, Meter, Panel } from "./ui";
+import { Asset, Badge, Btn, CreatureImg, Loading, Meter, Panel } from "./ui";
 
 const MAX_HEALTH = 1000;
 
@@ -52,7 +52,7 @@ export function Battle({
       <header className="battle__head">
         <h1 className="display">ARENA BATTLE RESULT</h1>
         <div className="battle__env">
-          <Asset slot={`environments/${battle.environment}`} label="" className="battle__envart" />
+          <Asset slot={`env/${battle.environment}`} label="" className="battle__envart" />
           {battle.environment.replace(/_/g, " ").toUpperCase()}
         </div>
       </header>
@@ -110,7 +110,7 @@ export function Battle({
           <Panel title="CHAMPION TRACKER" accent="gold">
             {champion ? (
               <div className="tracker">
-                <Asset slot={`creatures/${champion.id}`} label={champion.name} className="tracker__art" />
+                <CreatureImg creature={champion} className="tracker__art" />
                 <div className="tracker__name">{champion.name.toUpperCase()}</div>
                 <div className="tracker__label">ARENA CHAMPION</div>
               </div>
@@ -189,21 +189,13 @@ function Fighter({
   return (
     <div className={`bfighter bfighter--${side}${winner ? " is-winner" : ""}`}>
       <div className="bfighter__id">
-        <Asset
-          slot={creature ? `creatures/${creature.id}` : "ui/tbd"}
-          label={creature?.name ?? "TBD"}
-          className="bfighter__badge"
-        />
+        <CreatureImg creature={creature} className="bfighter__badge" />
         <div>
           <div className="bfighter__name">{(creature?.name ?? "—").toUpperCase()}</div>
           <div className="bfighter__role muted">{creature?.role ?? ""}</div>
         </div>
       </div>
-      <Asset
-        slot={creature ? `creatures/${creature.id}` : "ui/tbd"}
-        label={creature?.name ?? "TBD"}
-        className="bfighter__art"
-      />
+      <CreatureImg creature={creature} prefer="hero" className="bfighter__art" />
       <div className="bfighter__health">
         <span className="bfighter__hlabel">HEALTH</span>
         <Meter value={health} max={MAX_HEALTH} tone={winner ? "green" : "red"} />

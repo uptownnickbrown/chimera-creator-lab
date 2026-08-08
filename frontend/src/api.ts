@@ -34,6 +34,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 // -- shapes -------------------------------------------------------------------
 
 export type ImageStatus = "pending" | "complete" | "failed";
+export type RecordStatus = "generating" | "complete" | "failed";
 export type Rarity = "Uncommon" | "Rare" | "Epic" | "Legendary";
 export type CodexSort =
   | "newest" | "biggest" | "fastest" | "strongest" | "winners" | "favorites";
@@ -61,7 +62,11 @@ export interface CreatureSummary {
   role: string;
   sources: string[];
   core_stats: Partial<CoreStats>;
+  /** "generating" while the gpt-5.1 record streams; fields below fill in live. */
+  record_status: RecordStatus;
   image_status: ImageStatus;
+  /** Streaming preview: ability names revealed so far. Empty once complete. */
+  ability_names: string[];
   hero_image_path: string | null;
   thumb_path: string | null;
   favorite: boolean;
@@ -198,6 +203,11 @@ export const api = {
       source_slugs,
     }),
   getCreature: (id: number) => request<CreatureDetail>("GET", `/creatures/${id}`),
+  retryImage: (id: number) =>
+    request<{ creature_id: number; status: ImageStatus }>(
+      "POST",
+      `/creatures/${id}/retry-image`,
+    ),
   listCreatures: (sort: CodexSort = "newest") =>
     request<CreatureSummary[]>("GET", `/creatures?sort=${sort}`),
   toggleFavorite: (id: number) =>
@@ -229,3 +239,16 @@ export const api = {
   getProfile: () => request<ProfileView>("GET", "/profile"),
   getHall: () => request<HallView>("GET", "/hall"),
 };
+
+/** The gene library never changes inside a session — fetch it once, share it.
+    The Fusion Wait needs it mid-flight and must not pay for a round trip. */
+let libraryPromise: Promise<LibraryResponse> | null = null;
+export function getLibraryCached(): Promise<LibraryResponse> {
+  if (!libraryPromise) {
+    libraryPromise = api.getLibrary().catch((err) => {
+      libraryPromise = null; // a failed fetch must not poison the cache
+      throw err;
+    });
+  }
+  return libraryPromise;
+}

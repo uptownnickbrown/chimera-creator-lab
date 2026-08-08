@@ -10,6 +10,55 @@ function hue(slot: string): number {
   return 190 + ((h % 110) - 20); // stay inside the cyan -> violet band
 }
 
+/* One map from the slot names screens ask for to the files the art pipeline
+   actually ships. Screens keep their readable names; new art only ever needs a
+   line here. Anything unlisted resolves straight to /assets/<slot>.png. */
+const SLOT_ALIASES: Record<string, string> = {
+  "ui/logo": "ui/logo_mark",
+  "ui/avatar": "avatar/henry_a",
+  "ui/tbd": "ui/slot_empty",
+
+  // Facts and abilities borrow the stat icons until purpose-made art lands.
+  "icons/fact_strength": "icons/stat_power",
+  "icons/ability": "icons/stat_special",
+
+  // Battle "why" icons map onto the five stats plus two of their own.
+  "icons/reason_armor": "icons/stat_armor",
+  "icons/reason_speed": "icons/stat_speed",
+  "icons/reason_power": "icons/stat_power",
+  "icons/reason_size": "icons/stat_size",
+  "icons/reason_special": "icons/stat_special",
+  "icons/reason_mobility": "icons/stat_speed",
+  "icons/reason_endurance": "icons/endurance",
+  "icons/reason_range": "icons/range",
+  "icons/reason_environment": "icons/env_leaf",
+
+  // Home tiles / quick stats / codex sorts / hall records.
+  "icons/tile_create": "icons/tile_create",
+  "icons/tile_my": "icons/tile_codex",
+  "icons/tile_battle": "icons/tile_arena",
+  "icons/tile_hall": "icons/tile_hall",
+  "icons/quick_total": "icons/creatures",
+  "icons/quick_wins": "icons/stat_power",
+  "icons/quick_biggest": "icons/stat_size",
+  "icons/quick_champion": "trophy/badge_champion",
+  "icons/sort_newest": "icons/creatures",
+  "icons/sort_favorites": "icons/stat_special",
+  "icons/sort_winners": "trophy/badge_champion",
+  "icons/sort_biggest": "icons/stat_size",
+  "icons/sort_fastest": "icons/stat_speed",
+  "icons/sort_strongest": "icons/stat_power",
+  "icons/record_biggest": "icons/stat_size",
+  "icons/record_fastest": "icons/stat_speed",
+  "icons/record_strongest": "icons/stat_power",
+  "icons/record_most_wins": "trophy/badge_champion",
+  "icons/record_champion": "trophy/badge_champion",
+};
+
+function resolveSlot(slot: string): string {
+  return SLOT_ALIASES[slot] ?? slot;
+}
+
 /** Loads /assets/<slot>.png; degrades to a labelled plate until the art lands. */
 export function Asset({
   slot,
@@ -23,11 +72,20 @@ export function Asset({
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [slot]);
 
+  const file = resolveSlot(slot);
   const style = { "--asset-hue": hue(slot) } as React.CSSProperties;
   if (failed) {
+    // label="" marks a decorative icon: the plate stays quiet rather than
+    // shouting a slot path at a seven-year-old. Named assets keep their label.
+    const decorative = label === "";
     return (
-      <div className={`asset asset--fallback ${className}`} style={style} aria-label={label || slot}>
-        <span className="asset__slot">{label || slot}</span>
+      <div
+        className={`asset asset--fallback${decorative ? " asset--quiet" : ""} ${className}`}
+        style={style}
+        aria-hidden={decorative || undefined}
+        aria-label={decorative ? undefined : label || slot}
+      >
+        {!decorative && <span className="asset__slot">{label || slot}</span>}
       </div>
     );
   }
@@ -35,11 +93,53 @@ export function Asset({
     <img
       className={`asset ${className}`}
       style={style}
-      src={`/assets/${slot}.png`}
+      src={`/assets/${file}.png`}
       alt={label || slot}
       onError={() => setFailed(true)}
     />
   );
+}
+
+/** Generated creature art lives on /media (backend-owned), never in /assets —
+    always render hero_image_path / thumb_path, never an invented slot name. */
+export function MediaImg({
+  src,
+  alt,
+  className = "",
+}: {
+  src: string | null | undefined;
+  alt: string;
+  className?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
+  if (!src || failed) {
+    return (
+      <div className={`asset asset--fallback ${className}`} aria-label={alt}>
+        <span className="asset__slot">{alt}</span>
+      </div>
+    );
+  }
+  return (
+    <img className={`asset ${className}`} src={src} alt={alt} onError={() => setFailed(true)} />
+  );
+}
+
+/** A saved creature's art: thumbnail where one exists, hero otherwise. */
+export function CreatureImg({
+  creature,
+  prefer = "thumb",
+  className = "",
+}: {
+  creature: Pick<CreatureSummary, "name" | "hero_image_path" | "thumb_path"> | null | undefined;
+  prefer?: "thumb" | "hero";
+  className?: string;
+}) {
+  const src =
+    prefer === "hero"
+      ? creature?.hero_image_path || creature?.thumb_path
+      : creature?.thumb_path || creature?.hero_image_path;
+  return <MediaImg src={src} alt={creature?.name || "chimera"} className={className} />;
 }
 
 export function Panel({
@@ -172,12 +272,8 @@ export function Stage({
     <div className={`stage${fusing ? " stage--fusing" : ""}`}>
       <div className="stage__glow" />
       <div className="stage__subject">
-        {creature ? (
-          <Asset
-            slot={creature.hero_image_path ? `creatures/${creature.id}` : `creatures/${creature.id}`}
-            label={creature.name}
-            className="stage__hero"
-          />
+        {creature && (creature.hero_image_path || creature.thumb_path) ? (
+          <CreatureImg creature={creature} prefer="hero" className="stage__hero" />
         ) : (
           <div className="stage__empty">{caption || "AWAITING FUSION"}</div>
         )}
@@ -216,7 +312,7 @@ export function CreatureCard({
       disabled={!onClick}
     >
       <div className="ccard__art">
-        <Asset slot={`creatures/${creature.id}`} label={creature.name} />
+        <CreatureImg creature={creature} />
         {creature.favorite && <span className="ccard__fav" aria-label="favorite" />}
         {corner && <span className="ccard__corner">{corner}</span>}
       </div>
