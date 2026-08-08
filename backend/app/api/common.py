@@ -30,6 +30,7 @@ def summary(c: Creature) -> CreatureSummary:
         image_status=c.image_status.value if hasattr(c.image_status, "value") else c.image_status,
         hero_image_path=c.hero_image_path,
         thumb_path=c.thumb_path,
+        signature_ability=((c.abilities or [{}])[0] or {}).get("name", ""),
         favorite=c.favorite,
         wins=c.wins,
         losses=c.losses,

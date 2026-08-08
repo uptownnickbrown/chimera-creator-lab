@@ -161,6 +161,9 @@ class CreatureSummary(Api):
         default_factory=list,
         description="Streaming preview: ability names revealed so far while record_status=generating",
     )
+    signature_ability: str = Field(
+        default="", description="First ability name — carousel headline without a detail fetch"
+    )
     hero_image_path: str | None = None
     thumb_path: str | None = None
     favorite: bool

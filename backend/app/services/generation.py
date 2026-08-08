@@ -14,6 +14,7 @@ the real generator is offline.
 """
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import logging
 import random
@@ -393,7 +394,20 @@ async def generate_creature_streaming(
     )
     buf = ""
     spec_fired = False
-    async for chunk in stream:
+    # Stall watchdog: a live stream that stops emitting is a hung connection
+    # (observed in the wild: 200+ silent seconds). No single gap may exceed
+    # STALL_S; the caller's except path marks the creature failed/retryable.
+    STALL_S = 45
+    it = stream.__aiter__()
+    while True:
+        try:
+            chunk = await asyncio.wait_for(it.__anext__(), timeout=STALL_S)
+        except StopAsyncIteration:
+            break
+        except TimeoutError as exc:
+            raise RuntimeError(
+                f"record stream stalled >{STALL_S}s after {len(buf)} chars"
+            ) from exc
         delta = chunk.choices[0].delta.content if chunk.choices else None
         if not delta:
             continue
