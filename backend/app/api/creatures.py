@@ -5,8 +5,6 @@ import asyncio
 import logging
 from typing import Literal
 
-log = logging.getLogger("chimera.creatures")
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,7 +22,22 @@ from ..schemas import (
 from ..services import ai, generation, images, library
 from .common import XP_CREATE, award_xp, detail, get_creature, get_profile, summary
 
+log = logging.getLogger("chimera.creatures")
+
 router = APIRouter(prefix="/api/creatures", tags=["creatures"])
+
+
+def spawn(coro, label: str) -> asyncio.Task:
+    """create_task + loud death: a background task that raises must never
+    vanish silently (asyncio only whispers at GC time)."""
+    task = asyncio.create_task(coro)
+
+    def _done(t: asyncio.Task) -> None:
+        if not t.cancelled() and t.exception() is not None:
+            log.error("background task %s crashed", label, exc_info=t.exception())
+
+    task.add_done_callback(_done)
+    return task
 
 CodexSort = Literal["newest", "biggest", "fastest", "strongest", "winners", "favorites"]
 
@@ -76,7 +89,7 @@ async def create_creature(
     db.add(creature)
     await db.flush()
     award_xp(await get_profile(db), XP_CREATE)
-    asyncio.create_task(_generate_task(creature.id, list(body.source_slugs)))
+    spawn(_generate_task(creature.id, list(body.source_slugs)), f"generate:{creature.id}")
     return CreateCreatureResponse(creature_id=creature.id, status="generating")
 
 
@@ -156,7 +169,7 @@ async def retry_image(creature_id: int, db: AsyncSession = Depends(get_db)) -> C
         raise HTTPException(status_code=409, detail="Image generation is offline")
     creature.image_status = ImageStatus.pending
     await db.flush()
-    asyncio.create_task(_retry_hero_task(creature.id))
+    spawn(_retry_hero_task(creature.id), f"retry-hero:{creature.id}")
     return CreateCreatureResponse(creature_id=creature.id, status="pending")
 
 

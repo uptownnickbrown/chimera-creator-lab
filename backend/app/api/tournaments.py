@@ -1,7 +1,6 @@
 """Bracket mode: predict -> simulate -> explain -> advance -> crown (spec §7, §15)."""
 from __future__ import annotations
 
-import asyncio
 import copy
 from datetime import UTC, datetime
 
@@ -23,6 +22,7 @@ from ..schemas import (
 from ..services import ai, images
 from ..services import battle as battle_svc
 from ..services import tournament as bracket_svc
+from . import creatures as creatures_api
 from .common import XP_CORRECT_PREDICTION, award_xp, get_profile, summary
 
 router = APIRouter(prefix="/api/tournaments", tags=["tournaments"])
@@ -225,7 +225,7 @@ async def resolve(
     if (final.get("a") and final.get("b") and final.get("winner") is None
             and not bracket.get("final_art") and ai.ai_enabled()):
         bracket["final_art"] = "pending"
-        asyncio.create_task(_final_art_task(t.id, final["a"], final["b"]))
+        creatures_api.spawn(_final_art_task(t.id, final["a"], final["b"]), f"final-art:{t.id}")
 
     if bracket_svc.is_complete(bracket):
         t.status = TournamentStatus.complete
