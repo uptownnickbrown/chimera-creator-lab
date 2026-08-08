@@ -3555,5 +3555,2419 @@
       "tracking"
     ],
     "visual_hint": "grizzled grey-and-cream coat, breath steaming, amber eyes forward, snowy pine forest at dusk"
+  },
+  {
+    "slug": "kitsune",
+    "name": "Kitsune",
+    "category": "mythic",
+    "emoji_fallback": "🦊",
+    "kid_blurb": "A magic fox that grows a brand new tail for every trick it learns!",
+    "contributes": [
+      "nine illusion tails",
+      "shape-shifting tricks"
+    ],
+    "traits": {
+      "iconic_appearance": "slender white fox with nine flowing tails, each tip burning with pale foxfire",
+      "signature_weapon": "foxfire flames flicked off the tails that send an enemy chasing the wrong shape",
+      "movement": "silent bounding runs with sudden impossible sidesteps",
+      "defense": "splits into a crowd of copies so nobody knows which fox is real",
+      "behavior": "playful trickster that would much rather outsmart you than fight you",
+      "mythic_power": "illusion magic — makes copies of itself and things that were never there"
+    },
+    "habitat": [
+      "bamboo forest",
+      "shrine hills",
+      "moonlit fields"
+    ],
+    "scale": 3,
+    "real_size": "1.2 m long plus nine tails (legendary)",
+    "movement_types": [
+      "run",
+      "walk",
+      "climb"
+    ],
+    "tags": [
+      "illusion",
+      "trickster",
+      "magic",
+      "agility",
+      "legendary"
+    ],
+    "visual_hint": "snow-white fox standing side-on in full view, nine tails fanned behind it glowing pale blue at the tips, moonlit bamboo grove"
+  },
+  {
+    "slug": "roc",
+    "name": "Roc",
+    "category": "mythic",
+    "emoji_fallback": "🦅",
+    "kid_blurb": "A bird so huge it can snatch up an elephant and fly away with it!",
+    "contributes": [
+      "elephant-lifting talons",
+      "hurricane wingbeats"
+    ],
+    "traits": {
+      "iconic_appearance": "mountain-sized eagle with wings that darken a whole valley and legs as thick as tree trunks",
+      "signature_weapon": "wingbeats that blast out a gale strong enough to flatten a forest",
+      "movement": "slow enormous flaps that carry it above the clouds and keep it there for days",
+      "defense": "flies higher than anything can climb, and grabs whatever tries",
+      "behavior": "nests on the highest peak and carries whole herds home to it",
+      "mythic_power": "lifts creatures the size of elephants without slowing down at all"
+    },
+    "habitat": [
+      "mountain peaks",
+      "sky",
+      "island cliffs"
+    ],
+    "scale": 10,
+    "real_size": "50 m wingspan (legendary)",
+    "movement_types": [
+      "fly",
+      "glide",
+      "walk"
+    ],
+    "tags": [
+      "flying",
+      "colossal",
+      "talons",
+      "wind",
+      "legendary"
+    ],
+    "visual_hint": "russet and gold giant eagle in full flight with both wings spread across the frame, talons open, a whole mountain range tiny below"
+  },
+  {
+    "slug": "qilin",
+    "name": "Qilin",
+    "category": "mythic",
+    "emoji_fallback": "🦌",
+    "kid_blurb": "A gentle dragon-deer that can spot a lie from a mile away!",
+    "contributes": [
+      "truth-seeing eyes",
+      "flame-wreathed hooves"
+    ],
+    "traits": {
+      "iconic_appearance": "deer-bodied beast in jade dragon scales with branching antlers and a mane of soft green fire",
+      "signature_weapon": "hooves wrapped in cool green flame that strike like falling hammers",
+      "movement": "runs over water, grass and even open air without bending a single blade",
+      "defense": "sees a trick coming before it starts, so nothing ever surprises it",
+      "behavior": "peaceful protector that only ever fights bullies",
+      "mythic_power": "truth sight — no illusion, disguise or lie can fool it"
+    },
+    "habitat": [
+      "cloud forests",
+      "mountain valleys",
+      "river meadows"
+    ],
+    "scale": 5,
+    "real_size": "3 m long (legendary)",
+    "movement_types": [
+      "run",
+      "walk"
+    ],
+    "tags": [
+      "magic",
+      "vision",
+      "fire",
+      "noble",
+      "legendary"
+    ],
+    "visual_hint": "jade-and-gold scaled deer-beast standing in full profile, branching antlers, green flame curling around every hoof, misty valley behind"
+  },
+  {
+    "slug": "world-turtle",
+    "name": "World Turtle",
+    "category": "mythic",
+    "emoji_fallback": "🐢",
+    "kid_blurb": "So enormous that a whole island grows on top of its shell!",
+    "contributes": [
+      "island-sized shell",
+      "unmovable weight"
+    ],
+    "traits": {
+      "iconic_appearance": "continent-sized turtle whose domed shell carries forests, waterfalls and stone hills",
+      "signature_weapon": "simply standing up — the ground it lifts becomes a wall",
+      "movement": "one slow paddle stroke an hour, crossing an ocean over a lifetime",
+      "defense": "a shell miles across that storms, waves and volcanoes cannot crack",
+      "behavior": "ancient, patient, and completely unbothered by anything at all",
+      "mythic_power": "carries an entire living island on its back"
+    },
+    "habitat": [
+      "open ocean",
+      "deep sea",
+      "island shallows"
+    ],
+    "scale": 10,
+    "real_size": "2 km shell (legendary)",
+    "movement_types": [
+      "swim",
+      "walk"
+    ],
+    "tags": [
+      "colossal",
+      "armored",
+      "aquatic",
+      "earth",
+      "legendary"
+    ],
+    "visual_hint": "barnacled grey-green turtle riding high in the water with the whole shell and all four flippers in view, forests and waterfalls on its back, tiny sailing ship for scale"
+  },
+  {
+    "slug": "fenrir",
+    "name": "Fenrir",
+    "category": "mythic",
+    "emoji_fallback": "🐺",
+    "kid_blurb": "A wolf the size of a mountain that snaps any chain ever made!",
+    "contributes": [
+      "chain-snapping jaws",
+      "grows stronger when held"
+    ],
+    "traits": {
+      "iconic_appearance": "shaggy storm-grey wolf as tall as a castle with broken chain links still swinging from its ruff",
+      "signature_weapon": "a bite wide enough to swallow the moon",
+      "movement": "earth-shaking bounds that clear whole valleys",
+      "defense": "gets bigger and stronger every single time someone tries to hold it",
+      "behavior": "unstoppable once it starts moving and refuses every cage ever built",
+      "mythic_power": "no rope, chain, wall or cage can hold it for long"
+    },
+    "habitat": [
+      "frozen wilds",
+      "mountain passes",
+      "dark forest"
+    ],
+    "scale": 9,
+    "real_size": "20 m at the shoulder (legendary)",
+    "movement_types": [
+      "run",
+      "walk"
+    ],
+    "tags": [
+      "colossal",
+      "bite",
+      "strength",
+      "canine",
+      "legendary"
+    ],
+    "visual_hint": "storm-grey shaggy wolf standing full-body on a snowy ridge, snapped silver chains hanging from its neck, pine trees tiny at its paws"
+  },
+  {
+    "slug": "couatl",
+    "name": "Couatl",
+    "category": "mythic",
+    "emoji_fallback": "🌈",
+    "kid_blurb": "A rainbow feathered serpent that flies and flashes blinding light!",
+    "contributes": [
+      "feathered flying coils",
+      "dazzling light flash"
+    ],
+    "traits": {
+      "iconic_appearance": "long serpent clothed in emerald and scarlet feathers with wide fanned wings behind the head",
+      "signature_weapon": "a burst of blinding rainbow light thrown from its spread feathers",
+      "movement": "swims through the air in curling loops, then hovers on beating wings",
+      "defense": "too bright to look at and far too quick to grab in mid-air",
+      "behavior": "wise sky guardian that always gives one warning before it acts",
+      "mythic_power": "turns plain sunlight into a blinding rainbow flare"
+    },
+    "habitat": [
+      "jungle temples",
+      "cloud forest",
+      "sky"
+    ],
+    "scale": 5,
+    "real_size": "8 m long (legendary)",
+    "movement_types": [
+      "fly",
+      "glide",
+      "slither"
+    ],
+    "tags": [
+      "flying",
+      "light",
+      "magic",
+      "guardian",
+      "legendary"
+    ],
+    "visual_hint": "emerald-and-scarlet feathered serpent stretched full length across a bright sky, wings fanned wide, prism sparkles running along every feather"
+  },
+  {
+    "slug": "storm-djinn",
+    "name": "Storm Djinn",
+    "category": "mythic",
+    "emoji_fallback": "🌪️",
+    "kid_blurb": "A giant spirit made of spinning wind and sand that punches like a tornado!",
+    "contributes": [
+      "tornado body",
+      "sandblast breath"
+    ],
+    "traits": {
+      "iconic_appearance": "towering figure of spinning sand and cloud with lantern-bright eyes and arms of whirlwind",
+      "signature_weapon": "a spinning arm that lands like a tornado touching down",
+      "movement": "races along the ground as a whirlwind, then rises into a roaring column",
+      "defense": "has no solid body at all — hits pass straight through the swirling wind",
+      "behavior": "arrives with the weather and always offers a bargain before a battle",
+      "mythic_power": "becomes a living sandstorm that nothing can grab hold of"
+    },
+    "habitat": [
+      "deserts",
+      "storm skies",
+      "canyon lands"
+    ],
+    "scale": 8,
+    "real_size": "40 m tall (legendary)",
+    "movement_types": [
+      "fly",
+      "glide",
+      "walk"
+    ],
+    "tags": [
+      "storm",
+      "wind",
+      "elemental",
+      "ranged",
+      "legendary"
+    ],
+    "visual_hint": "towering whirlwind giant of ochre sand and grey cloud with a clear head-to-base shape and both arms raised, twin amber eyes, moonlit dunes below"
+  },
+  {
+    "slug": "behemoth",
+    "name": "Behemoth",
+    "category": "mythic",
+    "emoji_fallback": "🐂",
+    "kid_blurb": "The land titan — every single step it takes sets off an earthquake!",
+    "contributes": [
+      "earthquake stomp",
+      "mountain-sized bulk"
+    ],
+    "traits": {
+      "iconic_appearance": "colossal four-legged titan of stone-grey muscle with a broad horned head and pillar legs",
+      "signature_weapon": "a stomp that cracks the ground open and knocks everything nearby off its feet",
+      "movement": "unhurried ground-shaking strides that nothing can turn aside",
+      "defense": "hide layered like slabs of rock over muscle the size of hills",
+      "behavior": "eats a forest a day and treats mountains as gentle hills",
+      "mythic_power": "shakes the earth itself — its footsteps split the ground"
+    },
+    "habitat": [
+      "highlands",
+      "river valleys",
+      "plains"
+    ],
+    "scale": 9,
+    "real_size": "60 m long (legendary)",
+    "movement_types": [
+      "walk",
+      "run"
+    ],
+    "tags": [
+      "colossal",
+      "earth",
+      "strength",
+      "impact",
+      "legendary"
+    ],
+    "visual_hint": "stone-grey mountain of a beast shown head to tail, blunt curved horns, cracked ground spreading from one raised foot, dust plume rising"
+  },
+  {
+    "slug": "treant",
+    "name": "Treant",
+    "category": "mythic",
+    "emoji_fallback": "🌳",
+    "kid_blurb": "A giant walking tree that grabs with its roots and grows straight back!",
+    "contributes": [
+      "grabbing roots",
+      "living bark armor"
+    ],
+    "traits": {
+      "iconic_appearance": "walking oak the height of a tower with root legs, branch arms and two amber eyes in the bark",
+      "signature_weapon": "root tendrils that burst up out of the ground and wrap around whatever they catch",
+      "movement": "slow creaking strides while its roots pull it forward and hold it steady",
+      "defense": "thick bark that grows back over any damage in minutes",
+      "behavior": "guards its forest and remembers every visitor for hundreds of years",
+      "mythic_power": "grows new limbs and fresh bark straight out of living wood"
+    },
+    "habitat": [
+      "ancient forest",
+      "groves",
+      "riverbanks"
+    ],
+    "scale": 8,
+    "real_size": "20 m tall (legendary)",
+    "movement_types": [
+      "walk",
+      "burrow"
+    ],
+    "tags": [
+      "plant",
+      "regeneration",
+      "grappler",
+      "armored",
+      "legendary"
+    ],
+    "visual_hint": "towering oak-bodied giant standing clear of the smaller trees, mossy bark, two glowing amber eyes in the trunk, thick roots lifted mid-step"
+  },
+  {
+    "slug": "frost-giant",
+    "name": "Frost Giant",
+    "category": "mythic",
+    "emoji_fallback": "🧊",
+    "kid_blurb": "One breath from this giant freezes a whole river solid!",
+    "contributes": [
+      "freezing breath",
+      "ice-block fists"
+    ],
+    "traits": {
+      "iconic_appearance": "blue-skinned giant with a frost-white beard and slabs of clear ice growing along its shoulders",
+      "signature_weapon": "a blast of freezing breath that turns water, wind and mud to solid ice",
+      "movement": "long heavy strides that leave frozen footprints behind",
+      "defense": "skin like packed glacier ice that shrugs off cold and heavy blows alike",
+      "behavior": "brings winter with it and fights slowly, calmly and forever",
+      "mythic_power": "freezing breath that locks anything it touches inside ice"
+    },
+    "habitat": [
+      "glaciers",
+      "snow mountains",
+      "frozen fjords"
+    ],
+    "scale": 8,
+    "real_size": "12 m tall (legendary)",
+    "movement_types": [
+      "walk",
+      "climb"
+    ],
+    "tags": [
+      "cold",
+      "ice",
+      "strength",
+      "giant",
+      "legendary"
+    ],
+    "visual_hint": "pale blue-skinned giant standing at full height in clear view, frost-white beard, ice plates on the shoulders, white breath streaming, frozen fjord behind"
+  },
+  {
+    "slug": "dimetrodon",
+    "name": "Dimetrodon",
+    "category": "extinct",
+    "emoji_fallback": "🦎",
+    "kid_blurb": "Its huge back sail soaked up the sun, so it warmed up first and moved first!",
+    "contributes": [
+      "solar back sail",
+      "two sizes of teeth"
+    ],
+    "traits": {
+      "iconic_appearance": "sprawling four-legged hunter with a tall skin sail stretched over long bony spines",
+      "signature_weapon": "two kinds of teeth at once — long stabbing fangs in front, slicing blades behind",
+      "movement": "low sprawling walk that turns into a sudden forward lunge",
+      "defense": "the sail makes it look twice as big from the side",
+      "behavior": "sunbathes at dawn, then hunts while everything else is still cold and slow",
+      "mythic_power": null
+    },
+    "habitat": [
+      "swamp edges",
+      "river deltas",
+      "dry uplands"
+    ],
+    "scale": 4,
+    "real_size": "4 m long, 250 kg",
+    "movement_types": [
+      "walk",
+      "swim"
+    ],
+    "tags": [
+      "sail",
+      "ambush",
+      "ancient",
+      "bite"
+    ],
+    "visual_hint": "sandy-tan reptile with dark bands shown whole and side-on, tall red-veined sail catching low sunlight, fern-lined riverbank"
+  },
+  {
+    "slug": "elasmotherium",
+    "name": "Elasmotherium",
+    "category": "extinct",
+    "emoji_fallback": "🦏",
+    "kid_blurb": "A shaggy woolly rhino with ONE giant horn — the real-life unicorn!",
+    "contributes": [
+      "single tower horn",
+      "woolly cold hide"
+    ],
+    "traits": {
+      "iconic_appearance": "horse-tall woolly rhino with a domed forehead carrying one enormous horn",
+      "signature_weapon": "a two-meter horn driven forward by a four-tonne charge",
+      "movement": "long-legged canter, far faster than any rhino alive today",
+      "defense": "thick woolly hide, and a horn that keeps every problem out in front",
+      "behavior": "grazes tough steppe grass and charges anything that crowds it",
+      "mythic_power": null
+    },
+    "habitat": [
+      "cold steppe",
+      "grassland",
+      "river valleys"
+    ],
+    "scale": 7,
+    "real_size": "5 m long, 4 tonnes",
+    "movement_types": [
+      "walk",
+      "run"
+    ],
+    "tags": [
+      "horn",
+      "charge",
+      "cold",
+      "ice-age"
+    ],
+    "visual_hint": "shaggy chestnut woolly rhino shown side-on head to tail, one huge grey horn on the forehead, breath fogging over frosted steppe grass"
+  },
+  {
+    "slug": "paraceratherium",
+    "name": "Paraceratherium",
+    "category": "extinct",
+    "emoji_fallback": "🦒",
+    "kid_blurb": "The tallest land mammal ever — it could peer over a two-story house!",
+    "contributes": [
+      "five-story reach",
+      "pillar legs"
+    ],
+    "traits": {
+      "iconic_appearance": "hornless rhino the size of a house with a long neck, long legs and a horse-like head",
+      "signature_weapon": "shoving weight and a head that pushes whole trees flat",
+      "movement": "long swinging strides that eat up kilometers without effort",
+      "defense": "so tall and so heavy that predators simply gave up trying",
+      "behavior": "strips leaves off treetops all day long, gently and constantly",
+      "mythic_power": null
+    },
+    "habitat": [
+      "open woodland",
+      "dry plains",
+      "river flats"
+    ],
+    "scale": 9,
+    "real_size": "8 m long, 5 m at the shoulder, 20 tonnes",
+    "movement_types": [
+      "walk",
+      "run"
+    ],
+    "tags": [
+      "colossal",
+      "reach",
+      "strength",
+      "herbivore"
+    ],
+    "visual_hint": "grey-brown hornless rhino giant shown head to tail, long neck raised above a lone tree, dry open plain, small deer nearby for scale"
+  },
+  {
+    "slug": "short-faced-bear",
+    "name": "Short-Faced Bear",
+    "category": "extinct",
+    "emoji_fallback": "🐻",
+    "kid_blurb": "A bear on long legs that could look a grown-up in the eye on all fours!",
+    "contributes": [
+      "long-legged charge",
+      "enormous reach"
+    ],
+    "traits": {
+      "iconic_appearance": "towering bear with unusually long straight legs and a short, broad, blunt face",
+      "signature_weapon": "a swiping forelimb with the reach of a whole doorway",
+      "movement": "long-striding run built for chasing across wide open ground",
+      "defense": "height and reach keep every rival at arm's length",
+      "behavior": "strode the open plains and claimed any meal it found first",
+      "mythic_power": null
+    },
+    "habitat": [
+      "open plains",
+      "cold grassland",
+      "river valleys"
+    ],
+    "scale": 6,
+    "real_size": "3.5 m tall standing, 900 kg",
+    "movement_types": [
+      "run",
+      "walk"
+    ],
+    "tags": [
+      "reach",
+      "speed",
+      "strength",
+      "ice-age"
+    ],
+    "visual_hint": "tawny-brown bear standing four-square in full view, unusually long legs, short blunt muzzle, cold golden grassland"
+  },
+  {
+    "slug": "haasts-eagle",
+    "name": "Haast's Eagle",
+    "category": "extinct",
+    "emoji_fallback": "🦅",
+    "kid_blurb": "The biggest eagle ever — it dived at car speed to knock giant birds flat!",
+    "contributes": [
+      "cannonball dive",
+      "tiger-sized talons"
+    ],
+    "traits": {
+      "iconic_appearance": "heavy-bodied eagle with a three-meter wingspan and talons as big as a tiger's claws",
+      "signature_weapon": "an 80 km/h dive that lands with the force of a dropped cinder block",
+      "movement": "short powerful flaps between trees, then a plunging strike",
+      "defense": "attacks from straight above, where nothing can reach back",
+      "behavior": "hunted flightless birds three times its own weight",
+      "mythic_power": null
+    },
+    "habitat": [
+      "forest edges",
+      "mountain valleys",
+      "island uplands"
+    ],
+    "scale": 4,
+    "real_size": "3 m wingspan, 15 kg",
+    "movement_types": [
+      "fly",
+      "glide",
+      "walk"
+    ],
+    "tags": [
+      "flying",
+      "talons",
+      "impact",
+      "predator"
+    ],
+    "visual_hint": "slate-and-rust eagle with wings fully spread, huge yellow talons thrown forward, green mountain valley behind"
+  },
+  {
+    "slug": "elephant-bird",
+    "name": "Elephant Bird",
+    "category": "extinct",
+    "emoji_fallback": "🥚",
+    "kid_blurb": "The heaviest bird that ever lived — its eggs were bigger than your head!",
+    "contributes": [
+      "half-tonne bulk",
+      "tree-trunk legs"
+    ],
+    "traits": {
+      "iconic_appearance": "three-meter flightless bird built like a shaggy feathered barrel on two enormous legs",
+      "signature_weapon": "a forward stamp from a leg as thick as a fence post",
+      "movement": "heavy rolling walk that shifts into a surprisingly quick trot",
+      "defense": "sheer weight — almost nothing on its island could tip it over",
+      "behavior": "a calm forest browser that ate fruit and minded its own business",
+      "mythic_power": null
+    },
+    "habitat": [
+      "island forest",
+      "scrubland"
+    ],
+    "scale": 6,
+    "real_size": "3 m tall, 700 kg",
+    "movement_types": [
+      "walk",
+      "run"
+    ],
+    "tags": [
+      "flightless",
+      "strength",
+      "herbivore",
+      "island"
+    ],
+    "visual_hint": "shaggy dark-brown flightless bird shown at full height, thick grey legs, small head, sunny island forest clearing with a huge pale egg beside it"
+  },
+  {
+    "slug": "diprotodon",
+    "name": "Diprotodon",
+    "category": "extinct",
+    "emoji_fallback": "🐨",
+    "kid_blurb": "A wombat the size of a rhino, with a pouch big enough to ride in!",
+    "contributes": [
+      "bulldozer bulk",
+      "giant pouch"
+    ],
+    "traits": {
+      "iconic_appearance": "rhino-sized wombat with a blunt heavy head, barrel body and broad turned-in feet",
+      "signature_weapon": "a shoving head and chest that flattens whatever it walks into",
+      "movement": "slow pigeon-toed plod that simply never stops",
+      "defense": "nearly three tonnes of low solid muscle that is very hard to tip",
+      "behavior": "browsed shrubs in herds and dug big shady dens to sleep in",
+      "mythic_power": null
+    },
+    "habitat": [
+      "dry woodland",
+      "scrub plains",
+      "salt lake shores"
+    ],
+    "scale": 6,
+    "real_size": "3 m long, 2.7 tonnes",
+    "movement_types": [
+      "walk",
+      "burrow"
+    ],
+    "tags": [
+      "marsupial",
+      "strength",
+      "herbivore",
+      "ice-age"
+    ],
+    "visual_hint": "shaggy grey-brown giant wombat shown side-on in full view, blunt muzzle, thick clawed feet, red dusty scrubland"
+  },
+  {
+    "slug": "thylacine",
+    "name": "Thylacine",
+    "category": "extinct",
+    "emoji_fallback": "🐕",
+    "kid_blurb": "A striped marsupial wolf that could open its jaws almost in half!",
+    "contributes": [
+      "enormous jaw gape",
+      "tireless tracking"
+    ],
+    "traits": {
+      "iconic_appearance": "dog-shaped marsupial in sandy fur with dark tiger stripes across the back and a stiff tapering tail",
+      "signature_weapon": "jaws that open a full 80 degrees — wider than any dog alive",
+      "movement": "steady loping trot, with a strange stiff-tailed hop when it hurries",
+      "defense": "keeps its distance and simply outlasts whatever is chasing it",
+      "behavior": "patient solo hunter that follows one animal until it tires out",
+      "mythic_power": null
+    },
+    "habitat": [
+      "eucalyptus woodland",
+      "grassland",
+      "rocky hills"
+    ],
+    "scale": 3,
+    "real_size": "1.6 m long, 30 kg",
+    "movement_types": [
+      "run",
+      "walk"
+    ],
+    "tags": [
+      "bite",
+      "endurance",
+      "marsupial",
+      "tracking"
+    ],
+    "visual_hint": "sandy-tan marsupial hunter shown in full profile, sixteen dark stripes across the back, stiff tapering tail, dry eucalyptus woodland"
+  },
+  {
+    "slug": "entelodont",
+    "name": "Entelodont",
+    "category": "extinct",
+    "emoji_fallback": "🐗",
+    "kid_blurb": "A giant prehistoric pig with bony shields on its cheeks — it headbutted for fun!",
+    "contributes": [
+      "bone cheek shields",
+      "huge gaping bite"
+    ],
+    "traits": {
+      "iconic_appearance": "buffalo-sized pig-like beast with a long lumpy skull and flaring bony knobs on each cheek",
+      "signature_weapon": "a wide-gaping bite from a skull built like a battle helmet",
+      "movement": "hoofed trot on long thin legs, quick across open ground",
+      "defense": "cheek and jaw bones thick enough to take a headbutt without flinching",
+      "behavior": "ate absolutely anything and shoved everyone else off it",
+      "mythic_power": null
+    },
+    "habitat": [
+      "floodplains",
+      "open woodland",
+      "river banks"
+    ],
+    "scale": 6,
+    "real_size": "3 m long, 900 kg",
+    "movement_types": [
+      "run",
+      "walk"
+    ],
+    "tags": [
+      "bite",
+      "armored",
+      "charge",
+      "ancient"
+    ],
+    "visual_hint": "dark bristly boar-like giant shown side-on head to tail, knobbed cheek bones, long heavy skull, muddy floodplain with scattered trees"
+  },
+  {
+    "slug": "basilosaurus",
+    "name": "Basilosaurus",
+    "category": "extinct",
+    "emoji_fallback": "🐋",
+    "kid_blurb": "An early whale shaped like a giant eel — with tiny leftover back legs!",
+    "contributes": [
+      "eel-like wriggling body",
+      "tiny leftover legs"
+    ],
+    "traits": {
+      "iconic_appearance": "18-meter whale with a long snaky body, a narrow toothy snout and comically tiny hind legs",
+      "signature_weapon": "a slim jaw of pointed gripping teeth and slicing back teeth",
+      "movement": "wriggles through the water like a colossal eel instead of pumping a tail",
+      "defense": "long and slippery — almost impossible to get a grip on",
+      "behavior": "cruised warm shallow seas snapping up fish and smaller whales",
+      "mythic_power": null
+    },
+    "habitat": [
+      "warm shallow seas",
+      "coastal water"
+    ],
+    "scale": 8,
+    "real_size": "18 m long, 6 tonnes",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "aquatic",
+      "bite",
+      "ancient",
+      "agile"
+    ],
+    "visual_hint": "slate-brown whale with a pale belly, whole snaky body curving in a long S across bright turquoise shallows, tiny hind flippers clearly visible"
+  },
+  {
+    "slug": "livyatan",
+    "name": "Livyatan",
+    "category": "extinct",
+    "emoji_fallback": "🐳",
+    "kid_blurb": "A sperm whale with giant teeth in BOTH jaws that rammed with its forehead!",
+    "contributes": [
+      "battering-ram forehead",
+      "36 cm teeth"
+    ],
+    "traits": {
+      "iconic_appearance": "17-meter sperm whale with a huge squared-off forehead and enormous teeth in the top and bottom jaws",
+      "signature_weapon": "a head-on ram from that giant forehead, followed by a bite with 36 cm teeth",
+      "movement": "powerful tail beats and long dives into the dark",
+      "defense": "the padded forehead soaks up hits that would break bone",
+      "behavior": "hunted other whales and found them in the dark using clicks of sound",
+      "mythic_power": null
+    },
+    "habitat": [
+      "open ocean",
+      "deep sea"
+    ],
+    "scale": 9,
+    "real_size": "17 m long, 50 tonnes",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "aquatic",
+      "impact",
+      "bite",
+      "sonar"
+    ],
+    "visual_hint": "dark slate whale shown full length from snout to tail fluke in clear blue water, huge blocky forehead, giant teeth visible in the open jaw"
+  },
+  {
+    "slug": "helicoprion",
+    "name": "Helicoprion",
+    "category": "extinct",
+    "emoji_fallback": "🌀",
+    "kid_blurb": "A shark with a spinning buzzsaw of teeth built into its jaw!",
+    "contributes": [
+      "buzzsaw tooth whorl",
+      "shearing jaw"
+    ],
+    "traits": {
+      "iconic_appearance": "shark-shaped fish with a spiral wheel of triangular teeth set into the lower jaw",
+      "signature_weapon": "a tooth whorl that slices like a circular saw every time the jaw closes",
+      "movement": "smooth gliding cruise broken by a sudden slashing lunge",
+      "defense": "keeps a mouthful of blades between itself and everything else",
+      "behavior": "sliced soft-bodied squid clean in half and swallowed the pieces",
+      "mythic_power": null
+    },
+    "habitat": [
+      "open sea",
+      "shallow seas"
+    ],
+    "scale": 7,
+    "real_size": "7 m long",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "aquatic",
+      "bite",
+      "ancient",
+      "piercing"
+    ],
+    "visual_hint": "steel-blue shark-like fish shown whole from the side, spiral saw of white teeth clear in the open lower jaw, sunlit ancient sea"
+  },
+  {
+    "slug": "anomalocaris",
+    "name": "Anomalocaris",
+    "category": "extinct",
+    "emoji_fallback": "🦐",
+    "kid_blurb": "The very first big ocean hunter — it grabbed with two spiky arms!",
+    "contributes": [
+      "spiny grabbing arms",
+      "ripple-fin swimming"
+    ],
+    "traits": {
+      "iconic_appearance": "meter-long swimmer with two spiky grasping arms, a round grinding mouth and rows of side fins",
+      "signature_weapon": "paired barbed arms that fold prey straight into a circular mouth",
+      "movement": "rippling waves down two rows of side flaps, like an underwater flying carpet",
+      "defense": "huge compound eyes on stalks that spot trouble from any angle",
+      "behavior": "the top hunter of the ancient Cambrian seas, half a billion years ago",
+      "mythic_power": null
+    },
+    "habitat": [
+      "shallow seas",
+      "sea floor"
+    ],
+    "scale": 3,
+    "real_size": "1 m long",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "aquatic",
+      "grip",
+      "ancient",
+      "vision"
+    ],
+    "visual_hint": "coral-pink and cream swimmer shown fully side-on, two segmented spiny arms reaching forward, stalked eyes, rows of side flaps, pale ancient seabed"
+  },
+  {
+    "slug": "opabinia",
+    "name": "Opabinia",
+    "category": "extinct",
+    "emoji_fallback": "👀",
+    "kid_blurb": "Five eyes and a grabby hose on its face — the weirdest hunter ever!",
+    "contributes": [
+      "five eyes at once",
+      "grabbing nozzle arm"
+    ],
+    "traits": {
+      "iconic_appearance": "small segmented swimmer with five mushroom eyes on top and a long flexible hose ending in a claw",
+      "signature_weapon": "a hose-like nozzle tipped with a toothed pincer that reaches into burrows",
+      "movement": "gentle flapping of side lobes, hovering just above the mud",
+      "defense": "five eyes means nothing sneaks up from any direction",
+      "behavior": "pokes its nozzle into hiding places and pulls dinner straight out",
+      "mythic_power": null
+    },
+    "habitat": [
+      "sea floor",
+      "shallow seas"
+    ],
+    "scale": 1,
+    "real_size": "7 cm long",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "vision",
+      "sensory",
+      "ancient",
+      "small"
+    ],
+    "visual_hint": "small amber-and-teal segmented creature shown whole from the side, five stalked eyes on top, long trunk-like nozzle stretched forward, pale seabed"
+  },
+  {
+    "slug": "hallucigenia",
+    "name": "Hallucigenia",
+    "category": "extinct",
+    "emoji_fallback": "🌵",
+    "kid_blurb": "A tiny worm that walked around wearing a whole coat of spikes!",
+    "contributes": [
+      "double row of spikes",
+      "clawed stilt legs"
+    ],
+    "traits": {
+      "iconic_appearance": "thumb-sized tube-shaped animal with seven pairs of long spines on its back and thin clawed legs",
+      "signature_weapon": "a back bristling with spines that nothing wants to bite",
+      "movement": "picks its way carefully over the seabed on stilt-thin legs",
+      "defense": "every angle from above is guarded by paired spikes",
+      "behavior": "grazes slowly on sponges and never hurries anywhere",
+      "mythic_power": null
+    },
+    "habitat": [
+      "sea floor",
+      "shallow seas"
+    ],
+    "scale": 1,
+    "real_size": "3 cm long",
+    "movement_types": [
+      "walk"
+    ],
+    "tags": [
+      "spikes",
+      "defensive",
+      "ancient",
+      "small"
+    ],
+    "visual_hint": "tiny cream-and-rust tube-bodied animal shown side-on and whole, seven pairs of dark spines standing up, thin clawed legs, sponge-covered ancient seabed"
+  },
+  {
+    "slug": "meganeura",
+    "name": "Meganeura",
+    "category": "extinct",
+    "emoji_fallback": "🦗",
+    "kid_blurb": "A dragonfly as big as a hawk that could fly in any direction!",
+    "contributes": [
+      "hawk-sized wings",
+      "all-round eyes"
+    ],
+    "traits": {
+      "iconic_appearance": "giant dragonfly with a 70 cm wingspan, glassy veined wings and huge wraparound eyes",
+      "signature_weapon": "spiny legs held out as a basket to scoop prey out of mid-air",
+      "movement": "hovers, then darts forwards, backwards or sideways in an instant",
+      "defense": "sees in every direction at once, so it is never where you swing",
+      "behavior": "patrols one stretch of swamp and catches everything that flies through it",
+      "mythic_power": null
+    },
+    "habitat": [
+      "coal forests",
+      "swamp",
+      "fern glades"
+    ],
+    "scale": 2,
+    "real_size": "70 cm wingspan",
+    "movement_types": [
+      "fly",
+      "glide",
+      "climb"
+    ],
+    "tags": [
+      "flying",
+      "agility",
+      "vision",
+      "insect"
+    ],
+    "visual_hint": "iridescent green-and-bronze giant dragonfly with all four wings spread, huge dark eyes, hovering in the open above giant ferns"
+  },
+  {
+    "slug": "jaekelopterus",
+    "name": "Jaekelopterus",
+    "category": "extinct",
+    "emoji_fallback": "🦂",
+    "kid_blurb": "A sea scorpion bigger than you, with claws full of spikes!",
+    "contributes": [
+      "spiked grabbing claws",
+      "paddle swimming"
+    ],
+    "traits": {
+      "iconic_appearance": "2.5-meter armoured sea scorpion with long spiny pincers, a segmented tail and flat swimming paddles",
+      "signature_weapon": "toothed pincers that hold prey still while the jaws underneath do the rest",
+      "movement": "sculls along with flat back paddles, then crawls over the bottom",
+      "defense": "jointed armour plates running from head to tail tip",
+      "behavior": "the biggest bug that ever lived, and it ruled its whole river",
+      "mythic_power": null
+    },
+    "habitat": [
+      "river deltas",
+      "shallow seas",
+      "estuaries"
+    ],
+    "scale": 4,
+    "real_size": "2.5 m long",
+    "movement_types": [
+      "swim",
+      "walk"
+    ],
+    "tags": [
+      "armored",
+      "grip",
+      "aquatic",
+      "arthropod"
+    ],
+    "visual_hint": "glossy bronze-black sea scorpion shown whole from above, long spined claws spread wide, paddle legs out, green ancient river bed"
+  },
+  {
+    "slug": "sarcosuchus",
+    "name": "Sarcosuchus",
+    "category": "extinct",
+    "emoji_fallback": "🐊",
+    "kid_blurb": "The SuperCroc — twelve meters of armor with a big bump on its nose!",
+    "contributes": [
+      "bony back armor",
+      "long grabbing jaws"
+    ],
+    "traits": {
+      "iconic_appearance": "12-meter crocodile with a long narrow snout ending in a bulbous bony bump and rows of armour plates",
+      "signature_weapon": "a meter and a half of narrow jaws lined with more than a hundred teeth",
+      "movement": "powerful tail sweeps in the water and a heavy high-walk on land",
+      "defense": "a back armoured with thick interlocking bony plates like a shield wall",
+      "behavior": "waited at river crossings for dinosaurs to make one mistake",
+      "mythic_power": null
+    },
+    "habitat": [
+      "rivers",
+      "floodplains",
+      "lakes"
+    ],
+    "scale": 8,
+    "real_size": "12 m long, 8 tonnes",
+    "movement_types": [
+      "swim",
+      "walk"
+    ],
+    "tags": [
+      "armored",
+      "bite",
+      "aquatic",
+      "ambush"
+    ],
+    "visual_hint": "olive-and-charcoal armoured crocodile shown fully on a sunlit sandy riverbank, whole body from snout bump to tail tip, bony back plates catching the light"
+  },
+  {
+    "slug": "carnotaurus",
+    "name": "Carnotaurus",
+    "category": "extinct",
+    "emoji_fallback": "🦖",
+    "kid_blurb": "A bull-horned dinosaur and the fastest big meat-eater of all!",
+    "contributes": [
+      "bull horns",
+      "sprinter legs"
+    ],
+    "traits": {
+      "iconic_appearance": "lean two-legged predator with two thick bull horns above the eyes and comically tiny arms",
+      "signature_weapon": "a head-down horn ram delivered at full sprint",
+      "movement": "huge tail muscles power a 50 km/h run, faster than any other big hunter",
+      "defense": "pebbly hide studded with rows of hard bony bumps",
+      "behavior": "runs prey down in the open instead of waiting in ambush",
+      "mythic_power": null
+    },
+    "habitat": [
+      "dry plains",
+      "open woodland"
+    ],
+    "scale": 6,
+    "real_size": "8 m long, 1.5 tonnes",
+    "movement_types": [
+      "run",
+      "walk"
+    ],
+    "tags": [
+      "speed",
+      "horns",
+      "dinosaur",
+      "charge"
+    ],
+    "visual_hint": "rust-red dinosaur with a cream underside shown full body mid-stride, two blunt horns above the eyes, bumpy hide, dusty open plain"
+  },
+  {
+    "slug": "parasaurolophus",
+    "name": "Parasaurolophus",
+    "category": "extinct",
+    "emoji_fallback": "🎺",
+    "kid_blurb": "Its head crest was a giant trumpet — one honk carried for miles!",
+    "contributes": [
+      "trumpet head crest",
+      "booming herd calls"
+    ],
+    "traits": {
+      "iconic_appearance": "duck-billed dinosaur with a long curved tube crest sweeping back off the skull",
+      "signature_weapon": "a foghorn call so loud you feel it in your chest, used to rally the whole herd",
+      "movement": "walks on four legs and rears up onto two to run",
+      "defense": "warns every friend for kilometres around long before danger arrives",
+      "behavior": "grazes in big herds and answers every call it hears",
+      "mythic_power": null
+    },
+    "habitat": [
+      "river plains",
+      "woodland",
+      "marsh edges"
+    ],
+    "scale": 7,
+    "real_size": "10 m long, 3 tonnes",
+    "movement_types": [
+      "walk",
+      "run",
+      "swim"
+    ],
+    "tags": [
+      "sound",
+      "herd",
+      "dinosaur",
+      "herbivore"
+    ],
+    "visual_hint": "olive-and-cream duckbill dinosaur shown side-on head to tail, long backswept tube crest with orange stripes, head raised mid-call, wide river plain"
+  },
+  {
+    "slug": "pachycephalosaurus",
+    "name": "Pachycephalosaurus",
+    "category": "extinct",
+    "emoji_fallback": "🦕",
+    "kid_blurb": "A dinosaur wearing a 25 cm bone helmet — built for headbutting!",
+    "contributes": [
+      "bone dome helmet",
+      "headbutt charge"
+    ],
+    "traits": {
+      "iconic_appearance": "two-legged dinosaur with a thick domed skull ringed by short bony spikes",
+      "signature_weapon": "a running headbutt from a skull made of 25 cm of solid bone",
+      "movement": "quick two-legged run balanced by a stiff straight tail",
+      "defense": "a helmet built to take hits, plus a spiky collar of knobs",
+      "behavior": "settled every argument by ramming heads and shoulders",
+      "mythic_power": null
+    },
+    "habitat": [
+      "woodland",
+      "upland plains"
+    ],
+    "scale": 5,
+    "real_size": "4.5 m long, 450 kg",
+    "movement_types": [
+      "run",
+      "walk"
+    ],
+    "tags": [
+      "impact",
+      "armored",
+      "dinosaur",
+      "charge"
+    ],
+    "visual_hint": "tan-and-brown dinosaur shown full body side-on, thick pink-tinged bone dome ringed with knobby spikes, head lowered mid-charge, autumn woodland"
+  },
+  {
+    "slug": "utahraptor",
+    "name": "Utahraptor",
+    "category": "extinct",
+    "emoji_fallback": "🪶",
+    "kid_blurb": "A raptor as heavy as a polar bear that pinned prey with its own weight!",
+    "contributes": [
+      "half-tonne pinning pounce",
+      "24 cm sickle claw"
+    ],
+    "traits": {
+      "iconic_appearance": "bear-heavy feathered raptor with a deep chest, thick arms and a 24 cm sickle claw on each foot",
+      "signature_weapon": "a leaping pounce that pins prey under half a tonne, claw first",
+      "movement": "short heavy charges and powerful leaps rather than long chases",
+      "defense": "far too strong to shake off once it has taken hold",
+      "behavior": "picks muscle over speed — it grapples and holds instead of chasing",
+      "mythic_power": null
+    },
+    "habitat": [
+      "river valleys",
+      "open woodland",
+      "dunes"
+    ],
+    "scale": 5,
+    "real_size": "6 m long, 500 kg",
+    "movement_types": [
+      "run",
+      "walk"
+    ],
+    "tags": [
+      "claws",
+      "strength",
+      "dinosaur",
+      "grip"
+    ],
+    "visual_hint": "heavyset raptor in barred rust-and-black feathers shown whole side-on, one huge curved foot claw raised, powerful arms, sandy river valley"
+  },
+  {
+    "slug": "iguanodon",
+    "name": "Iguanodon",
+    "category": "extinct",
+    "emoji_fallback": "🗡️",
+    "kid_blurb": "It had a sharp spike for a thumb — a dagger on each hand!",
+    "contributes": [
+      "thumb spikes",
+      "two-legged or four"
+    ],
+    "traits": {
+      "iconic_appearance": "big plant-eater with a horse-like head, hoofed fingers and a cone-shaped spike where a thumb should be",
+      "signature_weapon": "a thumb spike punched forward like a hand-held dagger",
+      "movement": "walks on all fours and rears up onto two legs to run or reach",
+      "defense": "a heavy counterbalancing tail and two spiked fists that hit back",
+      "behavior": "a peaceful browser that happened to carry weapons on its hands",
+      "mythic_power": null
+    },
+    "habitat": [
+      "river plains",
+      "forest",
+      "fern meadows"
+    ],
+    "scale": 7,
+    "real_size": "10 m long, 3.5 tonnes",
+    "movement_types": [
+      "walk",
+      "run"
+    ],
+    "tags": [
+      "spikes",
+      "herbivore",
+      "dinosaur",
+      "piercing"
+    ],
+    "visual_hint": "warm brown-and-cream dinosaur shown in full profile, one hand raised with the pale thumb spike clearly visible, open fern meadow"
+  },
+  {
+    "slug": "castoroides",
+    "name": "Giant Beaver",
+    "category": "extinct",
+    "emoji_fallback": "🦫",
+    "kid_blurb": "A beaver the size of a bear with front teeth as long as bananas!",
+    "contributes": [
+      "chisel gnawing teeth",
+      "paddle tail swimming"
+    ],
+    "traits": {
+      "iconic_appearance": "bear-sized beaver with shaggy fur, a long rounded tail and 15 cm orange front teeth",
+      "signature_weapon": "curved orange chisel teeth that gnaw straight through tree trunks",
+      "movement": "waddles on land and paddles powerfully through water with tail and webbed feet",
+      "defense": "heads for deep water where almost nothing can follow it",
+      "behavior": "worked the marshes day and night, chewing through anything woody",
+      "mythic_power": null
+    },
+    "habitat": [
+      "lakes",
+      "marshes",
+      "river banks"
+    ],
+    "scale": 4,
+    "real_size": "2.2 m long, 100 kg",
+    "movement_types": [
+      "swim",
+      "walk",
+      "burrow"
+    ],
+    "tags": [
+      "bite",
+      "aquatic",
+      "ice-age",
+      "grip"
+    ],
+    "visual_hint": "shaggy chestnut giant beaver shown whole on a mossy bank, big orange front teeth, broad flat tail behind it, reedy lake edge"
+  },
+  {
+    "slug": "platybelodon",
+    "name": "Platybelodon",
+    "category": "extinct",
+    "emoji_fallback": "🥄",
+    "kid_blurb": "An elephant with a giant shovel for a chin!",
+    "contributes": [
+      "shovel jaw",
+      "short gripping trunk"
+    ],
+    "traits": {
+      "iconic_appearance": "elephant relative with a wide flat lower jaw ending in two shovel-shaped tusks",
+      "signature_weapon": "a shovel jaw that scoops and shears through thick water plants",
+      "movement": "slow heavy elephant walk across soft muddy ground",
+      "defense": "herd-sized bulk plus a bony scoop that doubles as a face shield",
+      "behavior": "shovelled up water plants along swampy shores all day long",
+      "mythic_power": null
+    },
+    "habitat": [
+      "swamp shores",
+      "river deltas",
+      "wetland"
+    ],
+    "scale": 7,
+    "real_size": "6 m long, 3 tonnes",
+    "movement_types": [
+      "walk",
+      "swim"
+    ],
+    "tags": [
+      "tusks",
+      "strength",
+      "herbivore",
+      "ancient"
+    ],
+    "visual_hint": "grey-brown short-trunked elephant shown fully side-on, broad flat shovel jaw clear in view, standing on a green swampy shore"
+  },
+  {
+    "slug": "bombardier-beetle",
+    "name": "Bombardier Beetle",
+    "category": "living",
+    "emoji_fallback": "🪲",
+    "kid_blurb": "Fires a boiling hot chemical spray out of its back — with a POP!",
+    "contributes": [
+      "boiling chemical spray",
+      "swivelling spray nozzle"
+    ],
+    "traits": {
+      "iconic_appearance": "thumbnail-sized beetle with a glossy blue-black body and rust-orange head and legs",
+      "signature_weapon": "a jet of boiling chemicals fired in machine-gun pulses from the tail",
+      "movement": "quick scurrying runs between stones and short buzzing flights",
+      "defense": "sprays 100-degree liquid backwards, forwards or sideways — it can aim",
+      "behavior": "tiny and totally fearless, because it carries its own chemistry set",
+      "mythic_power": null
+    },
+    "habitat": [
+      "woodland floor",
+      "grassland",
+      "riverbanks"
+    ],
+    "scale": 1,
+    "real_size": "2 cm long",
+    "movement_types": [
+      "walk",
+      "fly",
+      "climb"
+    ],
+    "tags": [
+      "chemical",
+      "ranged",
+      "insect",
+      "small"
+    ],
+    "visual_hint": "glossy blue-black beetle with a rust-orange head shown large and clear on a pale stone, tail tipped up, small puff of hot spray behind"
+  },
+  {
+    "slug": "thorny-devil",
+    "name": "Thorny Devil",
+    "category": "living",
+    "emoji_fallback": "🦎",
+    "kid_blurb": "A spiky lizard that drinks with its SKIN and wears a fake spare head!",
+    "contributes": [
+      "all-over spikes",
+      "skin that drinks water"
+    ],
+    "traits": {
+      "iconic_appearance": "small desert lizard covered in cone-shaped spines, with a spiky false head behind its neck",
+      "signature_weapon": "a body so spiky that biting it is a genuinely bad idea",
+      "movement": "jerky rocking walk that makes it look like a wind-blown leaf",
+      "defense": "tucks the real head down and shows a decoy head made of spikes",
+      "behavior": "eats thousands of ants a day, one single ant at a time",
+      "mythic_power": null
+    },
+    "habitat": [
+      "sandy desert",
+      "spinifex scrub",
+      "dry plains"
+    ],
+    "scale": 1,
+    "real_size": "20 cm long",
+    "movement_types": [
+      "walk",
+      "climb"
+    ],
+    "tags": [
+      "spikes",
+      "defensive",
+      "survival",
+      "reptile"
+    ],
+    "visual_hint": "ochre-and-cream spiky lizard shown whole from the side on bright red sand, every cone spine crisp, false-head bump visible behind the neck"
+  },
+  {
+    "slug": "gila-monster",
+    "name": "Gila Monster",
+    "category": "living",
+    "emoji_fallback": "🦎",
+    "kid_blurb": "It bites, hangs on tight, and chews its venom right in!",
+    "contributes": [
+      "chewing venom bite",
+      "fat-storing tail"
+    ],
+    "traits": {
+      "iconic_appearance": "heavy-bodied desert lizard with beadwork skin in black and hot orange and a thick sausage tail",
+      "signature_weapon": "a locked-on bite that grinds venom in through grooved teeth",
+      "movement": "slow deliberate waddle — it never needs to hurry anywhere",
+      "defense": "beaded bony skin, and a grip that simply does not let go",
+      "behavior": "can eat three big meals a year and live off its fat tail in between",
+      "mythic_power": null
+    },
+    "habitat": [
+      "desert",
+      "rocky scrub",
+      "dry washes"
+    ],
+    "scale": 2,
+    "real_size": "55 cm long, 2 kg",
+    "movement_types": [
+      "walk",
+      "burrow",
+      "climb"
+    ],
+    "tags": [
+      "venom",
+      "grip",
+      "survival",
+      "reptile"
+    ],
+    "visual_hint": "black-and-orange beaded lizard shown at full length on warm desert stone, thick tail, blunt head raised, cactus scrub behind"
+  },
+  {
+    "slug": "secretary-bird",
+    "name": "Secretary Bird",
+    "category": "living",
+    "emoji_fallback": "🐦",
+    "kid_blurb": "A long-legged bird that stomps snakes with lightning kung-fu kicks!",
+    "contributes": [
+      "stomping kick",
+      "long armored legs"
+    ],
+    "traits": {
+      "iconic_appearance": "crane-legged eagle with a grey body, black leggings and a spray of quill feathers behind the head",
+      "signature_weapon": "a stomp five times its own body weight, aimed and landed in fifteen milliseconds",
+      "movement": "strides 30 km a day on land and flies strongly when it chooses to",
+      "defense": "scaly leg armour and long legs that keep fangs far from its body",
+      "behavior": "the snake specialist — it kicks first and hardly ever gets bitten",
+      "mythic_power": null
+    },
+    "habitat": [
+      "savanna",
+      "grassland",
+      "open scrub"
+    ],
+    "scale": 3,
+    "real_size": "1.3 m tall, 2.1 m wingspan",
+    "movement_types": [
+      "walk",
+      "fly",
+      "run"
+    ],
+    "tags": [
+      "kick",
+      "reach",
+      "predator",
+      "flying"
+    ],
+    "visual_hint": "grey-and-black long-legged bird shown head to toe, orange face patch, quill crest fanned, one foot raised mid-stomp, golden savanna"
+  },
+  {
+    "slug": "shoebill",
+    "name": "Shoebill",
+    "category": "living",
+    "emoji_fallback": "🪶",
+    "kid_blurb": "Stands still as a statue for hours, then grabs with a beak like a giant clog!",
+    "contributes": [
+      "huge hooked beak",
+      "statue-still patience"
+    ],
+    "traits": {
+      "iconic_appearance": "1.4-meter slate-grey stork with an enormous shoe-shaped beak ending in a sharp hook",
+      "signature_weapon": "a beak that closes like a hooked bucket and holds a huge fish easily",
+      "movement": "slow careful wading steps and heavy, powerful flight",
+      "defense": "clatters its giant bill like a machine gun to scare intruders away",
+      "behavior": "waits without moving for hours, then strikes in one enormous lunge",
+      "mythic_power": null
+    },
+    "habitat": [
+      "marsh",
+      "papyrus swamp",
+      "river shallows"
+    ],
+    "scale": 3,
+    "real_size": "1.4 m tall, 2.6 m wingspan",
+    "movement_types": [
+      "walk",
+      "fly"
+    ],
+    "tags": [
+      "beak",
+      "ambush",
+      "predator",
+      "wading"
+    ],
+    "visual_hint": "slate-grey stork standing tall and fully visible on open marsh grass, giant pale shoe-shaped bill with a hooked tip, bright pale sky"
+  },
+  {
+    "slug": "harpy-eagle",
+    "name": "Harpy Eagle",
+    "category": "living",
+    "emoji_fallback": "🦅",
+    "kid_blurb": "Talons as big as a bear's claws — and it flies through thick jungle!",
+    "contributes": [
+      "bear-sized talons",
+      "tight jungle flying"
+    ],
+    "traits": {
+      "iconic_appearance": "huge grey-and-white eagle with a double crest of feathers and yellow talons the size of a hand",
+      "signature_weapon": "rear talons 13 cm long that punch in and simply hold on",
+      "movement": "short broad wings that let it twist between tree trunks at speed",
+      "defense": "grips a high branch out of reach and watches everything below",
+      "behavior": "snatches monkeys and sloths straight out of the treetops",
+      "mythic_power": null
+    },
+    "habitat": [
+      "rainforest canopy",
+      "jungle",
+      "river forest"
+    ],
+    "scale": 3,
+    "real_size": "2 m wingspan, 9 kg",
+    "movement_types": [
+      "fly",
+      "glide",
+      "climb"
+    ],
+    "tags": [
+      "talons",
+      "flying",
+      "jungle",
+      "grip"
+    ],
+    "visual_hint": "grey-and-white eagle perched in full view on a bare branch, black crest feathers raised, enormous yellow talons gripping, green rainforest behind"
+  },
+  {
+    "slug": "peacock",
+    "name": "Peacock",
+    "category": "living",
+    "emoji_fallback": "🦚",
+    "kid_blurb": "Opens a two-meter fan covered in shimmering eyes to freeze anything watching!",
+    "contributes": [
+      "giant eye-spot fan",
+      "rattling display"
+    ],
+    "traits": {
+      "iconic_appearance": "electric-blue bird with a crown of feather spikes and a train of shimmering green eye-spot feathers",
+      "signature_weapon": "sharp leg spurs backing up a display that stops rivals in their tracks",
+      "movement": "quick ground running with short heavy flights up to a roost",
+      "defense": "the fan makes it look four times bigger and covered in staring eyes",
+      "behavior": "shivers the whole train to make a low rattle you feel more than hear",
+      "mythic_power": null
+    },
+    "habitat": [
+      "forest edge",
+      "farmland",
+      "open woodland"
+    ],
+    "scale": 3,
+    "real_size": "2.3 m long with train",
+    "movement_types": [
+      "walk",
+      "run",
+      "fly"
+    ],
+    "tags": [
+      "intimidation",
+      "display",
+      "flying",
+      "warning-colors"
+    ],
+    "visual_hint": "iridescent blue peacock shown head-on with the full train fanned wide, hundreds of green-gold eye spots, crest of spikes, sunlit green lawn"
+  },
+  {
+    "slug": "archerfish",
+    "name": "Archerfish",
+    "category": "living",
+    "emoji_fallback": "🎯",
+    "kid_blurb": "Shoots a water bullet out of its mouth to knock bugs off leaves!",
+    "contributes": [
+      "water-jet sniper shot",
+      "bent-light aiming"
+    ],
+    "traits": {
+      "iconic_appearance": "silver disc-shaped fish with bold black wedge bars and a sharply upturned mouth",
+      "signature_weapon": "a jet of water spat two meters to blast insects off a branch",
+      "movement": "hovers just under the surface, then leaps clear to grab the prize",
+      "defense": "a flat silver body that flashes once and vanishes into the roots",
+      "behavior": "aims by allowing for the way water bends light — and it learns by watching others",
+      "mythic_power": null
+    },
+    "habitat": [
+      "mangroves",
+      "river mouths",
+      "brackish creeks"
+    ],
+    "scale": 1,
+    "real_size": "20 cm long",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "ranged",
+      "vision",
+      "aquatic",
+      "small"
+    ],
+    "visual_hint": "silver fish with black wedge bars shown whole and side-on in bright shallow water, thin jet of water arcing up from its mouth, mangrove roots behind"
+  },
+  {
+    "slug": "flying-fish",
+    "name": "Flying Fish",
+    "category": "living",
+    "emoji_fallback": "🐟",
+    "kid_blurb": "Bursts out of the sea and glides 200 meters over the waves!",
+    "contributes": [
+      "wing-like fins",
+      "sea-to-air escape glide"
+    ],
+    "traits": {
+      "iconic_appearance": "torpedo-shaped blue fish with huge stiff pectoral fins held out like glider wings",
+      "signature_weapon": "escape itself — it leaves the water before a hunter can close in",
+      "movement": "swims fast, breaks the surface and glides, flicking its tail to launch again",
+      "defense": "goes where fish-hunters cannot follow: straight up into the air",
+      "behavior": "travels in flashing schools that burst out of the water all together",
+      "mythic_power": null
+    },
+    "habitat": [
+      "open ocean",
+      "warm surface water"
+    ],
+    "scale": 1,
+    "real_size": "30 cm long",
+    "movement_types": [
+      "swim",
+      "glide"
+    ],
+    "tags": [
+      "glide",
+      "speed",
+      "aquatic",
+      "small"
+    ],
+    "visual_hint": "steel-blue fish with a silver belly shown fully in the air above the waves, both wing fins spread wide, spray trailing from its tail"
+  },
+  {
+    "slug": "sawfish",
+    "name": "Sawfish",
+    "category": "living",
+    "emoji_fallback": "🪚",
+    "kid_blurb": "Its nose is a two-meter saw covered in tiny sensors!",
+    "contributes": [
+      "toothed saw snout",
+      "electric sensing blade"
+    ],
+    "traits": {
+      "iconic_appearance": "flat-bodied ray with a long straight snout lined with sharp teeth down both edges",
+      "signature_weapon": "a saw swung sideways to stun and slice through a whole school at once",
+      "movement": "glides low over the bottom with slow beats of its broad body",
+      "defense": "swings the saw like a spiked club at anything that comes too close",
+      "behavior": "sweeps the saw through the mud, feeling for hidden dinner by electric buzz",
+      "mythic_power": null
+    },
+    "habitat": [
+      "river mouths",
+      "coastal shallows",
+      "mangrove channels"
+    ],
+    "scale": 6,
+    "real_size": "5 m long",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "aquatic",
+      "piercing",
+      "electro-sense",
+      "predator"
+    ],
+    "visual_hint": "olive-grey sawfish shown whole from above in clear sunlit shallows, long toothed saw snout in sharp detail, pale sandy bottom"
+  },
+  {
+    "slug": "hammerhead-shark",
+    "name": "Hammerhead Shark",
+    "category": "living",
+    "emoji_fallback": "🔨",
+    "kid_blurb": "Its hammer head works like a metal detector for hidden dinner!",
+    "contributes": [
+      "360-degree hammer head",
+      "electric field detector"
+    ],
+    "traits": {
+      "iconic_appearance": "grey shark with a wide flattened hammer head and an eye at each far end",
+      "signature_weapon": "the hammer pins prey down against the seabed while the jaws get to work",
+      "movement": "banks and turns far tighter than any other big shark",
+      "defense": "sees almost all the way around itself at once",
+      "behavior": "swings its head side to side like a scanner, feeling for electric buzz in the sand",
+      "mythic_power": null
+    },
+    "habitat": [
+      "coastal ocean",
+      "reefs",
+      "open sea"
+    ],
+    "scale": 5,
+    "real_size": "4 m long",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "aquatic",
+      "sensory",
+      "vision",
+      "predator"
+    ],
+    "visual_hint": "bronze-grey shark shown whole from a front-side angle, wide hammer head with an eye at each tip, clear blue water over a sandy reef floor"
+  },
+  {
+    "slug": "manta-ray",
+    "name": "Manta Ray",
+    "category": "living",
+    "emoji_fallback": "🐟",
+    "kid_blurb": "Flies underwater on seven-meter wings and leaps clean out of the sea!",
+    "contributes": [
+      "seven-meter wings",
+      "underwater flight"
+    ],
+    "traits": {
+      "iconic_appearance": "diamond-shaped ray with enormous triangular wings, two curled head fins and a bright white belly",
+      "signature_weapon": "no weapon at all — it simply out-flies whatever wants a piece of it",
+      "movement": "slow powerful wingbeats that carry it hundreds of kilometres across open ocean",
+      "defense": "leaps two meters clear of the water and lands with a cannon-crack",
+      "behavior": "the brainiest fish in the sea — curious, playful, and it knows its own reflection",
+      "mythic_power": null
+    },
+    "habitat": [
+      "open ocean",
+      "coral reefs",
+      "warm currents"
+    ],
+    "scale": 7,
+    "real_size": "7 m wingspan, 1.4 tonnes",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "aquatic",
+      "agility",
+      "intelligence",
+      "gentle"
+    ],
+    "visual_hint": "black-backed white-bellied manta shown whole from the front, both wings fully spread, head fins curled forward, sunbeams in clear blue water"
+  },
+  {
+    "slug": "portuguese-man-o-war",
+    "name": "Portuguese Man o' War",
+    "category": "living",
+    "emoji_fallback": "⛵",
+    "kid_blurb": "Not one animal but a whole team, sailing along on 30-meter stingers!",
+    "contributes": [
+      "wind-catching sail float",
+      "30-meter stinging lines"
+    ],
+    "traits": {
+      "iconic_appearance": "translucent blue-and-pink gas balloon topped by a crested sail, with long ribbon tentacles below",
+      "signature_weapon": "trailing tentacles up to 30 meters long, coiled with thousands of stingers",
+      "movement": "cannot swim at all — it sails, tilting its crest to catch the wind",
+      "defense": "deflates the sail and dips under for a moment to duck a breaking wave",
+      "behavior": "a colony of tiny animals working as one, drifting in whole fleets",
+      "mythic_power": null
+    },
+    "habitat": [
+      "open ocean",
+      "warm surface water",
+      "coastal drift"
+    ],
+    "scale": 4,
+    "real_size": "30 cm float, 30 m tentacles",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "venom",
+      "aquatic",
+      "reach",
+      "colony"
+    ],
+    "visual_hint": "translucent blue-violet float with a pink crest riding on a calm surface, long ribbon tentacles trailing clearly below in sunlit water, whole colony in view"
+  },
+  {
+    "slug": "immortal-jellyfish",
+    "name": "Immortal Jellyfish",
+    "category": "living",
+    "emoji_fallback": "⏳",
+    "kid_blurb": "When it gets old or hurt, it turns back into a baby and starts over!",
+    "contributes": [
+      "age reversal",
+      "start-over body"
+    ],
+    "traits": {
+      "iconic_appearance": "fingernail-sized clear bell with a glowing red core and dozens of fine tentacles",
+      "signature_weapon": "a ring of stinging tentacles for catching tiny drifting prey",
+      "movement": "pulses its bell in slow drifting hops through the water",
+      "defense": "if badly hurt it folds into a blob and grows all the way back as a baby",
+      "behavior": "does not really do getting old — it just resets and starts again",
+      "mythic_power": null
+    },
+    "habitat": [
+      "coastal water",
+      "harbours",
+      "warm seas"
+    ],
+    "scale": 1,
+    "real_size": "5 mm across",
+    "movement_types": [
+      "swim"
+    ],
+    "tags": [
+      "regeneration",
+      "survival",
+      "aquatic",
+      "small"
+    ],
+    "visual_hint": "crystal-clear jellyfish bell shown whole and glowing, vivid red core, fine tentacles fanned out, deep blue water behind"
+  },
+  {
+    "slug": "coconut-crab",
+    "name": "Coconut Crab",
+    "category": "living",
+    "emoji_fallback": "🥥",
+    "kid_blurb": "A crab as wide as a bike that climbs trees and cracks coconuts!",
+    "contributes": [
+      "coconut-cracking claw",
+      "tree-climbing grip"
+    ],
+    "traits": {
+      "iconic_appearance": "meter-wide land crab in blue and rust armour with one enormous crushing claw",
+      "signature_weapon": "a pinch stronger than a lion's bite, built for splitting coconuts open",
+      "movement": "walks kilometres over land and climbs straight up palm trunks",
+      "defense": "hard shell armour plus a claw nobody wants to argue with",
+      "behavior": "smells food from far away and drags it home to its own burrow",
+      "mythic_power": null
+    },
+    "habitat": [
+      "island beaches",
+      "palm forest",
+      "coastal burrows"
+    ],
+    "scale": 3,
+    "real_size": "1 m leg span, 4 kg",
+    "movement_types": [
+      "walk",
+      "climb",
+      "burrow"
+    ],
+    "tags": [
+      "crush",
+      "armored",
+      "grip",
+      "island"
+    ],
+    "visual_hint": "deep blue and rust-orange giant crab shown fully on pale sand, one oversized claw raised over a split coconut, palm trunks behind"
+  },
+  {
+    "slug": "pistol-shrimp",
+    "name": "Pistol Shrimp",
+    "category": "living",
+    "emoji_fallback": "💥",
+    "kid_blurb": "Snaps its claw so fast it fires a bubble bullet louder than a jet!",
+    "contributes": [
+      "sonic bubble shot",
+      "snapping claw"
+    ],
+    "traits": {
+      "iconic_appearance": "small striped shrimp with one normal claw and one giant snapping claw half its own size",
+      "signature_weapon": "a snapping claw that fires a bubble bullet — the bang alone stuns prey from a distance",
+      "movement": "short darting backward flicks and careful crawling between rocks",
+      "defense": "a bang loud enough to make much bigger animals think twice",
+      "behavior": "shares a burrow with a goby fish that keeps watch at the door",
+      "mythic_power": null
+    },
+    "habitat": [
+      "coral reefs",
+      "seagrass beds",
+      "shallow burrows"
+    ],
+    "scale": 1,
+    "real_size": "5 cm long",
+    "movement_types": [
+      "swim",
+      "walk",
+      "burrow"
+    ],
+    "tags": [
+      "ranged",
+      "sound",
+      "small",
+      "stun"
+    ],
+    "visual_hint": "candy-striped orange-and-white shrimp shown whole side-on, one enormous claw cocked open, a tiny bright bubble at the claw tip, coral gravel"
+  },
+  {
+    "slug": "horseshoe-crab",
+    "name": "Horseshoe Crab",
+    "category": "living",
+    "emoji_fallback": "🛡️",
+    "kid_blurb": "Older than the dinosaurs, with ten eyes and bright blue blood!",
+    "contributes": [
+      "dome shield shell",
+      "ten-eye light sensing"
+    ],
+    "traits": {
+      "iconic_appearance": "smooth brown horseshoe-shaped shell with a long spike tail and ten small eyes across the dome",
+      "signature_weapon": "the spike tail is a lever, not a spear — it flips the animal back upright",
+      "movement": "plods along the sea floor and swims upside down when it needs to",
+      "defense": "one curved shield of a shell with everything tucked safely underneath",
+      "behavior": "has survived, almost unchanged, for 450 million years",
+      "mythic_power": null
+    },
+    "habitat": [
+      "sandy shallows",
+      "estuaries",
+      "beaches"
+    ],
+    "scale": 2,
+    "real_size": "60 cm long",
+    "movement_types": [
+      "walk",
+      "swim",
+      "burrow"
+    ],
+    "tags": [
+      "armored",
+      "ancient",
+      "survival",
+      "defensive"
+    ],
+    "visual_hint": "glossy chestnut horseshoe shell shown whole from above on wet sand, long spike tail straight out behind, small eyes visible on the dome"
+  },
+  {
+    "slug": "star-nosed-mole",
+    "name": "Star-Nosed Mole",
+    "category": "living",
+    "emoji_fallback": "⭐",
+    "kid_blurb": "Its nose has 22 wiggly fingers, and it eats faster than any animal alive!",
+    "contributes": [
+      "22-finger touch nose",
+      "lightning tunnelling"
+    ],
+    "traits": {
+      "iconic_appearance": "small velvet-black mole with huge pink digging hands and a star of 22 fleshy rays around the nose",
+      "signature_weapon": "a strike-and-swallow so quick the whole thing takes a quarter of a second",
+      "movement": "shovels through soil with paddle hands and swims well underwater too",
+      "defense": "stays inside its own tunnel network where nothing can follow",
+      "behavior": "touches twelve different spots every second to map the dark by feel",
+      "mythic_power": null
+    },
+    "habitat": [
+      "wet meadows",
+      "marsh soil",
+      "stream banks"
+    ],
+    "scale": 1,
+    "real_size": "20 cm long",
+    "movement_types": [
+      "burrow",
+      "swim",
+      "walk"
+    ],
+    "tags": [
+      "sensory",
+      "small",
+      "speed",
+      "nocturnal"
+    ],
+    "visual_hint": "velvet-black mole shown whole on dark soil, bright pink star of nose rays spread wide, broad pink digging hands, tunnel mouth behind"
+  },
+  {
+    "slug": "naked-mole-rat",
+    "name": "Naked Mole Rat",
+    "category": "living",
+    "emoji_fallback": "🐀",
+    "kid_blurb": "Feels no burning pain, needs almost no air, and digs with its teeth!",
+    "contributes": [
+      "no-oxygen survival",
+      "pain-proof skin"
+    ],
+    "traits": {
+      "iconic_appearance": "wrinkled pink hairless rodent with two pairs of big buck teeth outside its lips",
+      "signature_weapon": "front teeth used like pickaxes — it chews through soil as hard as concrete",
+      "movement": "runs forwards and backwards equally fast through tight tunnels",
+      "defense": "shrugs off acid, chilli heat and low air; that kind of pain does not reach it",
+      "behavior": "lives in a huge colony ruled by one queen, more like an insect than a mouse",
+      "mythic_power": null
+    },
+    "habitat": [
+      "underground tunnels",
+      "dry savanna soil"
+    ],
+    "scale": 1,
+    "real_size": "10 cm long",
+    "movement_types": [
+      "burrow",
+      "walk",
+      "run"
+    ],
+    "tags": [
+      "survival",
+      "resistant",
+      "small",
+      "colony"
+    ],
+    "visual_hint": "pink wrinkled hairless rodent shown whole and side-on at a tunnel mouth, big pale buck teeth, sandy soil, warm light"
+  },
+  {
+    "slug": "musk-ox",
+    "name": "Musk Ox",
+    "category": "living",
+    "emoji_fallback": "🐂",
+    "kid_blurb": "When wolves show up, the whole herd locks into a circle of horns!",
+    "contributes": [
+      "shield-wall herd circle",
+      "horn helmet boss"
+    ],
+    "traits": {
+      "iconic_appearance": "shaggy arctic ox in a floor-length coat, with horns curving down and out from a bony helmet",
+      "signature_weapon": "a head-on crash from a horn boss built to take 30 km/h impacts",
+      "movement": "steady plodding on wide hooves across snow and rock",
+      "defense": "the herd forms a horn-out circle with the calves safe in the middle",
+      "behavior": "never runs from wolves — it forms up and faces them instead",
+      "mythic_power": null
+    },
+    "habitat": [
+      "arctic tundra",
+      "snow plains",
+      "rocky ridges"
+    ],
+    "scale": 5,
+    "real_size": "2.3 m long, 400 kg",
+    "movement_types": [
+      "walk",
+      "run"
+    ],
+    "tags": [
+      "horns",
+      "cold",
+      "herd",
+      "defensive"
+    ],
+    "visual_hint": "shaggy dark-brown ox shown side-on in full view, long skirt of hair almost touching the snow, pale down-curving horns, frosty tundra"
+  },
+  {
+    "slug": "ibex",
+    "name": "Ibex",
+    "category": "living",
+    "emoji_fallback": "🐐",
+    "kid_blurb": "Climbs a straight-up cliff like it is an ordinary staircase!",
+    "contributes": [
+      "cliff-gripping hooves",
+      "ridged sweeping horns"
+    ],
+    "traits": {
+      "iconic_appearance": "mountain goat with a dark beard and enormous ridged horns curving back over its shoulders",
+      "signature_weapon": "horns nearly a meter long, clashed overhead on a narrow ledge",
+      "movement": "climbs near-vertical rock on split rubbery hooves that grip like suction cups",
+      "defense": "simply goes where nothing else can follow — straight up",
+      "behavior": "licks salt off dam walls hundreds of meters above the ground",
+      "mythic_power": null
+    },
+    "habitat": [
+      "alpine cliffs",
+      "mountain slopes",
+      "rocky ridges"
+    ],
+    "scale": 4,
+    "real_size": "1.5 m long, 100 kg",
+    "movement_types": [
+      "climb",
+      "walk",
+      "run"
+    ],
+    "tags": [
+      "climbing",
+      "horns",
+      "agility",
+      "mountain"
+    ],
+    "visual_hint": "tawny mountain goat shown whole standing on a narrow ledge, huge ridged horns sweeping back, dark beard, vast rock face behind"
+  },
+  {
+    "slug": "giraffe",
+    "name": "Giraffe",
+    "category": "living",
+    "emoji_fallback": "🦒",
+    "kid_blurb": "Six meters tall — and it swings that whole neck like a club!",
+    "contributes": [
+      "six-meter height",
+      "neck-swinging club"
+    ],
+    "traits": {
+      "iconic_appearance": "patchwork-patterned giant with a two-meter neck, short skin-covered horns and very long legs",
+      "signature_weapon": "a kick from a dinner-plate hoof that can stop a lion in mid-leap",
+      "movement": "smooth pacing walk that opens into a rolling 55 km/h gallop",
+      "defense": "spots danger kilometres away from the highest eyes on land",
+      "behavior": "males swing their heavy necks like sledgehammers to settle contests",
+      "mythic_power": null
+    },
+    "habitat": [
+      "savanna",
+      "open woodland",
+      "acacia scrub"
+    ],
+    "scale": 7,
+    "real_size": "5.5 m tall, 1.2 tonnes",
+    "movement_types": [
+      "walk",
+      "run"
+    ],
+    "tags": [
+      "reach",
+      "kick",
+      "vision",
+      "herbivore"
+    ],
+    "visual_hint": "orange-and-cream patchwork giraffe shown head to hoof, long neck upright beside a flat-topped acacia, golden savanna light"
+  },
+  {
+    "slug": "hyena",
+    "name": "Spotted Hyena",
+    "category": "living",
+    "emoji_fallback": "🐕",
+    "kid_blurb": "Jaws that crunch bones to powder — and a laugh that calls the whole clan!",
+    "contributes": [
+      "bone-powdering jaws",
+      "clan-calling laugh"
+    ],
+    "traits": {
+      "iconic_appearance": "sloping-backed hunter with a massive head, thick neck and a dark-blotched sandy coat",
+      "signature_weapon": "the strongest bite for its size on the savanna — it eats the bones as well",
+      "movement": "tireless loping run that keeps going for tens of kilometres",
+      "defense": "a clan that arrives fast and very loud the moment one member calls",
+      "behavior": "clever, chatty and organised — it hunts far more than it scavenges",
+      "mythic_power": null
+    },
+    "habitat": [
+      "savanna",
+      "dry scrub",
+      "grassland"
+    ],
+    "scale": 4,
+    "real_size": "1.5 m long, 65 kg",
+    "movement_types": [
+      "run",
+      "walk"
+    ],
+    "tags": [
+      "bite",
+      "pack",
+      "endurance",
+      "sound"
+    ],
+    "visual_hint": "spotted sandy-and-black hyena shown whole side-on, sloping back, massive muzzle, dusty golden savanna at dawn"
+  },
+  {
+    "slug": "snow-leopard",
+    "name": "Snow Leopard",
+    "category": "living",
+    "emoji_fallback": "🐆",
+    "kid_blurb": "Leaps fifteen meters across a mountain gap in one single jump!",
+    "contributes": [
+      "fifteen-meter leap",
+      "balancing tail"
+    ],
+    "traits": {
+      "iconic_appearance": "pale smoke-grey cat with black rosettes, enormous furry paws and a tail almost as long as its body",
+      "signature_weapon": "a pounce launched downhill from above with all four paws landing at once",
+      "movement": "leaps between cliff ledges and lands on paws shaped like snowshoes",
+      "defense": "wraps its thick tail right around itself and keeps every bit of body heat",
+      "behavior": "the ghost of the mountains — climbs high and drops on prey from above",
+      "mythic_power": null
+    },
+    "habitat": [
+      "high mountains",
+      "rocky slopes",
+      "snow ridges"
+    ],
+    "scale": 4,
+    "real_size": "1.3 m long plus 1 m tail, 55 kg",
+    "movement_types": [
+      "run",
+      "climb",
+      "walk"
+    ],
+    "tags": [
+      "jump",
+      "cold",
+      "mountain",
+      "ambush"
+    ],
+    "visual_hint": "pale grey cat with dark rosettes shown full-body mid-leap between snowy rocks, enormous plumed tail streaming behind, cold blue mountain light"
+  },
+  {
+    "slug": "sea-otter",
+    "name": "Sea Otter",
+    "category": "living",
+    "emoji_fallback": "🦦",
+    "kid_blurb": "Carries its own favorite rock around to smash shells open!",
+    "contributes": [
+      "tool-using paws",
+      "densest fur on Earth"
+    ],
+    "traits": {
+      "iconic_appearance": "chunky brown otter floating on its back with a stone balanced on its chest and a whiskery grin",
+      "signature_weapon": "a hand-held rock swung as a hammer to crack shells apart",
+      "movement": "rolls and sculls at the surface, then dives to the seabed and back",
+      "defense": "the thickest fur of any animal — a million hairs in a postage-stamp patch",
+      "behavior": "keeps a favourite rock tucked in a pouch of loose skin under one arm",
+      "mythic_power": null
+    },
+    "habitat": [
+      "kelp forests",
+      "rocky coasts",
+      "cold bays"
+    ],
+    "scale": 3,
+    "real_size": "1.4 m long, 45 kg",
+    "movement_types": [
+      "swim",
+      "walk"
+    ],
+    "tags": [
+      "intelligence",
+      "cold",
+      "aquatic",
+      "grip"
+    ],
+    "visual_hint": "rich brown otter shown whole floating on its back at the surface, stone held on its chest, paws up, kelp fronds around it"
+  },
+  {
+    "slug": "walrus",
+    "name": "Walrus",
+    "category": "living",
+    "emoji_fallback": "🦭",
+    "kid_blurb": "Uses meter-long tusks like ice picks to haul itself out of the sea!",
+    "contributes": [
+      "ice-pick tusks",
+      "whisker sensor pad"
+    ],
+    "traits": {
+      "iconic_appearance": "tonne-heavy sea giant with wrinkled cinnamon hide, a bristling moustache and two long ivory tusks",
+      "signature_weapon": "meter-long tusks used to hook the ice and jab at pushy rivals",
+      "movement": "rows powerfully through water, then hitches itself across ice on its tusks",
+      "defense": "blubber 15 cm thick under skin like armour over the neck and shoulders",
+      "behavior": "sweeps the seabed with 700 stiff whiskers to feel out buried clams",
+      "mythic_power": null
+    },
+    "habitat": [
+      "arctic ice",
+      "cold coasts",
+      "shallow seabed"
+    ],
+    "scale": 6,
+    "real_size": "3.5 m long, 1.5 tonnes",
+    "movement_types": [
+      "swim",
+      "walk"
+    ],
+    "tags": [
+      "tusks",
+      "cold",
+      "sensory",
+      "aquatic"
+    ],
+    "visual_hint": "wrinkled cinnamon-brown walrus shown whole on blue-white ice, long ivory tusks and bushy whiskers clear, calm arctic sea behind"
+  },
+  {
+    "slug": "emperor-penguin",
+    "name": "Emperor Penguin",
+    "category": "living",
+    "emoji_fallback": "🐧",
+    "kid_blurb": "Dives half a kilometer down and holds its breath for 20 minutes!",
+    "contributes": [
+      "deep breath-hold dive",
+      "huddle against the cold"
+    ],
+    "traits": {
+      "iconic_appearance": "1.2-meter penguin in a black-and-white tuxedo with golden neck patches and stiff flipper wings",
+      "signature_weapon": "a spiny tongue and a beak that never lets a slippery fish back out",
+      "movement": "flies underwater on stiff flippers, then waddles and belly-slides on ice",
+      "defense": "thousands huddle and slowly rotate so nobody stays on the freezing edge",
+      "behavior": "survives the coldest winter on Earth standing up, balancing an egg on its feet",
+      "mythic_power": null
+    },
+    "habitat": [
+      "antarctic ice",
+      "southern ocean",
+      "ice shelves"
+    ],
+    "scale": 3,
+    "real_size": "1.2 m tall, 40 kg",
+    "movement_types": [
+      "swim",
+      "walk"
+    ],
+    "tags": [
+      "cold",
+      "aquatic",
+      "endurance",
+      "survival"
+    ],
+    "visual_hint": "black-and-white penguin with orange-gold neck patches standing at full height on bright antarctic ice, flippers held slightly out, blue ice cliffs behind"
+  },
+  {
+    "slug": "alligator-snapping-turtle",
+    "name": "Alligator Snapping Turtle",
+    "category": "living",
+    "emoji_fallback": "🐢",
+    "kid_blurb": "Wiggles a pink worm on its tongue to go fishing for its own dinner!",
+    "contributes": [
+      "worm-shaped lure tongue",
+      "spiked shell fortress"
+    ],
+    "traits": {
+      "iconic_appearance": "huge freshwater turtle with three spiked ridges along the shell, a hooked beak and a pink worm-like lure on the tongue",
+      "signature_weapon": "a beak snap fast and strong enough to snip a broom handle in two",
+      "movement": "walks along the river bottom rather than bothering to swim much",
+      "defense": "a rugged spiked shell that even big predators give up on",
+      "behavior": "sits with its mouth wide open and wiggles its tongue like bait",
+      "mythic_power": null
+    },
+    "habitat": [
+      "rivers",
+      "swamps",
+      "lakes"
+    ],
+    "scale": 4,
+    "real_size": "80 cm shell, 100 kg",
+    "movement_types": [
+      "walk",
+      "swim"
+    ],
+    "tags": [
+      "armored",
+      "bite",
+      "trap",
+      "ambush"
+    ],
+    "visual_hint": "moss-green spiked-shell turtle shown whole and side-on on a sunlit riverbank, ridged shell clear, hooked beak open showing the pink lure"
+  },
+  {
+    "slug": "mudskipper",
+    "name": "Mudskipper",
+    "category": "living",
+    "emoji_fallback": "🐟",
+    "kid_blurb": "A fish that walks on land, climbs trees and breathes through its skin!",
+    "contributes": [
+      "walking arm fins",
+      "breathes out of water"
+    ],
+    "traits": {
+      "iconic_appearance": "goggle-eyed fish propped up on two arm-like front fins, with a speckled brown-and-blue body",
+      "signature_weapon": "a sudden hop-and-snap at insects, powered by a flick of the tail",
+      "movement": "crutch-walks on its front fins, skips across mud and climbs mangrove roots",
+      "defense": "carries a mouthful of water like a scuba tank and bolts for its burrow",
+      "behavior": "spends more of its life out of the water than in it",
+      "mythic_power": null
+    },
+    "habitat": [
+      "mangrove mudflats",
+      "estuaries",
+      "tidal creeks"
+    ],
+    "scale": 1,
+    "real_size": "20 cm long",
+    "movement_types": [
+      "walk",
+      "swim",
+      "climb"
+    ],
+    "tags": [
+      "amphibious",
+      "agility",
+      "small",
+      "survival"
+    ],
+    "visual_hint": "speckled brown-and-blue fish propped fully upright on wet mud on its front fins, big periscope eyes on top of the head, mangrove roots behind"
+  },
+  {
+    "slug": "lungfish",
+    "name": "Lungfish",
+    "category": "living",
+    "emoji_fallback": "🫧",
+    "kid_blurb": "When the river dries up it sleeps in a mud cocoon for YEARS!",
+    "contributes": [
+      "real air-breathing lungs",
+      "years-long drought sleep"
+    ],
+    "traits": {
+      "iconic_appearance": "long eel-shaped fish with thread-thin fins, heavy overlapping scales and a blunt head",
+      "signature_weapon": "crushing tooth plates that grind up snails and shells",
+      "movement": "wriggles and 'walks' along the bottom on thread fins, rising to gulp air",
+      "defense": "digs down, wraps itself in a mud cocoon and waits out an entire dry season",
+      "behavior": "breathes air with real lungs — it would drown if it could not reach the surface",
+      "mythic_power": null
+    },
+    "habitat": [
+      "seasonal swamps",
+      "muddy rivers",
+      "floodplain pools"
+    ],
+    "scale": 3,
+    "real_size": "1.5 m long",
+    "movement_types": [
+      "swim",
+      "burrow",
+      "walk"
+    ],
+    "tags": [
+      "survival",
+      "ancient",
+      "aquatic",
+      "resistant"
+    ],
+    "visual_hint": "olive-brown eel-shaped fish shown whole and side-on in shallow clear water, thread-thin fins spread, head lifted to the surface for a gulp of air"
   }
 ]

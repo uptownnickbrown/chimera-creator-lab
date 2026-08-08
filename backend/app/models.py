@@ -39,6 +39,15 @@ class ImageStatus(str, enum.Enum):
     failed = "failed"
 
 
+class RecordStatus(str, enum.Enum):
+    """Text-record lifecycle. `generating` rows stream partial fields to the
+    reveal screen from the in-memory progress map (services/generation.py)."""
+
+    generating = "generating"
+    complete = "complete"
+    failed = "failed"
+
+
 class TournamentStatus(str, enum.Enum):
     setup = "setup"
     active = "active"
@@ -100,6 +109,9 @@ class Creature(TimestampMixin, Base):
     anatomy_plan: Mapped[str] = mapped_column(Text, default="")
     fun_fact: Mapped[str] = mapped_column(Text, default="")
 
+    record_status: Mapped[RecordStatus] = mapped_column(
+        _enum(RecordStatus, "record_status"), default=RecordStatus.complete
+    )
     image_status: Mapped[ImageStatus] = mapped_column(
         _enum(ImageStatus, "image_status"), default=ImageStatus.pending
     )

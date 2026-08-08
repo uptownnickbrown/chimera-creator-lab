@@ -155,7 +155,12 @@ class CreatureSummary(Api):
     role: str
     sources: list[str]
     core_stats: dict
+    record_status: str = "complete"
     image_status: str
+    ability_names: list[str] = Field(
+        default_factory=list,
+        description="Streaming preview: ability names revealed so far while record_status=generating",
+    )
     hero_image_path: str | None = None
     thumb_path: str | None = None
     favorite: bool

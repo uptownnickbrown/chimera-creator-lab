@@ -6,8 +6,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import get_settings
-from ..models import Creature, Profile
+from ..models import Creature, Profile, RecordStatus
 from ..schemas import CreatureDetail, CreatureSummary
+from ..services import generation
 
 XP_PER_LEVEL = 200
 XP_CREATE = 10
@@ -23,6 +24,9 @@ def summary(c: Creature) -> CreatureSummary:
         role=c.role,
         sources=c.sources or [],
         core_stats=c.core_stats or {},
+        record_status=(
+            c.record_status.value if hasattr(c.record_status, "value") else c.record_status
+        ),
         image_status=c.image_status.value if hasattr(c.image_status, "value") else c.image_status,
         hero_image_path=c.hero_image_path,
         thumb_path=c.thumb_path,
@@ -36,8 +40,20 @@ def summary(c: Creature) -> CreatureSummary:
 
 def detail(c: Creature) -> CreatureDetail:
     fought = c.wins + c.losses
+    base = summary(c).model_dump()
+    if c.record_status == RecordStatus.generating:
+        # Fusion Wait: overlay whatever the record stream has revealed so far
+        # (name at ~8s, stats ticking in after) onto the placeholder row.
+        partial = generation.PROGRESS.get(c.id, {})
+        for key in ("name", "title", "rarity"):
+            if partial.get(key):
+                base[key] = partial[key]
+        if partial.get("core_stats"):
+            base["core_stats"] = partial["core_stats"]
+        if partial.get("ability_names"):
+            base["ability_names"] = partial["ability_names"]
     return CreatureDetail(
-        **summary(c).model_dump(),
+        **base,
         abilities=c.abilities or [],
         strengths=c.strengths or [],
         weaknesses=c.weaknesses or [],

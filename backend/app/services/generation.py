@@ -316,6 +316,101 @@ async def generate_creature(sources: list[str]) -> CreatureRecord:
     return record
 
 
+# -- streaming generation (Fusion Wait experience) ----------------------------
+
+#: creature_id -> partial fields revealed so far ("name", "title", "rarity",
+#: "core_stats", "abilities_count"). Read by GET /api/creatures/{id} while
+#: record_status == generating. In-memory is correct here: single-player,
+#: single-process, and the map is only a progress mirror of work in flight.
+PROGRESS: dict[int, dict] = {}
+
+_FIELD_RE = {
+    "name": re.compile(r'"name"\s*:\s*"([^"]{1,120})"'),
+    "title": re.compile(r'"title"\s*:\s*"([^"]{1,160})"'),
+    "rarity": re.compile(r'"rarity"\s*:\s*"(Uncommon|Rare|Epic|Legendary)"'),
+    "visual_spec": re.compile(r'"visual_spec"\s*:\s*"((?:[^"\\]|\\.){20,4000})"\s*[,}]'),
+}
+_CORE_RE = re.compile(
+    r'"core_stats"\s*:\s*\{[^{}]*?"power"\s*:\s*(\d+)[^{}]*?"speed"\s*:\s*(\d+)'
+    r'[^{}]*?"armor"\s*:\s*(\d+)[^{}]*?"size"\s*:\s*(\d+)'
+    r'[^{}]*?"special_name"\s*:\s*"([^"]+)"[^{}]*?"special"\s*:\s*(\d+)'
+)
+_ABILITY_NAME_RE = re.compile(r'"abilities"\s*:\s*\[(.*)', re.DOTALL)
+
+
+def _extract_partial(buf: str) -> dict:
+    """Best-effort field extraction from a growing JSON document."""
+    out: dict = {}
+    for key, rx in _FIELD_RE.items():
+        m = rx.search(buf)
+        if m:
+            out[key] = m.group(1)
+    m = _CORE_RE.search(buf)
+    if m:
+        out["core_stats"] = {
+            "power": int(m.group(1)), "speed": int(m.group(2)),
+            "armor": int(m.group(3)), "size": int(m.group(4)),
+            "special_name": m.group(5), "special": int(m.group(6)),
+        }
+    m = _ABILITY_NAME_RE.search(buf)
+    if m:
+        names = re.findall(r'"name"\s*:\s*"([^"]{1,80})"', m.group(1))
+        if names:
+            out["ability_names"] = names[:4]
+    return out
+
+
+async def generate_creature_streaming(
+    creature_id: int, sources: list[str], on_visual_spec=None
+) -> CreatureRecord:
+    """Stream the record, mirroring partial fields into PROGRESS[creature_id].
+
+    `on_visual_spec(spec)` fires the moment visual_spec fully parses — the
+    hero render starts there, not when the record finishes (~10s earlier).
+    Caller owns persistence and PROGRESS cleanup.
+    """
+    import json
+
+    from . import ai
+
+    if not ai.ai_enabled():
+        return build_stub_record(sources)
+
+    user = (
+        "Create a chimera fused from exactly these four sources:\n"
+        f"{_source_briefs(sources)}\n\n"
+        "Remember: one coherent species, fused abilities, honest weaknesses."
+    )
+    schema = CreatureRecord.model_json_schema()
+    stream = await ai.client().chat.completions.create(
+        model=ai.TEXT_MODEL,
+        messages=[{"role": "system", "content": SYSTEM_PROMPT},
+                  {"role": "user", "content": user}],
+        response_format={"type": "json_schema",
+                         "json_schema": {"name": "chimera", "strict": True,
+                                         "schema": schema}},
+        stream=True,
+    )
+    buf = ""
+    spec_fired = False
+    async for chunk in stream:
+        delta = chunk.choices[0].delta.content if chunk.choices else None
+        if not delta:
+            continue
+        buf += delta
+        partial = _extract_partial(buf)
+        if partial:
+            PROGRESS[creature_id] = partial
+        if not spec_fired and on_visual_spec and "visual_spec" in partial:
+            spec_fired = True
+            spec = json.loads(f'"{partial["visual_spec"]}"' if "\\" in partial["visual_spec"]
+                              else json.dumps(partial["visual_spec"]))
+            await on_visual_spec(spec)
+    record = CreatureRecord.model_validate(json.loads(buf))
+    log.info("generation: streamed record %r for %s", record.name, sources)
+    return record
+
+
 class _NameOnly(Strict):
     name: str
     title: str
