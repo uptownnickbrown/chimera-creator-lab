@@ -142,18 +142,23 @@ export default function App() {
           </nav>
 
           <div className="player">
-            <div className="player__chips">
-              <span className="chip chip--purple">
-                <Asset slot="icons/xp" label="" className="chip__icon" tint="purple" />
-                <b className="num">{profile?.xp ?? 0}</b>
+            <span
+              className="player__badge"
+              title={`${200 - ((profile?.xp ?? 0) % 200)} XP to level ${(profile?.level ?? 1) + 1}`}
+            >
+              <svg className="player__ring" viewBox="0 0 58 58" aria-hidden="true">
+                <circle className="player__ring-track" cx="29" cy="29" r="26" />
+                <circle
+                  className="player__ring-fill"
+                  cx="29"
+                  cy="29"
+                  r="26"
+                  strokeDasharray={`${(((profile?.xp ?? 0) % 200) / 200) * 163.36} 163.36`}
+                />
+              </svg>
+              <span className="player__avatar">
+                <Asset slot="ui/avatar" label="" />
               </span>
-              <span className="chip">
-                <Asset slot="icons/creatures" label="" className="chip__icon" />
-                <b className="num">{profile?.total_creatures ?? 0}</b>
-              </span>
-            </div>
-            <span className="player__avatar">
-              <Asset slot="ui/avatar" label="" />
             </span>
             <div className="player__id">
               <div className="player__name">{(profile?.name ?? "player").toUpperCase()}</div>

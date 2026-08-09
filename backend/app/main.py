@@ -25,6 +25,13 @@ async def lifespan(app: FastAPI):
         await create_all()
     # Authored content is optional at boot — load_library logs and shrugs.
     library_svc.load_library()
+    from .services import ai
+    if not ai.ai_enabled():
+        logging.getLogger("chimera").warning(
+            "AI DISABLED — no OPEN_AI_API_KEY found (looked in %s). Creatures "
+            "will be STUB records with no hero renders. This is never what you "
+            "want outside tests.", "repo-root .env / environment",
+        )
     await _sweep_orphans()
     await _seed_starter_crew()
     yield

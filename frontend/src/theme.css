@@ -889,45 +889,29 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .nav__tab.is-active .nav__icon { filter: var(--tint) drop-shadow(0 0 8px rgba(79, 216, 255, 0.9)); }
 
 .player { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-.player__chips { display: flex; gap: 8px; }
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 38px;
-  padding: 0 13px;
-  clip-path: var(--clip-notch-sm);
-  --notch-sm: 7px;
-  background: linear-gradient(180deg, rgba(20, 30, 66, 0.9), rgba(7, 11, 28, 0.92));
-  box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.4);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.04em;
-  color: #eaf4ff;
+/* Avatar disc wrapped by the level-progress ring: the ring fills as Henry
+   earns XP toward the next level — the header's one number that MEANS
+   something (no fake currencies). */
+.player__badge { position: relative; width: 54px; height: 54px; flex: none; }
+.player__ring { position: absolute; inset: 0; transform: rotate(-90deg); }
+.player__ring circle { fill: none; stroke-width: 3; }
+.player__ring-track { stroke: rgba(79, 216, 255, 0.18); }
+.player__ring-fill {
+  stroke: url(#xpRingGrad);
+  stroke: var(--cyan);
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(79, 216, 255, 0.7));
+  transition: stroke-dasharray 600ms ease;
 }
-.chip--purple { --accent-rgb: 168, 107, 255; }
-.chip .chip__icon { width: 21px; height: 21px; flex: none; }
-/* The painted avatar is a full-body figure, so the disc zooms its head in. */
 .player__avatar {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  flex: none;
+  position: absolute;
+  inset: 5px;
   border-radius: 50%;
   overflow: hidden;
   background: radial-gradient(circle at 50% 32%, rgba(79, 216, 255, 0.34), rgba(8, 13, 32, 0.96));
-  box-shadow: 0 0 0 2px var(--cyan), 0 0 18px rgba(79, 216, 255, 0.55);
+  box-shadow: 0 0 14px rgba(79, 216, 255, 0.45);
 }
-.player__avatar .asset {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 230%;
-  height: 230%;
-  max-width: none;
-  transform: translate(-50%, 8%);
-}
+.player__avatar .asset { width: 100%; height: 100%; object-fit: cover; }
 .player__id { display: grid; gap: 1px; }
 .player__name { font-family: var(--font-display); font-weight: 700; font-size: 16px; letter-spacing: 0.11em; line-height: 1.05; color: var(--cyan); }
 .player__level { font-family: var(--font-display); font-weight: 600; font-size: 13px; letter-spacing: 0.12em; color: var(--muted); line-height: 1.05; }

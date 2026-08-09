@@ -92,19 +92,25 @@ async def generate_hero(creature: Creature) -> str | None:
 
 
 def _thumb_from_hero_bytes(hero_png: bytes) -> bytes:
-    """Alpha-aware square crop biased toward the creature's head (top third)."""
+    """Alpha-aware square FIT: the whole creature, never a crop.
+
+    A square crop chopped wide creatures (wings, serpent coils) at the card
+    edge. Instead: tight alpha bbox, then letterbox onto a transparent square
+    with a small margin so every silhouette reads complete in the Codex.
+    """
     from PIL import Image
 
     img = Image.open(io.BytesIO(hero_png)).convert("RGBA")
     bbox = img.getchannel("A").point(lambda a: 255 if a > 20 else 0).getbbox()
     if bbox:
         img = img.crop(bbox)
-    side = min(img.width, img.height)
-    left = (img.width - side) // 2
-    img = img.crop((left, 0, left + side, side))
-    img = img.resize((THUMB_PX, THUMB_PX), Image.LANCZOS)
+    side = max(img.width, img.height)
+    margin = max(2, side // 25)
+    canvas = Image.new("RGBA", (side + 2 * margin,) * 2, (0, 0, 0, 0))
+    canvas.paste(img, ((canvas.width - img.width) // 2, (canvas.height - img.height) // 2))
+    canvas = canvas.resize((THUMB_PX, THUMB_PX), Image.LANCZOS)
     out = io.BytesIO()
-    img.save(out, "PNG")
+    canvas.save(out, "PNG")
     return out.getvalue()
 
 

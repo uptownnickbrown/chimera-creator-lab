@@ -12,7 +12,8 @@ import type { CoreStats, CreatureSummary } from "./api";
    line here. Anything unlisted resolves straight to /assets/<slot>.png. */
 const SLOT_ALIASES: Record<string, string> = {
   "ui/logo": "ui/logo_mark",
-  "ui/avatar": "avatar/henry_a",
+  "ui/avatar": "avatar/henry_headshot",
+  "ui/avatar_full": "avatar/henry_a",
   "ui/tbd": "ui/slot_empty",
   "ui/mascot": "lab/mascot",
 

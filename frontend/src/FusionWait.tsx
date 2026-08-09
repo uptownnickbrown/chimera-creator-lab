@@ -386,11 +386,13 @@ export function FusionWait({
           ))}
         </div>
         <p className="fw__status">
-          {imageDone
+          {heroReady
             ? "RENDER COMPLETE"
-            : recordDone
-              ? "PAINTING THE HERO RENDER — THIS IS THE SLOW, GOOD BIT"
-              : "READING THE FUSED GENOME"}
+            : imageDone
+              ? "DOWNLOADING THE FINISHED RENDER"
+              : recordDone
+                ? "PAINTING THE HERO RENDER — THIS IS THE SLOW, GOOD BIT"
+                : "READING THE FUSED GENOME"}
         </p>
       </footer>
     </div>

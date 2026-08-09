@@ -102,10 +102,12 @@ export function FusionLab({ go }: { go: Go }) {
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return (sources ?? []).filter((s) => {
-      if (!q && activeCategory !== "all" && s.category !== activeCategory) return false;
-      return !q || haystack(s).includes(q);
-    });
+    return (sources ?? [])
+      .filter((s) => {
+        if (!q && activeCategory !== "all" && s.category !== activeCategory) return false;
+        return !q || haystack(s).includes(q);
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [sources, activeCategory, query]);
 
   useEffect(() => {
