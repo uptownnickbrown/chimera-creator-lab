@@ -210,6 +210,13 @@ class SourceCreature(Api):
     traits: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
     art: str | None = None
+    aliases: list[str] = Field(
+        default_factory=list,
+        description="Authored misspellings and nicknames the picker search accepts",
+    )
+    custom: bool = Field(
+        default=False, description="True for parts Henry summoned (custom_parts table)"
+    )
 
 
 class Environment(Api):
@@ -223,6 +230,45 @@ class LibraryResponse(Api):
     sources: list[SourceCreature]
     environments: list[Environment]
     loaded: bool = Field(description="False when the data files are not on disk yet")
+
+
+# -- summon (POST /api/library/summon) ----------------------------------------
+
+class SummonResolution(Strict):
+    """The gpt-5.1 summon-resolver contract (strict structured output, so every
+    field is required — unused fields come back as "" / [])."""
+
+    decision: Literal["library", "new", "redirect"]
+    library_slugs: list[str] = Field(
+        description="decision=library: the matching library slug(s), 1-3 of them"
+    )
+    name: str = Field(description="decision=new: Title Case creature name, max 3 words")
+    category: Literal["mythic", "extinct", "living"]
+    blurb: str = Field(description="decision=new: one exciting kid-readable sentence")
+    traits: list[str] = Field(description="decision=new: exactly 3 short powers/features")
+    contribution: str = Field(
+        description="decision=new: one sentence starting with 'Adds' — what it gives a chimera"
+    )
+    portrait_description: str = Field(
+        description="decision=new: complete physical description for the portrait painter"
+    )
+    redirect_message: str = Field(
+        description="decision=redirect: one kind playful line steering back to animals"
+    )
+
+
+class SummonRequest(Api):
+    query: str = Field(min_length=1, max_length=80)
+
+
+class SummonResponse(Api):
+    status: Literal["matched", "disambiguate", "conjured", "redirect"]
+    source: SourceCreature | None = None
+    candidates: list[SourceCreature] = Field(default_factory=list)
+    message: str = ""
+    portrait_status: str = Field(
+        default="", description="conjured only: rendering | complete | failed"
+    )
 
 
 # -- tournaments --------------------------------------------------------------

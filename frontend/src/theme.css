@@ -3433,3 +3433,353 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .fw__ticker-text { background: none !important; color: var(--text) !important; }
 }
 @keyframes rm-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Summon New Creature (Fusion Lab modal + rail card) ─────────────────────
+   Purple/fusion treatment throughout: this is creation magic, visually
+   distinct from browsing the painted library. Same holo-panel recipe, same
+   notch geometry — crafted, never a default rectangle (UI_STANDARD). */
+
+/* The permanent card pinned at the START of the picker rail. */
+.pcard--summon { --accent-rgb: 168, 107, 255; }
+.pcard--summon::before {
+  background: linear-gradient(158deg, rgba(168, 107, 255, 0.95), rgba(168, 107, 255, 0.3) 55%, rgba(79, 216, 255, 0.55));
+}
+.pcard--summon::after {
+  background:
+    radial-gradient(90% 70% at 50% 30%, rgba(168, 107, 255, 0.28), transparent 70%),
+    linear-gradient(180deg, rgba(22, 14, 52, 0.94), rgba(6, 4, 20, 0.97));
+}
+.pcard--summon:hover { filter: drop-shadow(0 8px 26px rgba(168, 107, 255, 0.55)); }
+.pcard--summon .pcard__plate {
+  background: linear-gradient(180deg, rgba(26, 14, 52, 0.55), rgba(10, 6, 28, 0.95));
+}
+.pcard--summon .pcard__name {
+  color: var(--purple-hot);
+  text-shadow: 0 0 14px rgba(168, 107, 255, 0.8);
+}
+.summoncard { display: grid; place-items: center; }
+.summoncard__halo {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 107, 255, 0.4), rgba(168, 107, 255, 0.08) 55%, transparent 72%);
+  animation: summon-breathe 2.8s ease-in-out infinite;
+}
+.summoncard__glyph {
+  position: relative;
+  width: 62%;
+  height: 62%;
+  object-fit: contain;
+  filter: var(--tint) drop-shadow(0 0 16px rgba(168, 107, 255, 0.85));
+  animation: summon-breathe 2.8s ease-in-out infinite;
+}
+.summoncard__sparks {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(2px 2px at 22% 30%, rgba(220, 194, 255, 0.9), transparent 60%),
+    radial-gradient(1.6px 1.6px at 74% 22%, rgba(182, 240, 255, 0.8), transparent 60%),
+    radial-gradient(1.8px 1.8px at 64% 74%, rgba(220, 194, 255, 0.85), transparent 60%),
+    radial-gradient(1.4px 1.4px at 30% 80%, rgba(182, 240, 255, 0.7), transparent 60%);
+  animation: summon-twinkle 3.6s ease-in-out infinite;
+}
+@keyframes summon-breathe { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.07); opacity: 1; } }
+@keyframes summon-twinkle { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+/* SUMMONED ribbon on custom parts in the rail. */
+.pcard__summoned {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  padding: 2px 7px 1px;
+  clip-path: var(--clip-notch-sm);
+  --notch-sm: 5px;
+  background: linear-gradient(180deg, rgba(168, 107, 255, 0.95), rgba(110, 58, 200, 0.9));
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 12px rgba(168, 107, 255, 0.75);
+}
+
+/* A matched/conjured part just flew in — slot and rail card pulse purple. */
+.slot.is-flash, .pcard.is-flash {
+  animation: summon-land 1.8s ease-out 1;
+}
+@keyframes summon-land {
+  0% { filter: drop-shadow(0 0 0 rgba(168, 107, 255, 0)); }
+  18% { filter: drop-shadow(0 0 26px rgba(168, 107, 255, 0.95)) brightness(1.28); }
+  100% { filter: drop-shadow(0 0 0 rgba(168, 107, 255, 0)); }
+}
+
+/* Shimmering "portrait is being painted" placeholder (PartImg). */
+.summonwait {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 44px;
+  overflow: hidden;
+  background:
+    radial-gradient(80% 60% at 50% 40%, rgba(168, 107, 255, 0.22), transparent 70%),
+    linear-gradient(180deg, rgba(20, 12, 44, 0.9), rgba(8, 5, 24, 0.95));
+}
+.summonwait::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(220, 194, 255, 0.22) 48%, rgba(182, 240, 255, 0.3) 52%, transparent 70%);
+  background-size: 250% 100%;
+  animation: summon-shimmer 2.2s linear infinite;
+}
+.summonwait__ring {
+  width: 34%;
+  aspect-ratio: 1;
+  max-width: 54px;
+  border-radius: 50%;
+  border: 2px solid rgba(168, 107, 255, 0.28);
+  border-top-color: var(--purple);
+  animation: summon-spin 1.3s linear infinite;
+}
+.summonwait__label {
+  position: absolute;
+  bottom: 7%;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--purple-hot);
+  text-shadow: 0 0 10px rgba(168, 107, 255, 0.8);
+}
+/* Tight spots (slot cards, adds rows, orbiters): the label would collide. */
+.slot__art .summonwait__label, .adds__art .summonwait__label,
+.cluster__art .summonwait__label, .fw__orbiter-art .summonwait__label,
+.fused__art.summonwait .summonwait__label { display: none; }
+@keyframes summon-shimmer { from { background-position: 120% 0; } to { background-position: -130% 0; } }
+@keyframes summon-spin { to { transform: rotate(360deg); } }
+
+/* Zero-hit search: the Empty state grows a summon call-to-action. */
+.picker__empty { display: grid; justify-items: center; gap: 4px; padding-bottom: 10px; }
+
+/* ── the holo-modal ── */
+.summon-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(120% 120% at 50% 40%, rgba(20, 10, 44, 0.55), rgba(2, 3, 10, 0.82));
+  backdrop-filter: blur(7px);
+  animation: summon-overlay-in 200ms ease both;
+}
+@keyframes summon-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+.summon-modal {
+  width: min(640px, 94vw);
+  max-height: min(92vh, 700px);
+  overflow-y: auto;
+  animation: summon-modal-in 240ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  box-shadow:
+    inset 0 1px 0 rgba(220, 194, 255, 0.3),
+    0 0 42px rgba(168, 107, 255, 0.22),
+    0 18px 60px rgba(0, 0, 0, 0.6);
+}
+@keyframes summon-modal-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }
+.summon-close {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  clip-path: var(--clip-notch-sm);
+  --notch-sm: 6px;
+  background: linear-gradient(180deg, rgba(36, 22, 70, 0.9), rgba(14, 8, 34, 0.95));
+  box-shadow: inset 0 0 0 1px rgba(168, 107, 255, 0.45);
+  color: var(--purple-hot);
+  font-size: 15px;
+  cursor: pointer;
+}
+.summon-close:hover { box-shadow: inset 0 0 0 1px rgba(168, 107, 255, 0.95), 0 0 14px -4px rgba(168, 107, 255, 0.9); }
+
+.summon-body { align-items: center; text-align: center; }
+.summon-form { display: grid; justify-items: center; gap: 14px; width: 100%; padding: 6px 4px 4px; }
+.summon-input {
+  display: block;
+  width: min(480px, 100%);
+  clip-path: var(--clip-notch-sm);
+  background: linear-gradient(158deg, rgba(168, 107, 255, 0.75), rgba(168, 107, 255, 0.22) 55%, rgba(79, 216, 255, 0.45));
+  padding: 1px;
+}
+.summon-input input {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  border: 0;
+  clip-path: var(--clip-notch-sm);
+  background: linear-gradient(180deg, rgba(10, 8, 30, 0.96), rgba(5, 4, 18, 0.98));
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-align: center;
+  color: var(--text);
+  outline: none;
+}
+.summon-input input::placeholder { color: var(--muted); font-weight: 500; }
+.summon-hint { margin: 0; font-size: 13px; color: var(--text-dim); }
+.summon-redirect {
+  margin: 0;
+  max-width: 460px;
+  padding: 10px 16px;
+  clip-path: var(--clip-notch-sm);
+  --notch-sm: 7px;
+  background: linear-gradient(180deg, rgba(47, 227, 196, 0.16), rgba(47, 227, 196, 0.05));
+  box-shadow: inset 0 0 0 1px rgba(47, 227, 196, 0.4);
+  color: #d6fff5;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.summon-busy { display: grid; justify-items: center; gap: 10px; padding: 6px 0 2px; }
+.summon-busy__label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  color: var(--purple-hot);
+  text-shadow: 0 0 14px rgba(168, 107, 255, 0.8);
+  animation: pending-pulse 1.6s ease-in-out infinite;
+}
+
+/* The incantation circle (busy + conjuring). */
+.summon-circle { position: relative; width: 132px; height: 132px; display: grid; place-items: center; }
+.summon-circle--sm { width: 72px; height: 72px; }
+.summon-circle__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(168, 107, 255, 0.22);
+  border-top-color: var(--purple);
+  border-right-color: rgba(79, 216, 255, 0.75);
+  animation: summon-spin 1.5s linear infinite;
+}
+.summon-circle__ring--slow {
+  inset: 14px;
+  border-color: rgba(79, 216, 255, 0.2);
+  border-top-color: rgba(220, 194, 255, 0.9);
+  animation: summon-spin 2.6s linear infinite reverse;
+}
+.summon-circle__core {
+  width: 34%;
+  height: 34%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 194, 255, 0.95), rgba(168, 107, 255, 0.5) 55%, transparent 75%);
+  filter: blur(1px);
+  animation: summon-breathe 1.8s ease-in-out infinite;
+}
+
+/* Did you mean? — 2-3 BIG portrait cards. */
+.summon-choice { display: grid; justify-items: center; gap: 14px; width: 100%; padding: 2px 0 6px; }
+.summon-lead {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.12em;
+  color: var(--purple-hot);
+  text-shadow: 0 0 16px rgba(168, 107, 255, 0.7);
+}
+.summon-cands { display: flex; justify-content: center; gap: 14px; width: 100%; }
+.summon-cand {
+  position: relative;
+  isolation: isolate;
+  width: min(178px, 44vw);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  clip-path: var(--clip-notch-sm);
+  cursor: pointer;
+  --accent-rgb: 168, 107, 255;
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.3, 1), filter 180ms ease;
+}
+.summon-cand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  clip-path: inherit;
+  background: linear-gradient(158deg, rgba(var(--accent-rgb), 0.8), rgba(var(--accent-rgb), 0.2) 58%, rgba(79, 216, 255, 0.5));
+}
+.summon-cand::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  clip-path: inherit;
+  background: linear-gradient(180deg, rgba(14, 22, 52, 0.92), rgba(4, 7, 20, 0.97));
+}
+.summon-cand:hover { transform: translateY(-4px) scale(1.02); filter: drop-shadow(0 10px 26px rgba(168, 107, 255, 0.5)); }
+.summon-cand__art { display: block; width: 100%; height: 168px; overflow: hidden; }
+.summon-cand__art .asset { width: 100%; height: 100%; object-fit: cover; }
+.summon-cand__plate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 8px 10px;
+  background: linear-gradient(180deg, rgba(8, 13, 32, 0.5), rgba(6, 10, 26, 0.95));
+}
+.summon-cand__cat { width: 18px; height: 18px; flex: none; }
+.summon-cand__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+}
+
+/* Conjuring: the incantation moment while the portrait paints. */
+.summon-conjuring { display: grid; justify-items: center; gap: 12px; padding: 4px 0 6px; }
+.summon-conjuring__name { display: grid; justify-items: center; gap: 2px; max-width: 100%; }
+.summon-conjuring__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.06em;
+  line-height: 1.05;
+  background: linear-gradient(92deg, var(--cyan-hot), var(--purple-hot) 60%, var(--purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 18px rgba(168, 107, 255, 0.55));
+}
+.summon-conjuring__sub {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  color: var(--text-dim);
+}
+.summon-conjuring__line { margin: 0; max-width: 440px; font-size: 15px; line-height: 1.5; }
+.summon-conjuring__note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--purple-hot);
+  text-shadow: 0 0 12px rgba(168, 107, 255, 0.6);
+  animation: pending-pulse 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summoncard__halo, .summoncard__glyph, .summoncard__sparks,
+  .summonwait::after, .summonwait__ring,
+  .summon-circle__ring, .summon-circle__ring--slow, .summon-circle__core,
+  .summon-busy__label, .summon-conjuring__note,
+  .slot.is-flash, .pcard.is-flash {
+    animation: none !important;
+  }
+  .summon-overlay, .summon-modal { animation-duration: 1ms !important; }
+}

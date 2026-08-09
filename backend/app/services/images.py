@@ -40,10 +40,75 @@ HERO_STYLE = (
 )
 
 
+# Summoned-part portraits must sit in the same visual family as the 160
+# pregenerated picker portraits. Style + isolation language is copied VERBATIM
+# from the pregen pipeline (scripts/assetlib.py PORTRAIT_STYLE and
+# scripts/generate_assets.py PORTRAIT_ISOLATION) — keep the three in sync.
+PART_PORTRAIT_STYLE = (
+    "Realistic AAA creature portrait for a neon sci-fi game, aimed at kids "
+    "7-10. The creature keeps its NATURAL realistic coloring and detailed "
+    "texture, lit dramatically with a subtle electric-cyan and violet rim "
+    "light as if standing in a dark holographic lab. Epic, fierce, premium — "
+    "never gory. Full body visible, three-quarter dramatic pose, centered, "
+    "not touching image edges. Absolutely no text or watermarks. "
+)
+PART_PORTRAIT_ISOLATION = (
+    " CRITICAL: this is a cut-out sprite of the creature ALONE. Do not paint "
+    "any scenery, environment, habitat, ground, floor, terrain, rock, water, "
+    "waves, snow, lava, sand, clouds, sky, mist, smoke, dust, moon, or cast "
+    "shadow. No base, no platform, no pedestal, no rectangular backdrop panel, "
+    "no vignette. Everything that is not the creature's own body must be "
+    "completely empty and fully transparent, right up to its silhouette. "
+    "Effects like fire or lightning are allowed only where they touch the "
+    "creature's own body. Transparent background."
+)
+PART_SIZE = "1024x1024"
+
+
 def _media_dir():
     d = get_settings().media_dir / "creatures"
     d.mkdir(parents=True, exist_ok=True)
     return d
+
+
+def _parts_dir():
+    d = get_settings().media_dir / "parts"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def part_portrait_prompt(name: str, description: str) -> str:
+    """Exactly the pregen part-portrait prompt shape (generate_assets.py)."""
+    return (PART_PORTRAIT_STYLE + "Creature: " + name + ". " +
+            description.rstrip(".") + "." + PART_PORTRAIT_ISOLATION)
+
+
+async def generate_part_portrait(file_slug: str, name: str, description: str) -> str | None:
+    """Render a summoned part's picker portrait; return its web path or None.
+
+    quality=medium (~26s, the verified fast path) — a picker card, not a hero
+    render. Two attempts, then None; the caller marks the row failed.
+    """
+    from . import ai
+
+    if not ai.ai_enabled():
+        log.info("images: AI disabled — no portrait for part %s", file_slug)
+        return None
+
+    prompt = part_portrait_prompt(name, description)
+    for attempt in (1, 2):
+        try:
+            png = await _render(prompt, quality="medium", size=PART_SIZE)
+            path = _parts_dir() / f"{file_slug}.png"
+            path.write_bytes(png)
+            log.info("images: part portrait %s (attempt %d, %dKB)",
+                     file_slug, attempt, len(png) // 1024)
+            return f"/media/parts/{file_slug}.png"
+        except Exception as exc:  # noqa: BLE001 - API errors: log and retry
+            log.warning("images: part portrait attempt %d failed for %s: %s",
+                        attempt, file_slug, str(exc)[:200])
+            await asyncio.sleep(2 * attempt)
+    return None
 
 
 def hero_prompt(record_like) -> str:

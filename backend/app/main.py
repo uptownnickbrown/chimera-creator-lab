@@ -25,6 +25,7 @@ async def lifespan(app: FastAPI):
         await create_all()
     # Authored content is optional at boot — load_library logs and shrugs.
     library_svc.load_library()
+    await _load_custom_parts()
     from .services import ai
     if not ai.ai_enabled():
         logging.getLogger("chimera").warning(
@@ -37,6 +38,21 @@ async def lifespan(app: FastAPI):
     yield
 
 
+async def _load_custom_parts() -> None:
+    """Merge Henry's summoned parts (custom_parts table) into the live library
+    so they show in the picker forever after. Best-effort, never blocks boot."""
+    from .db import session_factory
+    from .services import summon as summon_svc
+
+    try:
+        async with session_factory()() as db:
+            count = await summon_svc.load_custom_parts(db)
+        if count:
+            logging.getLogger("chimera").info("library: +%d summoned parts", count)
+    except Exception:
+        logging.getLogger("chimera").exception("loading summoned parts failed — continuing")
+
+
 async def _sweep_orphans() -> None:
     """In-flight generation tasks die with the process; on boot, any row still
     generating/pending is an orphan. Mark it failed so the UI's retry button
@@ -44,7 +60,7 @@ async def _sweep_orphans() -> None:
     from sqlalchemy import update
 
     from .db import session_factory
-    from .models import Creature, ImageStatus, RecordStatus
+    from .models import Creature, CustomPart, ImageStatus, RecordStatus
 
     async with session_factory()() as db:
         rec = await db.execute(
@@ -58,11 +74,17 @@ async def _sweep_orphans() -> None:
                    Creature.image_status == ImageStatus.pending)
             .values(image_status=ImageStatus.failed)
         )
+        # Summoned-part portraits share the same orphan fate on restart.
+        parts = await db.execute(
+            update(CustomPart)
+            .where(CustomPart.portrait_status == ImageStatus.pending)
+            .values(portrait_status=ImageStatus.failed)
+        )
         await db.commit()
-        if rec.rowcount or img.rowcount:
+        if rec.rowcount or img.rowcount or parts.rowcount:
             logging.getLogger("chimera").info(
-                "orphan sweep: %d records, %d images marked failed for retry",
-                rec.rowcount, img.rowcount)
+                "orphan sweep: %d records, %d images, %d part portraits marked failed",
+                rec.rowcount, img.rowcount, parts.rowcount)
 
 
 async def _seed_starter_crew() -> None:

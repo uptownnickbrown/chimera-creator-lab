@@ -26,6 +26,12 @@ _raw_sources: dict[str, dict] = {}
 _raw_environments: dict[str, dict] = {}
 _loaded = False
 
+# Summoned parts (custom_parts table) mirrored in memory so every consumer —
+# /api/library, validate_slugs, prompt enrichment — sees one merged library.
+# Single-player, single-process: the same pattern as generation.PROGRESS.
+_customs: list[SourceCreature] = []
+_raw_customs: dict[str, dict] = {}
+
 
 def _slugify(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
@@ -86,6 +92,7 @@ def _coerce_source(rec: dict) -> SourceCreature | None:
         traits=contributes or _strings(rec.get("traits") or rec.get("child_traits")),
         tags=_strings(rec.get("tags")),
         art=rec.get("art") or rec.get("image") or None,
+        aliases=_strings(rec.get("aliases")),
     )
 
 
@@ -118,8 +125,15 @@ def _coerce_environment(rec: dict) -> Environment | None:
 
 
 def load_library(data_dir: Path | None = None) -> None:
-    """Read the data files into memory. Called once at startup; idempotent."""
+    """Read the data files into memory. Called once at startup; idempotent.
+
+    Also resets the customs registry — the caller (lifespan / test fixture)
+    re-registers DB-backed custom parts afterwards via register_custom().
+    """
     global _sources, _environments, _raw_sources, _raw_environments, _loaded
+    global _customs, _raw_customs
+    _customs = []
+    _raw_customs = {}
     data_dir = data_dir or get_settings().data_dir
 
     src_records = _read_json_list(data_dir / "source_creatures.json", "sources", "creatures")
@@ -145,7 +159,22 @@ def load_library(data_dir: Path | None = None) -> None:
 
 
 def sources() -> list[SourceCreature]:
-    return list(_sources)
+    """Curated parts + Henry's summoned parts, one merged picker library."""
+    return list(_sources) + list(_customs)
+
+
+def register_custom(source: SourceCreature, raw: dict) -> None:
+    """Merge one summoned part into the live library (new or updated)."""
+    global _customs
+    _customs = [c for c in _customs if c.slug != source.slug] + [source]
+    _raw_customs[source.slug] = raw
+
+
+def set_custom_art(slug: str, art: str | None) -> None:
+    """The portrait render landed (or failed) — update the live entry."""
+    for c in _customs:
+        if c.slug == slug:
+            c.art = art
 
 
 def environments() -> list[Environment]:
@@ -164,12 +193,12 @@ def is_loaded() -> bool:
 
 
 def source_by_slug(slug: str) -> SourceCreature | None:
-    return next((s for s in _sources if s.slug == slug), None)
+    return next((s for s in sources() if s.slug == slug), None)
 
 
 def raw_source(slug: str) -> dict:
     """Full authored record for AI prompt enrichment ({} when unauthored)."""
-    return _raw_sources.get(slug, {})
+    return _raw_sources.get(slug) or _raw_customs.get(slug) or {}
 
 
 def raw_environment(slug: str) -> dict:
@@ -185,7 +214,7 @@ def display_name(slug: str) -> str:
 
 def validate_slugs(slugs: list[str]) -> list[str]:
     """Return the unknown slugs. Always empty while the library is unauthored."""
-    if not _sources:
+    if not _sources and not _customs:
         return []
-    known = {s.slug for s in _sources}
+    known = {s.slug for s in sources()}
     return [s for s in slugs if s not in known]

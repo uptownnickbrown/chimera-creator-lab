@@ -5,7 +5,7 @@
    crafted holo-plate, because a creature without a render is not a missing
    asset slot. Never an emoji (ARCHITECTURE.md non-negotiable). */
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { CoreStats, CreatureSummary } from "./api";
+import type { CoreStats, CreatureSummary, SourceCreature } from "./api";
 
 /* One map from the slot names screens ask for to the files the art pipeline
    actually ships. Screens keep their readable names; new art only ever needs a
@@ -140,6 +140,51 @@ export function Asset({
       alt={label || slot}
       onError={() => setFailed(true)}
     />
+  );
+}
+
+/** A source-part portrait. Curated parts ship as painted /assets/parts/<slug>
+    files; SUMMONED parts carry a /media portrait in `art` — and while that
+    portrait is still being painted (or if it failed), they get a shimmering
+    conjure placeholder instead of a magenta gap: a part mid-summon is a real
+    part, not missing art. Accepts a bare slug for callers that only have the
+    slug list (Reveal's FUSED FROM). */
+export function PartImg({
+  source,
+  slug,
+  label,
+  className = "",
+}: {
+  source?: Pick<SourceCreature, "slug" | "name" | "art" | "custom"> | null;
+  slug?: string;
+  label?: string;
+  className?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  const art = source?.art ?? null;
+  useEffect(() => setFailed(false), [art]);
+
+  const finalSlug = source?.slug ?? slug ?? "";
+  const name = label ?? source?.name ?? finalSlug;
+  const isCustom = source?.custom || finalSlug.startsWith("custom/");
+  if (!isCustom) {
+    return <Asset slot={`parts/${finalSlug}`} label={name} className={className} />;
+  }
+  if (art && !failed) {
+    return (
+      <img
+        className={`asset ${className}`}
+        src={art}
+        alt={name}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <div className={`summonwait ${className}`} role="img" aria-label={name}>
+      <span className="summonwait__ring" aria-hidden="true" />
+      <span className="summonwait__label">PAINTING…</span>
+    </div>
   );
 }
 

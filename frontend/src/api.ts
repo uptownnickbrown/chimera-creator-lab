@@ -104,6 +104,19 @@ export interface SourceCreature {
       the field is in data/source_creatures.json and the picker searches it as
       soon as /api/library starts serving it. */
   aliases?: string[];
+  /** True for parts Henry summoned himself (backend custom_parts table).
+      Custom parts carry their portrait in `art` (a /media path) — it is null
+      while the portrait is still being painted. */
+  custom?: boolean;
+}
+
+export interface SummonResponse {
+  status: "matched" | "disambiguate" | "conjured" | "redirect";
+  source: SourceCreature | null;
+  candidates: SourceCreature[];
+  message: string;
+  /** conjured only: "rendering" | "complete" | "failed" */
+  portrait_status: string;
 }
 
 export interface Environment {
@@ -229,6 +242,7 @@ export const api = {
     ),
 
   getLibrary: () => request<LibraryResponse>("GET", "/library"),
+  summon: (query: string) => request<SummonResponse>("POST", "/library/summon", { query }),
 
   listTournaments: () => request<TournamentView[]>("GET", "/tournaments"),
   createTournament: (entrant_ids: number[], name?: string) =>
@@ -261,4 +275,11 @@ export function getLibraryCached(): Promise<LibraryResponse> {
     });
   }
   return libraryPromise;
+}
+
+/** Summoning changes the library (a new part, then its portrait landing) —
+    drop the session cache and refetch so every later consumer sees it. */
+export function refreshLibrary(): Promise<LibraryResponse> {
+  libraryPromise = null;
+  return getLibraryCached();
 }
