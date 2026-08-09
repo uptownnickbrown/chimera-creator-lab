@@ -42,6 +42,10 @@ function cleanFacts(rows: string[], max = 3): string[] {
     .slice(0, max);
 }
 
+/* Gradual disclosure is the product: until the FIRST streamed field lands
+   (the name — server-side it parses ~1-2s into the stream), poll fast so the
+   kid sees it the moment it exists; then back off to easy cruising. */
+const POLL_FAST_MS = 450;
 const POLL_MS = 1500;
 /** White-out length; the reveal mounts underneath it and is lit as it clears. */
 const FLASH_MS = 300;
@@ -79,7 +83,9 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
           (row.image_status === "complete" || row.image_status === "failed");
         if (!settled) {
           waited.current = true;
-          timer.current = setTimeout(poll, POLL_MS) as unknown as number;
+          // Fast until the name (first streamed field) is on screen.
+          const wait = row.record_status === "generating" && !row.name ? POLL_FAST_MS : POLL_MS;
+          timer.current = setTimeout(poll, wait) as unknown as number;
         }
       } catch {
         if (!cancelled) setError("That chimera could not be found.");
