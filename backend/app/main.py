@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -124,3 +126,40 @@ app.mount("/media", StaticFiles(directory=_media), name="media")
 @app.get("/health")
 async def health() -> dict:
     return {"status": "ok", "env": get_settings().env}
+
+
+@app.get("/healthz")
+async def healthz() -> dict:
+    """Railway's healthcheck target. Deliberately does not touch the database:
+    it answers "is this container serving?", which is what decides whether the
+    new deploy replaces the old one."""
+    return {"ok": True}
+
+
+@app.get("/readyz")
+async def readyz(response: Response) -> dict:
+    """Deeper probe for humans: proves the DB round-trips. Not the healthcheck —
+    a database blip should not roll back a good container."""
+    from sqlalchemy import text
+
+    from .db import session_factory
+
+    try:
+        async with session_factory()() as db:
+            await db.execute(text("SELECT 1"))
+    except Exception as exc:  # noqa: BLE001 — the message is the whole point
+        response.status_code = 503
+        return {"ok": False, "db": type(exc).__name__, "detail": str(exc)[:200]}
+    return {"ok": True, "db": "ok"}
+
+
+# -- SPA -----------------------------------------------------------------------
+# Mounted LAST so it can never shadow /api or /media (Starlette matches routes in
+# registration order). Absent in dev — `npm run dev` serves the frontend and
+# proxies here — so a missing directory is a silent, expected no-op.
+_static = Path(os.environ.get("CHIMERA_STATIC_DIR", "/app/static"))
+if (_static / "index.html").is_file():
+    # html=True serves index.html at "/". The app uses hash routing, so there
+    # are no deep server-side paths to fall back for.
+    app.mount("/", StaticFiles(directory=_static, html=True), name="spa")
+    logging.getLogger("chimera").info("serving SPA from %s", _static)
