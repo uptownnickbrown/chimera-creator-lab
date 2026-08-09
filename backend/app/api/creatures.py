@@ -27,6 +27,10 @@ log = logging.getLogger("chimera.creatures")
 router = APIRouter(prefix="/api/creatures", tags=["creatures"])
 
 
+#: Absolute ceiling for the record phase (~26s typical) — see _generate_task.
+RECORD_DEADLINE_S = 180
+
+
 def spawn(coro, label: str) -> asyncio.Task:
     """create_task + loud death: a background task that raises must never
     vanish silently (asyncio only whispers at GC time)."""
@@ -126,14 +130,31 @@ async def _generate_task(creature_id: int, sources: list[str]) -> None:
             images.generate_hero(SimpleNamespace(id=creature_id, visual_spec=spec, name=""))
         )
 
+    log.info("generation task start: creature %s from %s", creature_id, sources)
     async with session_factory()() as db:
         creature = await db.get(Creature, creature_id)
         if creature is None:
             return
+        log.info("generation task: row %s loaded, opening record stream", creature_id)
         try:
-            record = await generation.generate_creature_streaming(
-                creature_id, sources, on_visual_spec=start_hero
+            # Hard ceiling over the WHOLE record phase. asyncio.wait (not
+            # wait_for) so a pathologically uncancellable hang can't take this
+            # task down with it: on deadline we abandon the stuck coroutine and
+            # land the row in failed/retryable — a creature may never strand at
+            # "generating" (observed once: silent hang before the first chunk,
+            # inner watchdogs never fired).
+            rec_task = asyncio.create_task(
+                generation.generate_creature_streaming(
+                    creature_id, sources, on_visual_spec=start_hero
+                )
             )
+            done, _ = await asyncio.wait({rec_task}, timeout=RECORD_DEADLINE_S)
+            if rec_task not in done:
+                rec_task.cancel()
+                raise RuntimeError(
+                    f"record generation exceeded {RECORD_DEADLINE_S}s deadline"
+                )
+            record = rec_task.result()
             for field, value in _record_fields(record).items():
                 setattr(creature, field, value)
             creature.record_status = RecordStatus.complete

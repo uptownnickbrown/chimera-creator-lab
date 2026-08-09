@@ -1857,7 +1857,9 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .starbtn:hover { opacity: 0.8; }
 .starbtn.is-on { opacity: 1; transform: scale(1.05); filter: drop-shadow(0 0 12px rgba(247, 201, 75, 0.85)); }
 
-.detail__stage { flex: 1; min-height: 196px; }
+/* Capped (not flex-greedy) so W/L + all five stats sit above the fold —
+   the archive grid may scroll instead (Nick's call, 2026-08-09). */
+.detail__stage { flex: 0 0 auto; height: clamp(150px, 26vh, 220px); }
 .detail__stage .stage { --disc-w: min(270%, 800px); --foot: 25%; }
 .detail__record { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; text-align: center; }
 .detail__record > div {
