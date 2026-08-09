@@ -8,7 +8,11 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 backend/chimera.db
+# SQLite in WAL mode leaves two sidecars next to the file; they hold real page
+# data, so they are as ignorable as the .db itself.
 *.db
+*.db-shm
+*.db-wal
 
 # node / build output
 node_modules/
