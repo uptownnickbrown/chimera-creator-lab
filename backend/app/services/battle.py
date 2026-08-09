@@ -19,7 +19,13 @@ import hashlib
 import logging
 
 from ..models import Creature
-from ..schemas import BattleReason, BattleResult, HealthRemaining
+from ..schemas import (
+    BEAT_TARGET,
+    REASON_BLURB_TARGET,
+    BattleReason,
+    BattleResult,
+    HealthRemaining,
+)
 from . import library
 
 log = logging.getLogger("chimera.battle")
@@ -163,9 +169,12 @@ BATTLE_SYSTEM = (
     "the opponent's weapons, stamina, elemental effects, whether one can "
     "force the fight into its preferred zone, and each creature's listed "
     "weaknesses. The environment must matter. Reasons: exactly three, each "
-    "kid-readable (title 4 words max, blurb 12 words max), each naming a "
-    "concrete trait or environment interaction. Beats: 4-6 short dramatic "
-    "sentences (opening, first advantage, counter, turning point, finisher). "
+    "kid-readable (title 4 words max; blurb 12 words max and under "
+    f"{REASON_BLURB_TARGET} characters), each naming a concrete trait or "
+    "environment interaction. Beats: 4-6 short dramatic sentences (opening, "
+    "first advantage, counter, turning point, finisher) — each beat ONE "
+    f"punchy sentence under {BEAT_TARGET} characters; it is displayed in "
+    "large type for a 7-year-old, never a wall of text. "
     "Narrative: 2-3 sentences, epic monster action, never gory — creatures "
     "are defeated, knocked out, driven back; nothing dies or bleeds. "
     "Health: the loser ends at 0; the winner keeps 150-950 of 1000 "

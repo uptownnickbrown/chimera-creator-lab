@@ -170,6 +170,13 @@ def register_custom(source: SourceCreature, raw: dict) -> None:
     _raw_customs[source.slug] = raw
 
 
+def remove_custom(slug: str) -> None:
+    """Drop one summoned part from the live registry (deletion path)."""
+    global _customs
+    _customs = [c for c in _customs if c.slug != slug]
+    _raw_customs.pop(slug, None)
+
+
 def set_custom_art(slug: str, art: str | None) -> None:
     """The portrait render landed (or failed) — update the live entry."""
     for c in _customs:

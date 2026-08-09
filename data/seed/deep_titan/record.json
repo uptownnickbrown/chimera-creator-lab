@@ -10,7 +10,7 @@
   "record": {
     "name": "Voltithan",
     "title": "The Storm Abyss Colossus",
-    "anatomy_plan": "Base body is a titanic Leviathan-style sea beast scaled down to about 45 m long, using Megalodon for skull shape, jaw structure, and main muscle layout. The torso is thick and torpedo-shaped like a super-sized shark, with a long tapering eel-like tail from the Electric Eel for extra length, flexibility, and electricity organs. Skin and outer armor fuse Leviathan\u2019s plated ridges and barnacle-crusted scutes with Megalodon\u2019s rough shark skin, with soft, slick patches over the electric organs from the eel. The head combines Megalodon\u2019s huge conical jaws and tooth rows with Anglerfish\u2019s stretchy, expandable jaw hinges and needle-like inner teeth, plus a massive forehead crest that carries a glowing Anglerfish-style lure on a thick, armored stalk. Nervous system is based on Electric Eel\u2019s electric organ layout, running in stacked bands down the sides of the body and tail, powered by a huge Leviathan heart. Sensory systems mix shark electroreception and smell with deep-sea Anglerfish-style low-light eyes and a light-control organ for the lure. Fins: oversized Megalodon dorsal and side fins reinforced with Leviathan armor ridges, and a wide eel-like tail fin that can flex and whip for sudden bursts and wave-splashing tail slams.",
+    "anatomy_plan": "Base body is a titanic Leviathan-style sea beast scaled down to about 45 m long, using Megalodon for skull shape, jaw structure, and main muscle layout. The torso is thick and torpedo-shaped like a super-sized shark, with a long tapering eel-like tail from the Electric Eel for extra length, flexibility, and electricity organs. Skin and outer armor fuse Leviathan’s plated ridges and barnacle-crusted scutes with Megalodon’s rough shark skin, with soft, slick patches over the electric organs from the eel. The head combines Megalodon’s huge conical jaws and tooth rows with Anglerfish’s stretchy, expandable jaw hinges and needle-like inner teeth, plus a massive forehead crest that carries a glowing Anglerfish-style lure on a thick, armored stalk. Nervous system is based on Electric Eel’s electric organ layout, running in stacked bands down the sides of the body and tail, powered by a huge Leviathan heart. Sensory systems mix shark electroreception and smell with deep-sea Anglerfish-style low-light eyes and a light-control organ for the lure. Fins: oversized Megalodon dorsal and side fins reinforced with Leviathan armor ridges, and a wide eel-like tail fin that can flex and whip for sudden bursts and wave-splashing tail slams.",
     "role": "Mythic Ocean Bruiser / Zone Denial Controller",
     "core_stats": {
       "power": 96,
@@ -39,7 +39,7 @@
       },
       {
         "name": "Stormlight Lure",
-        "blurb": "A giant glowing lure tricks enemies close, then blasts them with a blinding flash and crackling shock.",
+        "blurb": "Its glowing lure tempts enemies close, then explodes in blinding light and a crackling water shock.",
         "sources": [
           "Anglerfish",
           "Electric Eel"
@@ -47,7 +47,7 @@
       },
       {
         "name": "Blackwater Cloak",
-        "blurb": "In deep dark water it fades to almost nothing, only barnacle ridges and a tiny ghost light show.",
+        "blurb": "In deep dark water it fades to a ghostly outline, with only rough ridges and one tiny drifting light.",
         "sources": [
           "Leviathan",
           "Anglerfish"
@@ -57,12 +57,12 @@
     "strengths": [
       "Colossal bite that can crush almost any armor once it connects",
       "Nearly warship-level plated hide with shark-skin roughness that shrugs off most hits",
-      "Devastating electric shocks that can stun big foes and overload metal gear in water range around its body and tail whip zone (short to mid range, not long-range lightning)\u201c,"
+      "Its body and tail whip unleash crushing electric shocks that stun big foes and fry metal gear in water."
     ],
     "weaknesses": [
       "Very slow turning and clumsy in tight spaces; quick, agile enemies can dance around it",
-      "Needs water to move and fight well; on land or in shallow water it is almost helpless and can be outmaneuvered",
-      "Electric shocks are much weaker in very cold water and almost useless out of water, so frozen or dry arenas cut its power a lot\u201c,"
+      "Without deep water it flops and fumbles, easy to dodge and outmaneuver in shallow pools or on land.",
+      "In icy or dry arenas its sparks fizzle weakly, cutting its shocking power down to almost nothing."
     ],
     "environment_affinities": {
       "deep_ocean": 2,
@@ -87,8 +87,8 @@
       "attack_range": 35,
       "maneuverability": 22
     },
-    "visual_spec": "A gigantic ocean monster about 45 meters long, shaped like a cross between a battleship-sized shark and a dragon-sized eel. The front half is thick and torpedo-shaped like a huge Megalodon, with a broad, triangular head and a massive, heavy chest. The back half stretches into a long, muscular eel-like tail that whips and coils, ending in a wide, ribbon-like fin. Along its back runs a towering Leviathan-style ridge of armor plates, each plate shaped like a rough stone shield, stacked in a jagged line from head to mid-tail. The armor is dark blue-black with patches of sea-green algae and white barnacles, giving it an ancient, rocky look, like a moving chunk of reef. Between the plates, the skin is tough shark hide, slate grey fading to a pale, yellowed belly that runs all along the underside. The texture there is smoother and slightly glossy, echoing electric eel skin, with faint blue sparks that race in thin lines when it charges up. The head has the huge, wedge-like shark profile, but the jaws can open far wider than a normal shark, hinging back like an Anglerfish to form a cavernous mouth. Inside are two layers of teeth: large, triangular Megalodon teeth in the outer rows, and behind them thin, needle-like inner teeth that curve back like a deep-sea trap. The eyes are relatively small for its size, set high and slightly forward, with glossy, deep-sea blue-black pupils that catch only a little light. From the top of its forehead rises a thick, bony stalk, armored at the base with the same blue-black plates. The tip of the stalk carries a huge, fleshy lure that glows blue-green, like a hanging lantern, the light pulsing slowly brighter and dimmer. In darkness, this lure can glow strong enough to light its whole head from below, making the teeth and jawline glow in eerie outline. The side fins are enormous shark-like flippers edged with small armored ridges; the dorsal fin is tall and triangular but broken into jagged segments by the Leviathan back plates. The tail is long and sinuous, with electric organ ridges running down each side like twin glowing seams, sometimes flickering with soft blue lightning under the skin. When it moves, its top half glides slow and steady, while the tail ripples in strong waves, giving it a powerful, unstoppable cruise. In still poses it looks like a piece of a dark island, with rough barnacle crusts, dripping water, and tiny waterfalls sliding off its armor plates when it rises from the sea. In motion, flashes of electric blue race down its sides and tail, and the lure\u2019s ghostly light swings above its jaws, casting moving shadows over its teeth.",
+    "visual_spec": "A gigantic ocean monster about 45 meters long, shaped like a cross between a battleship-sized shark and a dragon-sized eel. The front half is thick and torpedo-shaped like a huge Megalodon, with a broad, triangular head and a massive, heavy chest. The back half stretches into a long, muscular eel-like tail that whips and coils, ending in a wide, ribbon-like fin. Along its back runs a towering Leviathan-style ridge of armor plates, each plate shaped like a rough stone shield, stacked in a jagged line from head to mid-tail. The armor is dark blue-black with patches of sea-green algae and white barnacles, giving it an ancient, rocky look, like a moving chunk of reef. Between the plates, the skin is tough shark hide, slate grey fading to a pale, yellowed belly that runs all along the underside. The texture there is smoother and slightly glossy, echoing electric eel skin, with faint blue sparks that race in thin lines when it charges up. The head has the huge, wedge-like shark profile, but the jaws can open far wider than a normal shark, hinging back like an Anglerfish to form a cavernous mouth. Inside are two layers of teeth: large, triangular Megalodon teeth in the outer rows, and behind them thin, needle-like inner teeth that curve back like a deep-sea trap. The eyes are relatively small for its size, set high and slightly forward, with glossy, deep-sea blue-black pupils that catch only a little light. From the top of its forehead rises a thick, bony stalk, armored at the base with the same blue-black plates. The tip of the stalk carries a huge, fleshy lure that glows blue-green, like a hanging lantern, the light pulsing slowly brighter and dimmer. In darkness, this lure can glow strong enough to light its whole head from below, making the teeth and jawline glow in eerie outline. The side fins are enormous shark-like flippers edged with small armored ridges; the dorsal fin is tall and triangular but broken into jagged segments by the Leviathan back plates. The tail is long and sinuous, with electric organ ridges running down each side like twin glowing seams, sometimes flickering with soft blue lightning under the skin. When it moves, its top half glides slow and steady, while the tail ripples in strong waves, giving it a powerful, unstoppable cruise. In still poses it looks like a piece of a dark island, with rough barnacle crusts, dripping water, and tiny waterfalls sliding off its armor plates when it rises from the sea. In motion, flashes of electric blue race down its sides and tail, and the lure’s ghostly light swings above its jaws, casting moving shadows over its teeth.",
     "rarity": "Legendary",
-    "fun_fact": "When a Voltithan swims slowly in the deep, tiny fish and curious sea creatures sometimes gather around its glowing lure like a floating streetlamp, riding safely in the calm water just outside its bite zone."
+    "fun_fact": "Slow-swimming Voltithan becomes a glowing sea streetlamp, with tiny fish riding safely beside it."
   }
 }

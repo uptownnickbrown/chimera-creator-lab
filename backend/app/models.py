@@ -21,7 +21,6 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     Float,
-    ForeignKey,
     Integer,
     String,
     Text,
@@ -162,15 +161,20 @@ class Battle(TimestampMixin, Base):
     `canonical_key` is unique; service code normalizes the pair to (min, max) so
     (A vs B) and (B vs A) collapse onto the same row and therefore the same
     winner. See services/battle.py.
+
+    Creature ids here are plain integers, NOT foreign keys: creatures are
+    deletable (playtest rule) while battle rows are the permanent determinism
+    cache and outlive them. A dangling id renders as a graceful ghost in the
+    frontend.
     """
 
     __tablename__ = "battles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    creature_a_id: Mapped[int] = mapped_column(ForeignKey("creatures.id"), index=True)
-    creature_b_id: Mapped[int] = mapped_column(ForeignKey("creatures.id"), index=True)
+    creature_a_id: Mapped[int] = mapped_column(Integer, index=True)
+    creature_b_id: Mapped[int] = mapped_column(Integer, index=True)
     environment: Mapped[str] = mapped_column(String(48))
-    winner_id: Mapped[int] = mapped_column(ForeignKey("creatures.id"), index=True)
+    winner_id: Mapped[int] = mapped_column(Integer, index=True)
 
     reasons: Mapped[list] = mapped_column(JSON, default=list)  # exactly 3 {icon,title,blurb}
     narrative: Mapped[str] = mapped_column(Text, default="")
@@ -202,5 +206,6 @@ class Tournament(TimestampMixin, Base):
     )
     entrant_ids: Mapped[list] = mapped_column(JSON, default=list)  # exactly 8 creature ids
     bracket: Mapped[dict] = mapped_column(JSON, default=dict)
-    champion_id: Mapped[int | None] = mapped_column(ForeignKey("creatures.id"))
+    # Plain integer, not a FK: history survives creature deletion (ghost render).
+    champion_id: Mapped[int | None] = mapped_column(Integer)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

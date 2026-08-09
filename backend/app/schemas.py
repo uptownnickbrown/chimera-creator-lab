@@ -10,11 +10,29 @@ sync: if a field changes here it must change in the prompt schema too.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 Rarity = Literal["Uncommon", "Rare", "Epic", "Legendary"]
+
+# -- kid-length copy budgets (request #2/#9) -----------------------------------
+# TARGETs are what the prompts ask for (short, punchy, one sentence a
+# 7-year-old reads without scrolling). MAXes are deliberately looser pydantic
+# backstops so structured-output validation rarely rejects a record outright.
+# scripts/scrub_records.py flags anything over TARGET and rewrites it.
+TITLE_TARGET, TITLE_MAX = 30, 60
+ABILITY_BLURB_TARGET, ABILITY_BLURB_MAX = 90, 160
+# 70 proved too tight for a complete thought (the scrub kept producing
+# fragments like "turning it into a."); 95 still fits a chip at the new
+# type scale and lets every trait be a whole sentence.
+TRAIT_TARGET, TRAIT_MAX = 95, 140  # each strength / weakness
+FUN_FACT_TARGET, FUN_FACT_MAX = 140, 240
+BEAT_TARGET = 110          # battle beats (prompt guidance only)
+REASON_BLURB_TARGET = 90   # battle reason blurbs (prompt guidance only)
+
+#: One strength/weakness line — backstop-bounded, kid-readable.
+TraitStr = Annotated[str, Field(max_length=TRAIT_MAX)]
 
 #: The nine arenas. Mirrors the environment_affinities keys in the probe schema.
 ENVIRONMENT_SLUGS: tuple[str, ...] = (
@@ -51,7 +69,10 @@ class CoreStats(Strict):
 
 class Ability(Strict):
     name: str
-    blurb: str = Field(description="One short exciting sentence a 7-year-old can read")
+    blurb: str = Field(
+        max_length=ABILITY_BLURB_MAX,
+        description="One short exciting sentence a 7-year-old can read",
+    )
     sources: list[str] = Field(
         description="Which source creatures combine into this ability — best abilities fuse two"
     )
@@ -90,18 +111,20 @@ class CreatureRecord(Strict):
     """One coherent species fused from four sources."""
 
     name: str = Field(description="Exciting 1-3 word species name a 7-year-old can pronounce")
-    title: str = Field(description="Epic short title like 'The Thundered Leviathan'")
+    title: str = Field(
+        max_length=TITLE_MAX, description="Epic short title like 'The Thundered Leviathan'"
+    )
     anatomy_plan: str = Field(description="How the four sources map to body systems")
     role: str = Field(description="Combat archetype, e.g. 'Bruiser / Area Control'")
     core_stats: CoreStats
     abilities: list[Ability] = Field(min_length=3, max_length=4)
-    strengths: list[str] = Field(min_length=2, max_length=3)
-    weaknesses: list[str] = Field(min_length=2, max_length=3)
+    strengths: list[TraitStr] = Field(min_length=2, max_length=3)
+    weaknesses: list[TraitStr] = Field(min_length=2, max_length=3)
     environment_affinities: EnvironmentAffinities
     sim_profile: SimProfile
     visual_spec: str = Field(description="Image-gen description: colors, textures, body plan")
     rarity: Rarity
-    fun_fact: str
+    fun_fact: str = Field(max_length=FUN_FACT_MAX)
 
 
 # -- battle contract (LLM) ----------------------------------------------------
@@ -199,6 +222,23 @@ class RenameResponse(Api):
 class FavoriteResponse(Api):
     creature_id: int
     favorite: bool
+
+
+# -- deletion (playtest request: anything creatable is deletable) ---------------
+
+class DeleteCreatureResponse(Api):
+    creature_id: int
+    deleted: bool = True
+
+
+class DeleteCustomPartResponse(Api):
+    slug: str
+    deleted: bool = True
+
+
+class DeleteTournamentResponse(Api):
+    tournament_id: int
+    deleted: bool = True
 
 
 class SourceCreature(Api):
@@ -302,6 +342,16 @@ class TournamentView(Api):
     rounds: list[BracketRound]
     champion_id: int | None = None
     entrants: list[CreatureSummary] = Field(default_factory=list)
+    next_match_id: str | None = Field(
+        default=None,
+        description="First unresolved match with both fighters seated — the arena's "
+        "'jump back in' target. Null once the bracket is complete.",
+    )
+    final_art: str | None = Field(
+        default=None,
+        description="Championship key art from the bracket JSON: null (not started or "
+        "failed), 'pending' (render in flight), or a /media/creatures/final_*.png path.",
+    )
     created_at: datetime | None = None
     completed_at: datetime | None = None
 

@@ -14,6 +14,7 @@ from ..schemas import (
     BattleReason,
     BattleView,
     CreateTournamentRequest,
+    DeleteTournamentResponse,
     HealthRemaining,
     PredictRequest,
     ResolveResponse,
@@ -37,20 +38,35 @@ async def _load(db: AsyncSession, tournament_id: int) -> Tournament:
     return row
 
 
+def _next_match_id(bracket: dict) -> str | None:
+    """First unresolved match with both fighters seated, in play order."""
+    for rnd in (bracket or {}).get("rounds", []):
+        for match in rnd.get("matches", []):
+            if (match.get("winner") is None
+                    and match.get("a") is not None and match.get("b") is not None):
+                return match.get("id")
+    return None
+
+
 async def _view(db: AsyncSession, t: Tournament) -> TournamentView:
     rows = list((await db.execute(
         select(Creature).where(Creature.id.in_(t.entrant_ids or []))
     )).scalars())
     by_id = {c.id: c for c in rows}
+    # Deleted entrants simply drop out of `entrants`; their ids stay in
+    # entrant_ids and the bracket, where the frontend renders a ghost.
     entrants = [summary(by_id[i]) for i in (t.entrant_ids or []) if i in by_id]
+    bracket = t.bracket or {}
     return TournamentView(
         id=t.id,
         name=t.name,
         status=t.status.value if hasattr(t.status, "value") else t.status,
         entrant_ids=t.entrant_ids or [],
-        rounds=(t.bracket or {}).get("rounds", []),
+        rounds=bracket.get("rounds", []),
         champion_id=t.champion_id,
         entrants=entrants,
+        next_match_id=_next_match_id(bracket),
+        final_art=bracket.get("final_art"),
         created_at=t.created_at,
         completed_at=t.completed_at,
     )
@@ -89,6 +105,18 @@ async def create_tournament(
     if len(set(body.entrant_ids)) != bracket_svc.ENTRANT_COUNT:
         raise HTTPException(status_code=400, detail="Need 8 different creatures")
 
+    # Single active tournament (request #7): the frontend offers "abandon
+    # current?" on 409 and abandons via DELETE /api/tournaments/{id}.
+    active = (await db.execute(
+        select(Tournament).where(Tournament.status != TournamentStatus.complete).limit(1)
+    )).scalar_one_or_none()
+    if active is not None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Tournament {active.id} ({active.name!r}) is still in progress — "
+            "finish it or abandon it first",
+        )
+
     found = list((await db.execute(
         select(Creature.id).where(Creature.id.in_(body.entrant_ids))
     )).scalars())
@@ -115,11 +143,39 @@ async def list_tournaments(db: AsyncSession = Depends(get_db)) -> list[Tournamen
     return [await _view(db, t) for t in rows]
 
 
+@router.get("/current", response_model=TournamentView | None)
+async def current_tournament(db: AsyncSession = Depends(get_db)) -> TournamentView | None:
+    """The single active (non-complete) tournament, or JSON null.
+
+    `next_match_id` lets the arena drop the player straight into their
+    current battle without walking the bracket client-side.
+    """
+    t = (await db.execute(
+        select(Tournament)
+        .where(Tournament.status != TournamentStatus.complete)
+        .order_by(Tournament.id.desc())
+        .limit(1)
+    )).scalar_one_or_none()
+    return None if t is None else await _view(db, t)
+
+
 @router.get("/{tournament_id}", response_model=TournamentView)
 async def read_tournament(
     tournament_id: int, db: AsyncSession = Depends(get_db)
 ) -> TournamentView:
     return await _view(db, await _load(db, tournament_id))
+
+
+@router.delete("/{tournament_id}", response_model=DeleteTournamentResponse)
+async def delete_tournament(
+    tournament_id: int, db: AsyncSession = Depends(get_db)
+) -> DeleteTournamentResponse:
+    """Delete a tournament in ANY status — abandon an in-flight bracket or
+    remove a history entry. The battles table (determinism cache) and the
+    creatures' win/loss records are untouched."""
+    t = await _load(db, tournament_id)
+    await db.delete(t)
+    return DeleteTournamentResponse(tournament_id=tournament_id)
 
 
 @router.post("/{tournament_id}/matches/{match_id}/predict", response_model=TournamentView)

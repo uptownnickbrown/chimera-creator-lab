@@ -9,7 +9,7 @@
   "target_rarity": "Rare",
   "record": {
     "name": "Foxmorphos",
-    "title": "The Trickster of a Thousand Skies",
+    "title": "Trickster of a Thousand Skies",
     "anatomy_plan": "Base body is a slender fox-like predator scaled to about 1.5 m long (Kitsune frame), but lightly built like a Microraptor for agile climbing and leaping. Forelimbs and hindlimbs are feathered-glider limbs (Microraptor wings) ending in chameleon-style gripping pincer feet for branch and wall climbing. The long fox torso tapers into a prehensile tail that splits into four main tail-limbs; each tail is lined with octopus-style muscular suckers on the underside and soft fur/feathers on top (Kitsune + Octopus). These tails act as extra arms for grabbing and as anchor lines while gliding. Skin and fur are overlaid with fine, scale-like patches that can change color and texture (Chameleon + Octopus), while the main coat shows ghostly white Kitsune fur with iridescent Microraptor feathers at joints. Head is fox-like with large ears, but with chameleon turret eyes mounted above the muzzle on small swiveling stalks for all-around vision. Inside the mouth is a sticky, extensible tongue shaped from chameleon mechanics but powered by octopus musculature. Kitsune mythic influence runs through the nervous system: specialized chromatophore clusters and feather-fiber filaments broadcast foxfire-like light patterns that trick vision and create illusions rather than true magic. Overall: an arboreal/ruin-climbing trickster glider that mixes fox cunning, dinosaur agility, lizard stealth, and cephalopod flexibility.",
     "role": "Ambush Skirmisher / Illusion Harrier",
     "core_stats": {
@@ -23,7 +23,7 @@
     "abilities": [
       {
         "name": "Foxfire Mirage",
-        "blurb": "Its glowing tail-suckers flash foxfire patterns that make foes chase fake copies instead of the real body.",
+        "blurb": "Glowing tail suckers flash foxfire that makes enemies chase bright fakes instead of the real fox.",
         "sources": [
           "Kitsune",
           "Octopus"
@@ -31,7 +31,7 @@
       },
       {
         "name": "Quad-Wing Ghost Glide",
-        "blurb": "It leaps and spreads feathered legs and arms to glide silently, then vanishes mid-air with a color-shift feint.",
+        "blurb": "It leaps, spreads feathery limbs to glide in silence, then color-shifts to seem to vanish mid-air.",
         "sources": [
           "Microraptor",
           "Chameleon"
@@ -39,7 +39,7 @@
       },
       {
         "name": "Tongue-Tether Pounce",
-        "blurb": "A lightning tongue sticks to a target, yanking it just enough for a surprise fox-leap and claw strike.",
+        "blurb": "A sticky lightning tongue zaps out, yanks a target closer, and sets up a surprise fox pounce.",
         "sources": [
           "Chameleon",
           "Microraptor"
@@ -47,7 +47,7 @@
       },
       {
         "name": "Many-Tail Gripstorm",
-        "blurb": "Four sucker-lined fox tails whip out to grab branches, walls, or foes, turning any space into a sticky trap.",
+        "blurb": "Four sucker tails snap out to grab walls, branches, or foes, turning the whole area into a sticky trap.",
         "sources": [
           "Octopus",
           "Kitsune"
@@ -57,12 +57,12 @@
     "strengths": [
       "Excellent at ambushes with camouflage and illusion-like light tricks",
       "Can climb almost any surface and glide between perches for hit-and-run attacks",
-      "Very hard to pin down thanks to multiple gripping tails and flexible joints that squeeze through small gaps like an octopus arm cluster with a fox body attached to the front half, shoulders very mobile but the main ribcage still solid and vulpine; it can\u2019t ooze like pure octopus but can slither through spaces a normal fox could never manage, as long as the chest and skull barely fit. Vision is superb: chameleon turret eyes can spin independently, giving nearly 360\u00b0 sight, plus excellent low-light Kitsune-style night vision. Pattern-shifting skin and feather-fur give high stealth, especially in forests and ruined cities. However, its body is lightly built with thin bones and mostly soft tissue, so strong hits, crushing blows, or very spiky terrain can knock it out fast. It also dries out easily because its semi-octopus skin needs moisture for top flexibility and color changing; hot desert or volcanic zones quickly tire it out and dull its illusions. Illusion tricks use real light and movement, not true mind-magic, so creatures that rely on smell, sonar, or heat-sense can see through many of its fakes."
+      "Slippery fox-octopus body squeezes through tiny gaps, sees almost all around, and vanishes with skin that shifts colors."
     ],
     "weaknesses": [
       "Low raw armor; strong direct hits from heavy bruisers or falling debris can defeat it fast",
-      "Needs shade or moisture; hot dry places quickly weaken its color-shift and make its skin crackly and slow",
-      "Illusions mainly fool eyesight; scent-tracking or echo-locating enemies can still find the real body easily; illusions mainly fool eyesight; scent-tracking or echo-locating enemies can still find the real body easily, and the fake copies don\u2019t block attacks. Its glides depend on altitude and air currents\u2014no true powered flight\u2014so in flat open fields or tight caves it loses a lot of mobility. Multiple gripping tails and limb feathers can tangle in thorns, nets, or dense rubble if it panics, making it briefly easy to grab."
+      "Needs shade or damp air, or its color tricks fade and its skin feels stiff and crackly.",
+      "Eye-fooling copies miss noses and sonar, glides need high places, and its grabby tails snag in thorns or nets."
     ],
     "environment_affinities": {
       "deep_ocean": -1,
@@ -87,8 +87,8 @@
       "attack_range": 68,
       "maneuverability": 89
     },
-    "visual_spec": "Fox-like quadruped body about 1.5 meters long, lean and flexible, standing lightly on four feathered limbs. Each limb has sleek, crow-like black and blue iridescent feathers fanning from elbows and knees, forming four glider wings when spread. Feet are chameleon-style pincer claws, two toes forward and two back, with rough pads for gripping bark and stone. The torso is covered in short, snow-white fox fur with faint silver swirls, broken at shoulders and hips by patches of glossy, raven-feather plumage that shimmers blue-green in the light. Along the flanks and neck, small chameleon-like scales peek through the fur, their colors slowly sliding between teal, amber, and mossy green. The head is a narrow white fox muzzle with a black nose and a small line of sharp teeth, crowned by tall, triangular ears dusted with dark tips. Above the muzzle rise two small chameleon turret eyes on short, scaly stalks; each eye is big, round, and emerald with slit pupils, able to swivel in different directions. From behind, instead of one tail, four long fox tails fan out, each as long as the body. The top half of each tail is fluffy white fur with streaks of black and midnight blue feathers; the underside is bare, octopus-like skin lined with neat rows of pale suction cups. At the tip of each tail, the fur thins into a soft, glowing tuft where pale blue-white foxfire light pulses softly, sometimes flaring into quick, ripple-like flashes that echo along the feathers and skin. The main body skin under the fur can shift color and texture: in forest it shows mottled greens and browns, in stone ruins it becomes gray and dusty. The creature\u2019s back and limbs are patterned with faint ripple bands, like water-light, that can brighten or fade. When it glides, all four feathered limbs stretch wide, showing a dark, glossy wing surface with subtle rainbow sheen, while the four tails stream behind like glowing, ribboned comets, suckers flexing and gripping any passing branch or ledge. Overall look: a sleek, snow-white fox crossed with a raven, a chameleon, and an octopus, built to cling to walls and leap silently through tangled ruins and jungle canopies.",
+    "visual_spec": "Fox-like quadruped body about 1.5 meters long, lean and flexible, standing lightly on four feathered limbs. Each limb has sleek, crow-like black and blue iridescent feathers fanning from elbows and knees, forming four glider wings when spread. Feet are chameleon-style pincer claws, two toes forward and two back, with rough pads for gripping bark and stone. The torso is covered in short, snow-white fox fur with faint silver swirls, broken at shoulders and hips by patches of glossy, raven-feather plumage that shimmers blue-green in the light. Along the flanks and neck, small chameleon-like scales peek through the fur, their colors slowly sliding between teal, amber, and mossy green. The head is a narrow white fox muzzle with a black nose and a small line of sharp teeth, crowned by tall, triangular ears dusted with dark tips. Above the muzzle rise two small chameleon turret eyes on short, scaly stalks; each eye is big, round, and emerald with slit pupils, able to swivel in different directions. From behind, instead of one tail, four long fox tails fan out, each as long as the body. The top half of each tail is fluffy white fur with streaks of black and midnight blue feathers; the underside is bare, octopus-like skin lined with neat rows of pale suction cups. At the tip of each tail, the fur thins into a soft, glowing tuft where pale blue-white foxfire light pulses softly, sometimes flaring into quick, ripple-like flashes that echo along the feathers and skin. The main body skin under the fur can shift color and texture: in forest it shows mottled greens and browns, in stone ruins it becomes gray and dusty. The creature’s back and limbs are patterned with faint ripple bands, like water-light, that can brighten or fade. When it glides, all four feathered limbs stretch wide, showing a dark, glossy wing surface with subtle rainbow sheen, while the four tails stream behind like glowing, ribboned comets, suckers flexing and gripping any passing branch or ledge. Overall look: a sleek, snow-white fox crossed with a raven, a chameleon, and an octopus, built to cling to walls and leap silently through tangled ruins and jungle canopies.",
     "rarity": "Rare",
-    "fun_fact": "Foxmorphos can swivel one eye to watch behind it while the other tracks a target ahead, all while its tails draw glowing light patterns that copy its own outline on nearby walls."
+    "fun_fact": "Foxmorphos swivels its eyes two ways at once while its glowing tails trace bright foxy shadows on the walls."
   }
 }

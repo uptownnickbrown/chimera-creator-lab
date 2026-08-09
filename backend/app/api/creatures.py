@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..config import get_settings
 from ..db import get_db
 from ..models import Creature, ImageStatus, RecordStatus
 from ..schemas import (
@@ -16,6 +17,7 @@ from ..schemas import (
     CreateCreatureResponse,
     CreatureDetail,
     CreatureSummary,
+    DeleteCreatureResponse,
     FavoriteResponse,
     RenameResponse,
 )
@@ -317,6 +319,29 @@ async def list_creatures(
 async def read_creature(creature_id: int, db: AsyncSession = Depends(get_db)) -> CreatureDetail:
     """Full record. `image_status` drives the reveal-screen polling loop."""
     return detail(await get_creature(db, creature_id))
+
+
+@router.delete("/{creature_id}", response_model=DeleteCreatureResponse)
+async def delete_creature(
+    creature_id: int, db: AsyncSession = Depends(get_db)
+) -> DeleteCreatureResponse:
+    """Delete a creature in ANY state (playtest rule: creatable => deletable).
+
+    History is never cascaded: battle rows (the permanent determinism cache)
+    and tournaments keep their ids and render the missing creature as a ghost.
+    The hero/thumb media files are removed best-effort.
+    """
+    creature = await get_creature(db, creature_id)
+    await db.delete(creature)
+    generation.PROGRESS.pop(creature_id, None)  # stop any Fusion Wait mirror
+
+    media = get_settings().media_dir / "creatures"
+    for name in (f"{creature_id}.png", f"{creature_id}_thumb.png"):
+        try:
+            (media / name).unlink(missing_ok=True)
+        except OSError as exc:  # best-effort: media cleanup never fails a delete
+            log.warning("delete: could not remove media %s: %s", name, exc)
+    return DeleteCreatureResponse(creature_id=creature_id)
 
 
 @router.post("/{creature_id}/favorite", response_model=FavoriteResponse)

@@ -121,15 +121,20 @@ async def test_full_run_to_champion(client, one_environment):
 
 
 async def test_same_matchup_resolves_identically(client, one_environment):
-    """The determinism promise: same (A, B, environment) -> same winner, forever."""
+    """The determinism promise: same (A, B, environment) -> same winner, forever.
+
+    Only one tournament may be active at a time (request #7), so the first is
+    abandoned before the rematch — the battle cache must survive that too.
+    """
     roster = await make_roster(client, 8)
 
     first = await start_tournament(client, roster)
-    second = await start_tournament(client, roster)  # identical seeding and arena
-    assert first["id"] != second["id"]
-
     a = (await client.post(
         f"/api/tournaments/{first['id']}/matches/r0m0/resolve")).json()["battle"]
+
+    assert (await client.delete(f"/api/tournaments/{first['id']}")).status_code == 200
+    second = await start_tournament(client, roster)  # identical seeding and arena
+
     b = (await client.post(
         f"/api/tournaments/{second['id']}/matches/r0m0/resolve")).json()["battle"]
 

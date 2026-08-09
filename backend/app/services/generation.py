@@ -21,7 +21,11 @@ import random
 import re
 
 from ..schemas import (
+    ABILITY_BLURB_TARGET,
     ENVIRONMENT_SLUGS,
+    FUN_FACT_TARGET,
+    TITLE_TARGET,
+    TRAIT_TARGET,
     Ability,
     CoreStats,
     CreatureRecord,
@@ -266,7 +270,15 @@ SYSTEM_PROMPT = (
     "transparent background and composited onto a game stage. "
     "Kid-readable language everywhere: short, punchy, epic but never gory "
     "(defeated/knocked out, never killed; no blood). Names must be "
-    "pronounceable by a child, exciting, and hint at 1-2 component traits."
+    "pronounceable by a child, exciting, and hint at 1-2 component traits. "
+    # Kid-length copy budgets (schemas.py *_TARGET / *_MAX): a 7-year-old
+    # reads cards, not walls of text.
+    f"STRICT LENGTH LIMITS — every one of these is a single short, punchy "
+    f"sentence a 7-year-old reads in one breath: each ability blurb under "
+    f"{ABILITY_BLURB_TARGET} characters; each strength and each weakness "
+    f"under {TRAIT_TARGET} characters; fun_fact under {FUN_FACT_TARGET} "
+    f"characters; title under {TITLE_TARGET} characters. Never cram extra "
+    f"facts into these fields."
 )
 
 
