@@ -89,7 +89,7 @@ async def test_final_art_lands_in_tournament_view(client, monkeypatch):
     a, b = final_match["a"], final_match["b"]
     assert a and b and view["final_art"] is None
 
-    stub_path = f"/media/creatures/final_{min(a, b)}_{max(a, b)}.png"
+    stub_path = f"/media/creatures/final_{min(a, b)}_{max(a, b)}.webp"
 
     async def fake_render(fa, fb):
         assert {fa.id, fb.id} == {a, b}

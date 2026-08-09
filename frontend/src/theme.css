@@ -3,7 +3,7 @@
    Layer stack, bottom to top:
      1 .ground      painted lab (or arena) plate, fixed, cover, vignetted
      2 .ground__motes  two slow drifting particle fields
-     3 .stage       creatures on assets/lab/platform*.png, never in a box
+     3 .stage       creatures on assets/lab/platform*.webp, never in a box
      4 .panel       the ONE holo-panel recipe (cyan / purple / gold / teal)
      5 type + painted icons
 
@@ -132,14 +132,14 @@ input { font: inherit; color: inherit; }
 .ground__plate {
   position: absolute;
   inset: -1%;
-  background-image: url("/assets/lab/background.png");
+  background-image: url("/assets/lab/background.webp");
   background-size: cover;
   background-position: 50% 58%;
   filter: saturate(0.9) brightness(0.72) contrast(1.04);
   transition: opacity 600ms ease;
 }
 .ground[data-scene="arena"] .ground__plate {
-  background-image: url("/assets/lab/background_arena.png");
+  background-image: url("/assets/lab/background_arena.webp");
   background-position: 50% 52%;
 }
 .ground[data-scene="gold"] .ground__plate {
@@ -2543,7 +2543,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   position: absolute;
   inset: -40% 0 auto;
   height: 140%;
-  background-image: url("/assets/trophy/confetti_sheet.png");
+  background-image: url("/assets/trophy/confetti_sheet.webp");
   background-size: 62% auto;
   background-repeat: repeat;
   opacity: 0.2;

@@ -136,8 +136,11 @@ async def repaint(cid: int, name: str, visual_spec: str, refs: list[bytes],
             await asyncio.sleep(3 * attempt)
             continue
 
-        (media / f"{cid}.png").write_bytes(png)
-        (media / f"{cid}_thumb.png").write_bytes(images._thumb_from_hero_bytes(png))
+        # Written through the runtime's format, not the API's: heroes on disk
+        # are WebP, and the stored hero_image_path points at the WebP.
+        (media / f"{cid}{images.MEDIA_EXT}").write_bytes(images.to_webp(png))
+        (media / f"{cid}_thumb{images.MEDIA_EXT}").write_bytes(
+            images._thumb_from_hero_bytes(png))
         print(f"    repainted {name} ({quality}, attempt {attempt}, {len(png)//1024}KB)")
         return True
     return False
@@ -187,7 +190,7 @@ async def main() -> int:
     backup = media.parent / f"_pre_recovery_{datetime.now(timezone.utc):%Y%m%d_%H%M%S}"
     backup.mkdir(parents=True, exist_ok=True)
     for cid in ids:
-        for suffix in (".png", "_thumb.png"):
+        for suffix in (".png", "_thumb.png", ".webp", "_thumb.webp"):
             src = media / f"{cid}{suffix}"
             if src.exists():
                 shutil.copy2(src, backup / src.name)

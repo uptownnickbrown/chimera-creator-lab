@@ -74,9 +74,12 @@ async def delete_custom_part(
     lib.remove_custom(full)
 
     # Portrait files are keyed on the slash-flattened slug (services/summon.py).
-    portrait = get_settings().media_dir / "parts" / f"{full.replace('/', '_')}.png"
-    try:
-        portrait.unlink(missing_ok=True)
-    except OSError as exc:  # best-effort: media cleanup never fails a delete
-        log.warning("delete: could not remove portrait %s: %s", portrait.name, exc)
+    # Both extensions: portraits summoned before the WebP switch are still .png.
+    parts_dir = get_settings().media_dir / "parts"
+    for ext in (".webp", ".png"):
+        portrait = parts_dir / f"{full.replace('/', '_')}{ext}"
+        try:
+            portrait.unlink(missing_ok=True)
+        except OSError as exc:  # best-effort: media cleanup never fails a delete
+            log.warning("delete: could not remove portrait %s: %s", portrait.name, exc)
     return DeleteCustomPartResponse(slug=full)

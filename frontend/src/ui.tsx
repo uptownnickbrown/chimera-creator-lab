@@ -9,7 +9,7 @@ import type { Ability, CoreStats, CreatureSummary, SourceCreature } from "./api"
 
 /* One map from the slot names screens ask for to the files the art pipeline
    actually ships. Screens keep their readable names; new art only ever needs a
-   line here. Anything unlisted resolves straight to /assets/<slot>.png. */
+   line here. Anything unlisted resolves straight to /assets/<slot>.webp. */
 const SLOT_ALIASES: Record<string, string> = {
   "ui/logo": "ui/logo_mark",
   "ui/avatar": "avatar/henry_headshot",
@@ -103,7 +103,7 @@ function resolveSlot(slot: string): string {
   return SLOT_ALIASES[slot] ?? slot;
 }
 
-/** Loads /assets/<slot>.png; a miss renders the magenta gap marker. */
+/** Loads /assets/<slot>.webp; a miss renders the magenta gap marker. */
 export function Asset({
   slot,
   label,
@@ -136,7 +136,7 @@ export function Asset({
   return (
     <img
       className={cls}
-      src={`/assets/${file}.png`}
+      src={`/assets/${file}.webp`}
       alt={label || slot}
       onError={() => setFailed(true)}
     />
@@ -206,7 +206,7 @@ export function MediaImg({
   if (!src || failed) {
     return (
       <div className={`pending ${className}`} aria-label={alt}>
-        <img className="pending__mark" src="/assets/ui/logo_mark.png" alt="" aria-hidden="true" />
+        <img className="pending__mark" src="/assets/ui/logo_mark.webp" alt="" aria-hidden="true" />
         <span className="pending__label">{note}</span>
       </div>
     );
@@ -611,7 +611,7 @@ export function Stage({
             <CreatureImg creature={creature} prefer="hero" note={caption || "RENDER PENDING"} />
           ) : (
             <div className="pending">
-              <img className="pending__mark" src="/assets/ui/logo_mark.png" alt="" aria-hidden="true" />
+              <img className="pending__mark" src="/assets/ui/logo_mark.webp" alt="" aria-hidden="true" />
               <span className="pending__label">{caption || "AWAITING FUSION"}</span>
             </div>
           ))}

@@ -10,8 +10,8 @@ from conftest import SOURCE_SETS
 SEED_KEYS = [f"crew_{i}" for i in range(8)]
 
 
-def _png_bytes(size: int = 64) -> bytes:
-    """A tiny valid RGBA PNG with transparent corners (stand-in for hero art)."""
+def _webp_bytes(size: int = 64) -> bytes:
+    """A tiny valid RGBA WebP with transparent corners (stand-in for hero art)."""
     from PIL import Image
 
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -19,7 +19,7 @@ def _png_bytes(size: int = 64) -> bytes:
         for y in range(8, size - 8):
             img.putpixel((x, y), (40, 200, 255, 255))
     out = io.BytesIO()
-    img.save(out, "PNG")
+    img.save(out, "WEBP")
     return out.getvalue()
 
 
@@ -28,7 +28,7 @@ def _build_seed_pack(data_dir, keys=SEED_KEYS) -> None:
     from app.services.generation import build_stub_record
 
     seed_dir = data_dir / "seed"
-    png = _png_bytes()
+    art = _webp_bytes()
     for i, key in enumerate(keys):
         sources = SOURCE_SETS[i % len(SOURCE_SETS)]
         record = build_stub_record(sources, nonce=key)
@@ -37,8 +37,8 @@ def _build_seed_pack(data_dir, keys=SEED_KEYS) -> None:
         (entry / "record.json").write_text(json.dumps(
             {"key": key, "sources": sources, "record": record.model_dump()}
         ))
-        (entry / "hero.png").write_bytes(png)
-        (entry / "thumb.png").write_bytes(png)
+        (entry / "hero.webp").write_bytes(art)
+        (entry / "thumb.webp").write_bytes(art)
     (seed_dir / "manifest.json").write_text(json.dumps({"keys": list(keys)}))
 
 
@@ -89,10 +89,10 @@ async def test_seeds_empty_db_with_full_crew(seed_env):
         assert len(c.sources) == 4
         assert (c.wins, c.losses, c.championships, c.favorite) == (0, 0, 0, False)
         assert c.created_at is not None
-        assert c.hero_image_path == f"/media/creatures/{c.id}.png"
-        assert c.thumb_path == f"/media/creatures/{c.id}_thumb.png"
-        assert (media / f"{c.id}.png").exists()
-        assert (media / f"{c.id}_thumb.png").exists()
+        assert c.hero_image_path == f"/media/creatures/{c.id}.webp"
+        assert c.thumb_path == f"/media/creatures/{c.id}_thumb.webp"
+        assert (media / f"{c.id}.webp").exists()
+        assert (media / f"{c.id}_thumb.webp").exists()
 
     # Second boot: the crew is already there — a strict no-op.
     async with session_factory()() as db:
@@ -129,7 +129,7 @@ async def test_existing_art_blocks_seeding_an_empty_table(seed_env):
 
     A server booted against the WRONG (empty) database while sharing the real
     player's media dir. The table looked like a first run, so the seeder copied
-    its starter heroes over media/creatures/{id}.png — destroying seven of
+    its starter heroes over media/creatures/{id} art — destroying seven of
     Henry's creature renders. Art already on disk now vetoes seeding.
     """
     from sqlalchemy import select
@@ -142,14 +142,14 @@ async def test_existing_art_blocks_seeding_an_empty_table(seed_env):
 
     media = seed_env / "media" / "creatures"
     media.mkdir(parents=True, exist_ok=True)
-    precious = media / "1.png"
-    precious.write_bytes(b"\x89PNG\r\n\x1a\n-henrys-creature")
+    precious = media / "1.webp"
+    precious.write_bytes(b"RIFF----WEBP-henrys-creature")
 
     async with session_factory()() as db:
         assert await seed_if_empty(db) == 0
     async with session_factory()() as db:
         assert list((await db.execute(select(Creature))).scalars()) == []
-    assert precious.read_bytes() == b"\x89PNG\r\n\x1a\n-henrys-creature"
+    assert precious.read_bytes() == b"RIFF----WEBP-henrys-creature"
 
 
 async def test_missing_manifest_is_a_quiet_no_op(seed_env):

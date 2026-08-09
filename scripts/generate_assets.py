@@ -24,14 +24,14 @@ import concurrent.futures as cf
 import json
 import sys
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable
 
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).parent))
-from assetlib import (  # noqa: E402
+from assetlib import (
     OUT_DIR,
     PORTRAIT_STYLE,
     RAW_DIR,
@@ -88,7 +88,7 @@ ICON_STYLE = (
 # ------------------------------------------------------------------- jobs ---
 @dataclass
 class Job:
-    slot: str                 # e.g. "parts/wolf" -> assets/parts/wolf.png
+    slot: str                 # e.g. "parts/wolf" -> assets/parts/wolf.webp
     raw: str                  # raw render basename in scripts/raw/
     prompt: str
     size: str = "1024x1024"
@@ -98,7 +98,7 @@ class Job:
     outputs: list = field(default_factory=list)
 
     def targets(self) -> list[Path]:
-        return [OUT_DIR / f"{s}.png" for s, *_ in self.outputs]
+        return [OUT_DIR / f"{s}.webp" for s, *_ in self.outputs]
 
     def done(self) -> bool:
         return all(p.exists() for p in self.targets())
@@ -417,7 +417,7 @@ def contact_sheet(family: str, thumb: int = 200) -> Path | None:
                "lab": ["lab/platform", "lab/background",
                        "lab/fusion_chamber"]}
     slots = anchors.get(family, []) + slots
-    paths = [OUT_DIR / f"{s}.png" for s in slots]
+    paths = [OUT_DIR / f"{s}.webp" for s in slots]
     paths = [p for p in paths if p.exists()]
     if not paths:
         return None

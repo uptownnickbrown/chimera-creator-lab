@@ -173,7 +173,7 @@ def fw_payload(state: str, cid: int, hero: dict | None) -> dict:
     if state == "b":
         return base
     # (c) complete: hero ready -> the reveal detonates.
-    hero_path = (hero or {}).get("hero_image_path") or "/assets/parts/dragon.png"
+    hero_path = (hero or {}).get("hero_image_path") or "/assets/parts/dragon.webp"
     thumb_path = (hero or {}).get("thumb_path") or hero_path
     base.update(image_status="complete", image_started=False,
                 hero_image_path=hero_path, thumb_path=thumb_path)

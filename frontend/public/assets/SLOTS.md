@@ -1,6 +1,6 @@
 # Pregenerated art lives here and is COMMITTED (Agora convention).
 #
-# <Asset slot="x/y"> loads /assets/x/y.png and falls back to a labelled plate
+# <Asset slot="x/y"> loads /assets/x/y.webp and falls back to a labelled plate
 # until the file exists. Slots the UI asks for today:
 #   ui/logo, ui/avatar, ui/tbd
 #   icons/nav_{home,fusion,codex,arena}

@@ -20,14 +20,14 @@ proud of every screen.
 
 ## Layer stack (every screen, bottom to top)
 
-1. **The lab**: `assets/lab/background.png` (or `background_arena.png` on
+1. **The lab**: `assets/lab/background.webp` (or `background_arena.webp` on
    battle screens) painted full-bleed, `background-size: cover`, fixed.
    Dimmed with a radial vignette overlay (darker at edges, subtle) so panels
    and creatures pop. NEVER a flat hex background color as the page ground.
 2. **Atmosphere**: one slow ambient layer — drifting cyan particle motes
    (2 tiny CSS-animated layers, 60s loops, opacity ≤ .18, disabled under
    prefers-reduced-motion).
-3. **Stage**: creatures ALWAYS stand on `assets/lab/platform.png` (gold
+3. **Stage**: creatures ALWAYS stand on `assets/lab/platform.webp` (gold
    variant for champions). Platform sits under the creature with a soft
    ellipse shadow bridging them. Creature renders come from /media (runtime)
    or assets/parts (library) — transparent PNGs over the platform, never in

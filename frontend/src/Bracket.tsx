@@ -414,7 +414,7 @@ function BracketBoard({
                   >
                     <span
                       className="match__bg"
-                      style={{ backgroundImage: `url(/assets/env/${m.environment}_card.png)` }}
+                      style={{ backgroundImage: `url(/assets/env/${m.environment}_card.webp)` }}
                     />
                     <span className="match__env">
                       <Asset slot={envIcon(m.environment)} label="" className="match__envicon" />

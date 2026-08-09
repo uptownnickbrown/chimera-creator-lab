@@ -16,6 +16,7 @@ import asyncio
 import base64
 import io
 import logging
+from pathlib import Path
 
 from ..config import get_settings
 from ..models import Creature
@@ -25,6 +26,45 @@ log = logging.getLogger("chimera.images")
 HERO_SIZE = "1536x1024"
 KEYART_SIZE = "1536x1024"
 THUMB_PX = 512
+
+# gpt-image-1.5 only ever hands back PNG, and a transparent 1536x1024 hero is
+# ~2.5MB of it — nine of those is a Codex page. Every render is transcoded to
+# WebP on its way to disk: q90 measures ~90% smaller on this art with alpha
+# intact and no visible difference at 1:1. This is a permanent step in the
+# save path, not a one-time migration — new creatures land as WebP too.
+MEDIA_EXT = ".webp"
+WEBP_QUALITY = 90
+WEBP_METHOD = 6  # slowest/best encoder pass; a few hundred ms, paid once
+
+
+def to_webp(png: bytes) -> bytes:
+    """PNG bytes -> WebP bytes, keeping alpha exactly when the source has it.
+
+    Hero cutouts are RGBA and must stay that way; opaque key art is written as
+    RGB so it does not carry a pointless all-255 alpha plane.
+    """
+    from PIL import Image
+
+    img = Image.open(io.BytesIO(png))
+    has_alpha = img.mode in ("RGBA", "LA") or "transparency" in img.info
+    img = img.convert("RGBA" if has_alpha else "RGB")
+    out = io.BytesIO()
+    img.save(out, "WEBP", quality=WEBP_QUALITY, method=WEBP_METHOD)
+    return out.getvalue()
+
+
+def find_media(directory: Path, stem: str) -> Path | None:
+    """The saved file for `stem`, WebP first, then PNG.
+
+    Art generated before the WebP switch is still on disk as .png and still
+    perfectly good; nothing is rewritten just to change its extension, so
+    every read goes through here.
+    """
+    for ext in (MEDIA_EXT, ".png"):
+        path = directory / f"{stem}{ext}"
+        if path.exists():
+            return path
+    return None
 
 HERO_STYLE = (
     "Epic realistic fantasy creature concept art for a AAA video game. "
@@ -99,11 +139,12 @@ async def generate_part_portrait(file_slug: str, name: str, description: str) ->
     for attempt in (1, 2):
         try:
             png = await _render(prompt, quality="medium", size=PART_SIZE)
-            path = _parts_dir() / f"{file_slug}.png"
-            path.write_bytes(png)
-            log.info("images: part portrait %s (attempt %d, %dKB)",
-                     file_slug, attempt, len(png) // 1024)
-            return f"/media/parts/{file_slug}.png"
+            webp = await asyncio.to_thread(to_webp, png)
+            path = _parts_dir() / f"{file_slug}{MEDIA_EXT}"
+            path.write_bytes(webp)
+            log.info("images: part portrait %s (attempt %d, %dKB webp from %dKB png)",
+                     file_slug, attempt, len(webp) // 1024, len(png) // 1024)
+            return f"/media/parts/{file_slug}{MEDIA_EXT}"
         except Exception as exc:  # noqa: BLE001 - API errors: log and retry
             log.warning("images: part portrait attempt %d failed for %s: %s",
                         attempt, file_slug, str(exc)[:200])
@@ -144,11 +185,12 @@ async def generate_hero(creature: Creature) -> str | None:
     for attempt, quality in enumerate(("high", "high", "medium"), 1):
         try:
             png = await _render(prompt, quality=quality)
-            path = _media_dir() / f"{creature.id}.png"
-            path.write_bytes(png)
-            log.info("images: hero for %s (%s, attempt %d, %dKB)",
-                     creature.id, quality, attempt, len(png) // 1024)
-            return f"/media/creatures/{creature.id}.png"
+            webp = await asyncio.to_thread(to_webp, png)
+            path = _media_dir() / f"{creature.id}{MEDIA_EXT}"
+            path.write_bytes(webp)
+            log.info("images: hero for %s (%s, attempt %d, %dKB webp from %dKB png)",
+                     creature.id, quality, attempt, len(webp) // 1024, len(png) // 1024)
+            return f"/media/creatures/{creature.id}{MEDIA_EXT}"
         except Exception as exc:  # noqa: BLE001 - API errors: log and retry
             log.warning("images: hero attempt %d (%s) failed for %s: %s",
                         attempt, quality, creature.id, str(exc)[:200])
@@ -156,7 +198,7 @@ async def generate_hero(creature: Creature) -> str | None:
     return None
 
 
-def _thumb_from_hero_bytes(hero_png: bytes) -> bytes:
+def _thumb_from_hero_bytes(hero_bytes: bytes) -> bytes:
     """Alpha-aware square FIT: the whole creature, never a crop.
 
     A square crop chopped wide creatures (wings, serpent coils) at the card
@@ -165,7 +207,7 @@ def _thumb_from_hero_bytes(hero_png: bytes) -> bytes:
     """
     from PIL import Image
 
-    img = Image.open(io.BytesIO(hero_png)).convert("RGBA")
+    img = Image.open(io.BytesIO(hero_bytes)).convert("RGBA")
     bbox = img.getchannel("A").point(lambda a: 255 if a > 20 else 0).getbbox()
     if bbox:
         img = img.crop(bbox)
@@ -175,18 +217,18 @@ def _thumb_from_hero_bytes(hero_png: bytes) -> bytes:
     canvas.paste(img, ((canvas.width - img.width) // 2, (canvas.height - img.height) // 2))
     canvas = canvas.resize((THUMB_PX, THUMB_PX), Image.LANCZOS)
     out = io.BytesIO()
-    canvas.save(out, "PNG")
+    canvas.save(out, "WEBP", quality=WEBP_QUALITY, method=WEBP_METHOD)
     return out.getvalue()
 
 
 async def generate_thumb(creature: Creature) -> str | None:
-    """Derive the codex thumbnail from the saved hero PNG. Local, instant."""
-    hero = _media_dir() / f"{creature.id}.png"
-    if not hero.exists():
+    """Derive the codex thumbnail from the saved hero. Local, instant."""
+    hero = find_media(_media_dir(), str(creature.id))
+    if hero is None:
         return None
-    thumb = _media_dir() / f"{creature.id}_thumb.png"
+    thumb = _media_dir() / f"{creature.id}_thumb{MEDIA_EXT}"
     thumb.write_bytes(await asyncio.to_thread(_thumb_from_hero_bytes, hero.read_bytes()))
-    return f"/media/creatures/{creature.id}_thumb.png"
+    return f"/media/creatures/{creature.id}_thumb{MEDIA_EXT}"
 
 
 async def generate_championship_art(fa: Creature, fb: Creature) -> str | None:
@@ -202,10 +244,11 @@ async def generate_championship_art(fa: Creature, fb: Creature) -> str | None:
 
     if not ai.ai_enabled():
         return None
-    a = _media_dir() / f"{fa.id}.png"
-    b = _media_dir() / f"{fb.id}.png"
-    if not (a.exists() and b.exists()):
+    a = find_media(_media_dir(), str(fa.id))
+    b = find_media(_media_dir(), str(fb.id))
+    if a is None or b is None:
         return None
+    mime = {".webp": "image/webp", ".png": "image/png"}
 
     prompt = (
         "Epic cinematic championship key art for a AAA monster game, child-"
@@ -220,15 +263,16 @@ async def generate_championship_art(fa: Creature, fb: Creature) -> str | None:
     try:
         resp = await ai.client().images.edit(
             model=ai.IMAGE_MODEL,
-            image=[(f"{fa.id}.png", io.BytesIO(a.read_bytes()), "image/png"),
-                   (f"{fb.id}.png", io.BytesIO(b.read_bytes()), "image/png")],
+            image=[(a.name, io.BytesIO(a.read_bytes()), mime[a.suffix]),
+                   (b.name, io.BytesIO(b.read_bytes()), mime[b.suffix])],
             prompt=prompt, size=KEYART_SIZE, quality="high", output_format="png",
         )
         png = base64.b64decode(resp.data[0].b64_json)
+        webp = await asyncio.to_thread(to_webp, png)
         lo, hi = sorted((fa.id, fb.id))
-        path = _media_dir() / f"final_{lo}_{hi}.png"
-        path.write_bytes(png)
-        return f"/media/creatures/final_{lo}_{hi}.png"
+        path = _media_dir() / f"final_{lo}_{hi}{MEDIA_EXT}"
+        path.write_bytes(webp)
+        return f"/media/creatures/final_{lo}_{hi}{MEDIA_EXT}"
     except Exception as exc:  # noqa: BLE001 - ceremony must never block
         log.warning("images: championship art failed (%s vs %s): %s",
                     fa.id, fb.id, str(exc)[:200])

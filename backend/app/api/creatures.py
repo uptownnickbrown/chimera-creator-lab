@@ -336,7 +336,9 @@ async def delete_creature(
     generation.PROGRESS.pop(creature_id, None)  # stop any Fusion Wait mirror
 
     media = get_settings().media_dir / "creatures"
-    for name in (f"{creature_id}.png", f"{creature_id}_thumb.png"):
+    # Both extensions: art rendered before the WebP switch is still .png on disk.
+    for name in (f"{creature_id}{stem}{ext}"
+                 for stem in ("", "_thumb") for ext in (".webp", ".png")):
         try:
             (media / name).unlink(missing_ok=True)
         except OSError as exc:  # best-effort: media cleanup never fails a delete

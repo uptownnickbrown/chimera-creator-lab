@@ -1,7 +1,7 @@
 # Asset Wishlist — Chimera Creator
 
 Every pregenerated asset slot, Agora-style: define → generate all ahead of
-time → frontend `Asset` component loads `/assets/<slot>.png` with a styled
+time → frontend `Asset` component loads `/assets/<slot>.webp` with a styled
 fallback until the PNG lands. All generation via **gpt-image-1.5** (OpenAI
 everywhere). Cutout assets use `background=transparent`; scenes are opaque.
 NO text baked into any image — UI renders all typography. No emoji anywhere.

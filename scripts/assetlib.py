@@ -89,8 +89,13 @@ def generate(prompt, name, *, size="1024x1024", transparent=True,
     raise RuntimeError(f"generation failed for {name}: {last}")
 
 
+# The shipped assets are WebP (q90/method 6 — ~90% smaller than PNG with alpha
+# intact). The raw API output stays PNG in scripts/raw as the archival original.
+WEBP = {"quality": 90, "method": 6}
+
+
 def finalize(raw_path, slot, w, h, *, margin=0.04, trim=True, alpha_thresh=0):
-    """Trim transparent borders, fit to WxH canvas, save to assets/<slot>.png.
+    """Trim transparent borders, fit to WxH canvas, save to assets/<slot>.webp.
 
     alpha_thresh ignores near-transparent pixels when measuring the bounding
     box, so a wide faint glow halo cannot shrink the actual subject.
@@ -110,9 +115,9 @@ def finalize(raw_path, slot, w, h, *, margin=0.04, trim=True, alpha_thresh=0):
                       max(1, int(img.height * scale))), Image.LANCZOS)
     canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     canvas.paste(img, ((w - img.width) // 2, (h - img.height) // 2), img)
-    out = OUT_DIR / f"{slot}.png"
+    out = OUT_DIR / f"{slot}.webp"
     out.parent.mkdir(parents=True, exist_ok=True)
-    canvas.save(out)
+    canvas.save(out, "WEBP", **WEBP)
     return out
 
 
@@ -124,7 +129,7 @@ def finalize_opaque(raw_path, slot, w, h):
     x = (img.width - w) // 2
     y = (img.height - h) // 2
     img = img.crop((x, y, x + w, y + h))
-    out = OUT_DIR / f"{slot}.png"
+    out = OUT_DIR / f"{slot}.webp"
     out.parent.mkdir(parents=True, exist_ok=True)
-    img.save(out)
+    img.save(out, "WEBP", **WEBP)
     return out

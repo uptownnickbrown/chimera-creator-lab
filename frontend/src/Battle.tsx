@@ -195,7 +195,7 @@ export function Battle({
 
       <section
         className={`battle__arena${showResult ? " is-resolved" : ""}`}
-        style={{ backgroundImage: `url(/assets/env/${environment}.png)` }}
+        style={{ backgroundImage: `url(/assets/env/${environment}.webp)` }}
       >
         <div className="battle__arenaveil" />
 

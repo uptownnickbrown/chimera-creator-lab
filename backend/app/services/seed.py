@@ -4,7 +4,7 @@ A brand-new player should open the app to a living Codex and one full
 8-entrant tournament bracket, not an empty lab. On boot, if the creatures
 table has ZERO rows and the committed seed pack exists, the 8 pregenerated
 chimeras are inserted as complete creatures and their art is copied into the
-media dir under the exact names the runtime uses ({id}.png / {id}_thumb.png).
+media dir under the exact names the runtime uses ({id} / {id}_thumb, WebP).
 
 Strictly first-run only: ANY existing creature row — even a failed one —
 means the player has history and seeding is a no-op. A missing or broken
@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import logging
 import shutil
+from pathlib import Path
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +25,15 @@ from ..models import Creature, ImageStatus, RecordStatus
 from ..schemas import CreatureRecord
 
 log = logging.getLogger("chimera.seed")
+
+
+def _art(entry: Path, stem: str) -> Path | None:
+    """A seed entry's art file, WebP first then PNG, or None if absent."""
+    for ext in (".webp", ".png"):
+        path = entry / f"{stem}{ext}"
+        if path.exists():
+            return path
+    return None
 
 
 def _record_fields(record: CreatureRecord) -> dict:
@@ -70,7 +80,7 @@ async def seed_if_empty(session: AsyncSession) -> int:
 
     # An empty table plus a media dir that ALREADY HAS ART is not a first run —
     # it is a database pointed somewhere unexpected. Seeding here would copy the
-    # starter heroes over files named {id}.png that belong to a real player's
+    # starter heroes over files named {id}.webp that belong to a real player's
     # creatures, which is exactly what happened on 2026-08-09 (recovered via
     # scripts/recover_heroes.py). Art on disk wins over an empty table, always.
     existing_art = next(media.iterdir(), None)
@@ -87,9 +97,9 @@ async def seed_if_empty(session: AsyncSession) -> int:
     for key in keys:
         entry = seed_dir / key
         record_path = entry / "record.json"
-        hero_src = entry / "hero.png"
-        thumb_src = entry / "thumb.png"
-        if not (record_path.exists() and hero_src.exists() and thumb_src.exists()):
+        hero_src = _art(entry, "hero")
+        thumb_src = _art(entry, "thumb")
+        if not (record_path.exists() and hero_src and thumb_src):
             log.warning("seed: %s is incomplete — skipping this entry", entry)
             continue
         try:
@@ -110,10 +120,12 @@ async def seed_if_empty(session: AsyncSession) -> int:
         session.add(creature)
         await session.flush()  # assign the id the media filenames are keyed on
 
-        shutil.copyfile(hero_src, media / f"{creature.id}.png")
-        shutil.copyfile(thumb_src, media / f"{creature.id}_thumb.png")
-        creature.hero_image_path = f"/media/creatures/{creature.id}.png"
-        creature.thumb_path = f"/media/creatures/{creature.id}_thumb.png"
+        # The extension follows the pack: WebP once converted, PNG for an older
+        # pack. The runtime reads whatever the stored path says, so both work.
+        shutil.copyfile(hero_src, media / f"{creature.id}{hero_src.suffix}")
+        shutil.copyfile(thumb_src, media / f"{creature.id}_thumb{thumb_src.suffix}")
+        creature.hero_image_path = f"/media/creatures/{creature.id}{hero_src.suffix}"
+        creature.thumb_path = f"/media/creatures/{creature.id}_thumb{thumb_src.suffix}"
         created += 1
         log.info("seed: %s -> creature %d %r (%s)", key, creature.id, record.name, record.rarity)
 

@@ -2,6 +2,7 @@
 """Regenerate henry_a with stronger likeness from the new close-up photo."""
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent))
 from assetlib import finalize, generate
 

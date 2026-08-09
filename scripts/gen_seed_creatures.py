@@ -12,8 +12,8 @@ so seed creatures are indistinguishable from runtime ones:
 
 Output (committed after art review):
   data/seed/<key>/record.json   full CreatureRecord dump + sources list
-  data/seed/<key>/hero.png
-  data/seed/<key>/thumb.png
+  data/seed/<key>/hero.webp
+  data/seed/<key>/thumb.webp
   data/seed/manifest.json       keys in bracket-seed order
 
 Resumable: a recipe whose three files already exist is skipped; a recipe with
@@ -124,8 +124,8 @@ async def build_recipe(key: str, sources: list[str], target: str) -> None:
     out = SEED_DIR / key
     out.mkdir(parents=True, exist_ok=True)
     record_path = out / "record.json"
-    hero_path = out / "hero.png"
-    thumb_path = out / "thumb.png"
+    hero_path = out / f"hero{images.MEDIA_EXT}"
+    thumb_path = out / f"thumb{images.MEDIA_EXT}"
 
     if record_path.exists() and hero_path.exists() and thumb_path.exists():
         log.info("[%s] complete — skipping", key)
@@ -144,15 +144,18 @@ async def build_recipe(key: str, sources: list[str], target: str) -> None:
         log.info("[%s] wrote %s", key, record_path)
 
     if hero_path.exists():
-        hero_png = hero_path.read_bytes()
-        log.info("[%s] hero.png already present — skipping render", key)
+        hero_png = None
+        log.info("[%s] hero art already present — skipping render", key)
     else:
         hero_png = await render_hero(key, record)
-        hero_path.write_bytes(hero_png)
+        hero_path.write_bytes(images.to_webp(hero_png))
         log.info("[%s] wrote %s", key, hero_path)
 
     if not thumb_path.exists():
-        thumb_path.write_bytes(images._thumb_from_hero_bytes(hero_png))
+        # _thumb_from_hero_bytes reads whatever Pillow can open and always
+        # writes WebP, so a resumed run can derive the thumb from the file.
+        source = hero_png if hero_png is not None else hero_path.read_bytes()
+        thumb_path.write_bytes(images._thumb_from_hero_bytes(source))
         log.info("[%s] wrote %s", key, thumb_path)
 
 
@@ -160,7 +163,8 @@ def complete_keys() -> list[str]:
     done = []
     for key, _, _ in RECIPES:
         d = SEED_DIR / key
-        if all((d / f).exists() for f in ("record.json", "hero.png", "thumb.png")):
+        if all((d / f).exists() for f in
+               ("record.json", f"hero{images.MEDIA_EXT}", f"thumb{images.MEDIA_EXT}")):
             done.append(key)
     return done
 

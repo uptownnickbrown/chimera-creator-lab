@@ -45,17 +45,19 @@ async def _battle_count() -> int:
 async def test_delete_creature_removes_row_and_media(client):
     creature = await make_creature(client, 0)
     cid = creature["id"]
-    hero = _media_dir() / f"{cid}.png"
-    thumb = _media_dir() / f"{cid}_thumb.png"
-    hero.write_bytes(b"png")
-    thumb.write_bytes(b"png")
+    # Both extensions: heroes render as WebP now, but art painted before that
+    # switch is still .png on disk and must be cleaned up just the same.
+    files = [_media_dir() / f"{cid}{stem}{ext}"
+             for stem in ("", "_thumb") for ext in (".webp", ".png")]
+    for f in files:
+        f.write_bytes(b"art")
 
     deleted = await client.delete(f"/api/creatures/{cid}")
     assert deleted.status_code == 200
     assert deleted.json() == {"creature_id": cid, "deleted": True}
 
     assert (await client.get(f"/api/creatures/{cid}")).status_code == 404
-    assert not hero.exists() and not thumb.exists()
+    assert not any(f.exists() for f in files)
     assert (await client.delete(f"/api/creatures/{cid}")).status_code == 404
 
 
@@ -134,14 +136,16 @@ async def test_delete_custom_part_row_registry_and_portrait(client, tmp_path):
 
     from app.config import get_settings
 
-    portrait = get_settings().media_dir / "parts" / "custom_axolotl-dragon.png"
-    portrait.parent.mkdir(parents=True, exist_ok=True)
-    portrait.write_bytes(b"png")
+    parts = get_settings().media_dir / "parts"
+    parts.mkdir(parents=True, exist_ok=True)
+    portraits = [parts / f"custom_axolotl-dragon{ext}" for ext in (".webp", ".png")]
+    for p_ in portraits:
+        p_.write_bytes(b"art")
 
     deleted = await client.delete("/api/library/custom/axolotl-dragon")
     assert deleted.status_code == 200
     assert deleted.json() == {"slug": slug, "deleted": True}
-    assert not portrait.exists()
+    assert not any(p_.exists() for p_ in portraits)
 
     # Gone from the merged picker library and from the DB.
     slugs = {s["slug"] for s in (await client.get("/api/library")).json()["sources"]}
