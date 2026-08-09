@@ -43,6 +43,13 @@ def _media_dir():
     return d
 
 
+def hero_prompt(record_like) -> str:
+    """The one true hero prompt. Used by the runtime render path AND the seed
+    pipeline (scripts/gen_seed_creatures.py) so pregenerated art is guaranteed
+    to match runtime art. `record_like` needs `.visual_spec` and `.name`."""
+    return HERO_STYLE + (record_like.visual_spec or record_like.name)
+
+
 async def _render(prompt: str, *, quality: str, size: str = HERO_SIZE) -> bytes:
     from . import ai
 
@@ -65,7 +72,7 @@ async def generate_hero(creature: Creature) -> str | None:
         log.info("images: AI disabled — no hero for creature %s", creature.id)
         return None
 
-    prompt = HERO_STYLE + (creature.visual_spec or creature.name)
+    prompt = hero_prompt(creature)
     for attempt, quality in enumerate(("high", "high", "medium"), 1):
         try:
             png = await _render(prompt, quality=quality)

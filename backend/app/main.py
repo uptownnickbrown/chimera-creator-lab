@@ -26,6 +26,7 @@ async def lifespan(app: FastAPI):
     # Authored content is optional at boot — load_library logs and shrugs.
     library_svc.load_library()
     await _sweep_orphans()
+    await _seed_starter_crew()
     yield
 
 
@@ -55,6 +56,20 @@ async def _sweep_orphans() -> None:
             logging.getLogger("chimera").info(
                 "orphan sweep: %d records, %d images marked failed for retry",
                 rec.rowcount, img.rowcount)
+
+
+async def _seed_starter_crew() -> None:
+    """First run only: an empty creatures table gets the committed starter
+    crew (data/seed) so the Codex and one full bracket exist immediately.
+    Seeding is best-effort — a broken or missing pack never blocks boot."""
+    from .db import session_factory
+    from .services.seed import seed_if_empty
+
+    try:
+        async with session_factory()() as db:
+            await seed_if_empty(db)
+    except Exception:
+        logging.getLogger("chimera").exception("starter-crew seeding failed — continuing")
 
 
 app = FastAPI(title="Chimera Creator API", version="0.1.0", lifespan=lifespan)

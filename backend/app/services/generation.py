@@ -294,12 +294,15 @@ def _source_briefs(slugs: list[str]) -> str:
     return "\n".join(lines)
 
 
-async def generate_creature(sources: list[str]) -> CreatureRecord:
+async def generate_creature(sources: list[str], extra_instructions: str = "") -> CreatureRecord:
     """Produce a full creature record from four source slugs.
 
     Real path: gpt-5.1 structured output (docs/AI_CONTRACTS.md §1, ~16s),
     enriched with the authored library traits so interpretation stays stable.
     Stub path (tests / keyless dev): deterministic local record.
+
+    `extra_instructions` (seed pipeline only) is appended verbatim to the user
+    message; the default empty string keeps the runtime prompt byte-identical.
     """
     from . import ai
 
@@ -312,6 +315,8 @@ async def generate_creature(sources: list[str]) -> CreatureRecord:
         f"{_source_briefs(sources)}\n\n"
         "Remember: one coherent species, fused abilities, honest weaknesses."
     )
+    if extra_instructions:
+        user += f"\n\n{extra_instructions}"
     record = await ai.structured(SYSTEM_PROMPT, user, CreatureRecord, name="chimera")
     log.info("generation: gpt-5.1 record %r for %s", record.name, sources)
     return record
@@ -383,21 +388,29 @@ async def generate_creature_streaming(
         "Remember: one coherent species, fused abilities, honest weaknesses."
     )
     schema = CreatureRecord.model_json_schema()
-    stream = await ai.client().chat.completions.create(
-        model=ai.TEXT_MODEL,
-        messages=[{"role": "system", "content": SYSTEM_PROMPT},
-                  {"role": "user", "content": user}],
-        response_format={"type": "json_schema",
-                         "json_schema": {"name": "chimera", "strict": True,
-                                         "schema": schema}},
-        stream=True,
-    )
+    # Stall watchdog: a hung connection can stall before the first chunk just
+    # as easily as mid-stream (observed in the wild: creature stuck at
+    # "generating" with zero streamed fields). No single gap — including
+    # opening the stream — may exceed STALL_S; the caller's except path marks
+    # the creature failed/retryable.
+    STALL_S = 45
+    try:
+        stream = await asyncio.wait_for(
+            ai.client().chat.completions.create(
+                model=ai.TEXT_MODEL,
+                messages=[{"role": "system", "content": SYSTEM_PROMPT},
+                          {"role": "user", "content": user}],
+                response_format={"type": "json_schema",
+                                 "json_schema": {"name": "chimera", "strict": True,
+                                                 "schema": schema}},
+                stream=True,
+            ),
+            timeout=STALL_S,
+        )
+    except TimeoutError as exc:
+        raise RuntimeError(f"record stream failed to open within {STALL_S}s") from exc
     buf = ""
     spec_fired = False
-    # Stall watchdog: a live stream that stops emitting is a hung connection
-    # (observed in the wild: 200+ silent seconds). No single gap may exceed
-    # STALL_S; the caller's except path marks the creature failed/retryable.
-    STALL_S = 45
     it = stream.__aiter__()
     while True:
         try:
