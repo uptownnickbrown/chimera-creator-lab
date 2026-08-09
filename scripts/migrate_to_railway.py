@@ -4,7 +4,7 @@
 Henry has ~30 chimeras he loves, ~100 cached battles, and a shelf of tournament
 champions. Losing any of it is not acceptable, and neither is renumbering it:
 
-  * `media/creatures/<id>.png` and `<id>_thumb.png` are named after creature ids
+  * `media/creatures/<id>.webp` and `<id>_thumb.webp` are named after creature ids
   * `tournaments.bracket` / `entrant_ids` embed creature ids
   * `battles.canonical_key` is "minId:maxId:environment"
 

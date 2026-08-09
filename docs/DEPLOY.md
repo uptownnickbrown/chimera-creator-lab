@@ -27,7 +27,7 @@ GitHub main ──push──▶ Railway build (root Dockerfile)
 | Service | Source: this GitHub repo, branch `main`. Builder: Dockerfile (`railway.toml` pins it). |
 | Postgres | Railway managed Postgres plugin, in the same project. |
 | Volume | Attached to the app service, **mount path `/data`**. Media then lives at `/data/media`. |
-| Domain | Generate a Railway domain (or attach a custom one) on the app service. |
+| Domain | Generate a Railway domain on the app service; see §9 for the custom one. |
 
 The service must be the **repo root**, not `backend/` or `frontend/` — the root
 `Dockerfile` builds both halves.
@@ -81,8 +81,8 @@ step 4 of the bootstrap below replaces them with Henry's real game.
 ## 4. Data bootstrap (one time, moves Henry's existing game up)
 
 His ~30 creatures, ~100 cached battles and tournament history are in the local
-SQLite file; his ~121MB of art is in `media/`. Creature **ids are load-bearing**
-— `media/creatures/<id>.png`, tournament brackets and `battles.canonical_key`
+SQLite file; his art (~17MB of WebP) is in `media/`. Creature **ids are load-bearing**
+— `media/creatures/<id>.webp`, tournament brackets and `battles.canonical_key`
 all reference them — so the migration preserves primary keys exactly and then
 fast-forwards the Postgres sequences past them.
 
@@ -96,23 +96,33 @@ cp ./chimera.db ./chimera-bootstrap.db
 **(1) Deploy** — done in §3.
 **(2) `alembic upgrade head`** — ran automatically on boot.
 
-**(3) Copy the database.** Use Railway's *public* Postgres URL
-(`DATABASE_PUBLIC_URL` on the Postgres service — the TCP-proxy one; the internal
-`.railway.internal` hostname does not resolve from your laptop).
+**(3) Copy the database — from inside the container.** The Postgres service
+has **no `DATABASE_PUBLIC_URL`**: it exposes only the private
+`postgres.railway.internal` hostname, which does not resolve from a laptop.
+Rather than open a public TCP proxy on the database for a one-time job, ship
+the SQLite file up to the volume and run the migration next to Postgres, over
+the private network:
 
 ```bash
-export PG="$(pbpaste)"   # paste DATABASE_PUBLIC_URL; keep it out of shell history
+railway link                                    # select the project/service
+railway volume files upload ./chimera-bootstrap.db /data/ --overwrite
 
 # look first — prints per-table row counts and the sequence values it will set
-.venv/bin/python scripts/migrate_to_railway.py \
-    --sqlite ./chimera-bootstrap.db --target "$PG" --dry-run
+railway ssh --service chimera \
+    'cd /app && python scripts/migrate_to_railway.py \
+        --sqlite /data/chimera-bootstrap.db --target "$DATABASE_URL" --dry-run'
 
 # the real run. --force is expected here: it deletes the auto-seeded starter
 # crew before inserting Henry's rows. Without it the script refuses to touch a
 # non-empty database.
-.venv/bin/python scripts/migrate_to_railway.py \
-    --sqlite ./chimera-bootstrap.db --target "$PG" --force
+railway ssh --service chimera \
+    'cd /app && python scripts/migrate_to_railway.py \
+        --sqlite /data/chimera-bootstrap.db --target "$DATABASE_URL" --force'
 ```
+
+`$DATABASE_URL` is already in the container's environment, so the connection
+string never lands in a laptop shell or its history. Delete the uploaded
+SQLite file afterwards: `railway volume files delete /data/chimera-bootstrap.db`.
 
 Expected tail:
 
@@ -134,7 +144,7 @@ railway volume files upload ./media /data/media --overwrite
 railway volume files list /data/media/creatures | head
 ```
 
-Sanity-check the listing shows `1.png`, `1_thumb.png`, … directly under
+Sanity-check the listing shows `1.webp`, `1_thumb.webp`, … directly under
 `/data/media/creatures`. If the CLI nested them (`/data/media/media/creatures`),
 delete and re-upload with `/data` as the destination instead.
 
@@ -207,10 +217,10 @@ are the kid's live playtest** and must not be touched.
 
 ## 8. Gotchas worth remembering
 
-- **Build context is large** (~250MB): `frontend/public/assets` is committed art
-  and is required by the Vite build. `.dockerignore` keeps `media/`, `qa/`,
-  `research/`, `scripts/raw/`, `.venv/` and `node_modules/` out. Final image is
-  ~550MB, most of it that art; builds take a few minutes.
+- **The build context is mostly art**: `frontend/public/assets` is committed
+  and required by the Vite build. It is WebP now — 49MB, down from 217MB of PNG
+  — which is the single biggest lever on build time. `.dockerignore` keeps
+  `media/`, `qa/`, `research/`, `scripts/raw/`, `.venv/` and `node_modules/` out.
 - **The container runs as root.** Railway volumes are root-owned; a non-root
   user would need a chown step at boot for no benefit here.
 - **Migrations run in the entrypoint, not in the app lifespan.** A failed
@@ -218,3 +228,32 @@ are the kid's live playtest** and must not be touched.
   against a stale schema.
 - **SQLite dev is unchanged.** `create_all` still stands the schema up locally;
   alembic is the Postgres path only. CI asserts the two agree (`alembic check`).
+
+## 9. The custom domain (`chimera.uptownnickbrown.com`)
+
+Railway hands out a free `*.up.railway.app` domain and terminates TLS on it.
+A custom domain is two halves — Railway claims the name and provisions the
+certificate, the registrar points DNS at it:
+
+```bash
+railway domain --service chimera chimera.uptownnickbrown.com
+```
+
+That prints a CNAME target (`<something>.up.railway.app`). The registrar is
+**Hover**, which has no public API, no CLI and no MCP server, so this record is
+added by hand in their control panel — `uptownnickbrown.com` → DNS → Add:
+
+| Type | Hostname | Value |
+|---|---|---|
+| CNAME | `chimera` | *(the target Railway printed)* |
+
+Railway polls DNS, then issues the certificate — usually minutes, up to about
+an hour if Hover's TTL is long. `railway domain --json` shows the status.
+
+A subdomain is the easy case. The apex `uptownnickbrown.com` could not be
+CNAME'd this way (it already carries the main site's records), which is why the
+game lives on a subdomain.
+
+Nothing in the app needs to change: `CHIMERA_CORS_ORIGINS` is irrelevant here
+because the API and the SPA are served from the same origin, whatever that
+origin is called. The old `*.up.railway.app` URL keeps working alongside it.
