@@ -125,6 +125,35 @@ class Creature(TimestampMixin, Base):
     records: Mapped[dict] = mapped_column(JSON, default=dict)  # "Biggest Win", "Fastest Win", ...
 
 
+# -- summoned parts -----------------------------------------------------------
+
+class CustomPart(TimestampMixin, Base):
+    """A source-creature part Henry summoned by typing its name (spec: 'Summon
+    New Creature', ARCHITECTURE.md 'Source library is hybrid').
+
+    Mirrors the curated part schema; slugs are namespaced `custom/<slug>` so
+    they can never collide with data/source_creatures.json. Rows merge into
+    /api/library at boot and at creation time (services/library.py customs
+    registry) and are first-class fusion sources forever after.
+    """
+
+    __tablename__ = "custom_parts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    category: Mapped[str] = mapped_column(String(24), default="living")  # mythic/extinct/living
+    blurb: Mapped[str] = mapped_column(Text, default="")
+    contribution: Mapped[str] = mapped_column(Text, default="")
+    traits: Mapped[list] = mapped_column(JSON, default=list)  # 3 kid-readable powers
+    aliases: Mapped[list] = mapped_column(JSON, default=list)  # queries that summoned it
+    portrait_description: Mapped[str] = mapped_column(Text, default="")
+    portrait_status: Mapped[ImageStatus] = mapped_column(
+        _enum(ImageStatus, "portrait_status"), default=ImageStatus.pending
+    )
+    art: Mapped[str | None] = mapped_column(String(255))  # /media/parts/<file>.png
+
+
 # -- battles ------------------------------------------------------------------
 
 class Battle(TimestampMixin, Base):

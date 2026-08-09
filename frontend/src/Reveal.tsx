@@ -6,9 +6,19 @@
    The creature is the star — panels frame it, they never crowd it. */
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Go } from "./App";
-import { api, type CreatureDetail } from "./api";
+import { api, getLibraryCached, type CreatureDetail, type SourceCreature } from "./api";
 import { FusionWait } from "./FusionWait";
-import { Asset, Badge, Btn, CreatureImg, FitText, Panel, RarityBadge, StatRow } from "./ui";
+import {
+  Asset,
+  Badge,
+  Btn,
+  CreatureImg,
+  FitText,
+  Panel,
+  PartImg,
+  RarityBadge,
+  StatRow,
+} from "./ui";
 
 /* Four abilities all wearing the same glyph reads as a placeholder; the stat
    icons give each one its own painted mark. */
@@ -47,6 +57,14 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
   /* Did we ever show the wait? A codex revisit lands already-complete and must
      not fire a white-out at a child who did not ask for one. */
   const waited = useRef(false);
+  /* Library lookup so FUSED FROM can render summoned parts (their portraits
+     live on /media, not in the painted /assets/parts set). */
+  const [libBySlug, setLibBySlug] = useState<Map<string, SourceCreature> | null>(null);
+  useEffect(() => {
+    getLibraryCached()
+      .then((lib) => setLibBySlug(new Map(lib.sources.map((s) => [s.slug, s]))))
+      .catch(() => {}); // painted-asset fallback still renders
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -245,8 +263,10 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
             {creature.sources.map((slug, i) => (
               <div className="fused__item" key={slug}>
                 {i > 0 && <span className="fused__plus">+</span>}
-                <Asset slot={`parts/${slug}`} label={slug} className="fused__art" />
-                <FitText className="fused__name">{slug.replace(/[_-]/g, " ").toUpperCase()}</FitText>
+                <PartImg source={libBySlug?.get(slug)} slug={slug} className="fused__art" />
+                <FitText className="fused__name">
+                  {(libBySlug?.get(slug)?.name ?? slug.replace(/^custom\//, "").replace(/[_-]/g, " ")).toUpperCase()}
+                </FitText>
               </div>
             ))}
           </div>

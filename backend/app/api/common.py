@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from fastapi import HTTPException
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import get_settings
@@ -75,12 +76,20 @@ async def get_creature(db: AsyncSession, creature_id: int) -> Creature:
 
 
 async def get_profile(db: AsyncSession) -> Profile:
-    """The one and only profile row, created on first access."""
+    """The one and only profile row, created on first access.
+
+    Two concurrent first-ever requests can both see "no row" and both insert
+    id=1 (observed as a 500 on a fresh DB). The insert runs in a SAVEPOINT so
+    the loser rolls back just that statement and reads the winner's row.
+    """
     row = (await db.execute(select(Profile).limit(1))).scalar_one_or_none()
     if row is None:
-        row = Profile(id=1, name=get_settings().player_name, settings={})
-        db.add(row)
-        await db.flush()
+        try:
+            async with db.begin_nested():
+                row = Profile(id=1, name=get_settings().player_name, settings={})
+                db.add(row)
+        except IntegrityError:
+            row = (await db.execute(select(Profile).limit(1))).scalar_one()
     return row
 
 

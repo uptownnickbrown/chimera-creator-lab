@@ -18,7 +18,7 @@ import {
   type CreatureSummary,
   type SourceCreature,
 } from "./api";
-import { Asset, Badge, CreatureImg, Meter, RarityBadge } from "./ui";
+import { Asset, Badge, CreatureImg, Meter, PartImg, RarityBadge } from "./ui";
 
 /* -- picks handoff ----------------------------------------------------------
    FusionLab -> Reveal goes through a hash change, so the chosen four would be
@@ -275,7 +275,7 @@ export function FusionWait({
                 >
                   <div className="fw__orbiter-inner">
                     <div className="fw__orbiter-art">
-                      <Asset slot={`parts/${s.slug}`} label={s.name} />
+                      <PartImg source={s} />
                     </div>
                   </div>
                 </div>
@@ -338,7 +338,7 @@ export function FusionWait({
                     ) : (
                       <>
                         <div className="fw__slide-art">
-                          <Asset slot={`parts/${slide.source.slug}`} label={slide.source.name} />
+                          <PartImg source={slide.source} />
                         </div>
                         <h3 className="fw__slide-name">{slide.source.name.toUpperCase()}</h3>
                         <p className="fw__slide-line">

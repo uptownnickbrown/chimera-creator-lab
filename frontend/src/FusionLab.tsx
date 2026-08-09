@@ -5,11 +5,12 @@
    platform in the middle, what-each-part-adds on the right, and one big
    portrait rail underneath. Browsing is visual first: the search box is there
    for the child who already knows the animal's name (and its misspellings). */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Go } from "./App";
-import { api, ApiError, getLibraryCached, type SourceCreature } from "./api";
-import { Asset, Btn, Empty, FitText, Loading, Panel } from "./ui";
+import { api, ApiError, getLibraryCached, refreshLibrary, type SourceCreature } from "./api";
+import { Asset, Btn, Empty, FitText, Loading, Panel, PartImg } from "./ui";
 import { stashPicks } from "./FusionWait";
+import { SummonModal, SummonRailCard } from "./Summon";
 
 /* PLACEHOLDER — only reached if GET /api/library is empty or unreachable, so
    the create -> reveal loop stays playable. The banner says so out loud. */
@@ -73,7 +74,12 @@ export function FusionLab({ go }: { go: Go }) {
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  /** Summon modal: null = closed, string = open with that prefill. */
+  const [summonQuery, setSummonQuery] = useState<string | null>(null);
+  /** Slug that just flew into a slot — wears a highlight pulse briefly. */
+  const [flash, setFlash] = useState<string | null>(null);
   const rail = useRef<HTMLDivElement | null>(null);
+  const flashTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     getLibraryCached()
@@ -132,6 +138,65 @@ export function FusionLab({ go }: { go: Go }) {
   function clearSlot(index: number) {
     setPicks((prev) => prev.map((p, i) => (i === index ? null : p)));
   }
+
+  /* -- Summon New Creature -------------------------------------------------- */
+
+  /** A summoned/matched part flies into the active slot with a highlight. */
+  const summonPlace = useCallback((source: SourceCreature) => {
+    setPicks((prev) => {
+      if (prev.some((p) => p?.slug === source.slug)) return prev; // already aboard
+      const next = [...prev];
+      const slot = next.findIndex((p) => p === null);
+      next[slot === -1 ? 3 : slot] = source;
+      return next;
+    });
+    setError(null);
+    setFlash(source.slug);
+    clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => setFlash(null), 1800);
+  }, []);
+
+  /** A brand-new conjured part: into the rail (under its category) AND the slot. */
+  const summonConjured = useCallback(
+    (source: SourceCreature) => {
+      setSources((prev) => {
+        const rest = (prev ?? []).filter((s) => s.slug !== source.slug);
+        return [...rest, source];
+      });
+      setUsingPlaceholders(false);
+      summonPlace(source);
+    },
+    [summonPlace],
+  );
+
+  useEffect(() => () => clearTimeout(flashTimer.current), []);
+
+  /* While any summoned part is missing its portrait, poll the library until
+     the render lands (backend paints in ~26s; give up after ~4 min). */
+  const awaitingArt = useMemo(
+    () => (sources ?? []).some((s) => s.custom && !s.art),
+    [sources],
+  );
+  useEffect(() => {
+    if (!awaitingArt) return;
+    let polls = 0;
+    const tick = window.setInterval(async () => {
+      polls += 1;
+      if (polls > 48) return clearInterval(tick);
+      try {
+        const lib = await refreshLibrary();
+        if (lib.sources.length) {
+          setSources(lib.sources);
+          setPicks((prev) =>
+            prev.map((p) => (p && lib.sources.find((s) => s.slug === p.slug)) || p),
+          );
+        }
+      } catch {
+        /* transient — keep polling */
+      }
+    }, 5000);
+    return () => clearInterval(tick);
+  }, [awaitingArt]);
 
   /** Random, but guided: each slot draws from the category it nudges toward. */
   function randomize() {
@@ -203,7 +268,7 @@ export function FusionLab({ go }: { go: Go }) {
               <button
                 key={i}
                 type="button"
-                className={`slot${pick ? " is-filled" : ""}${i === activeSlot && !pick ? " is-active" : ""}`}
+                className={`slot${pick ? " is-filled" : ""}${i === activeSlot && !pick ? " is-active" : ""}${pick && flash === pick.slug ? " is-flash" : ""}`}
                 onClick={() => pick && clearSlot(i)}
                 title={pick ? `Remove ${pick.name}` : `Slot ${i + 1}`}
               >
@@ -211,7 +276,7 @@ export function FusionLab({ go }: { go: Go }) {
                 {pick ? (
                   <>
                     <span className="slot__art">
-                      <Asset slot={`parts/${pick.slug}`} label={pick.name} />
+                      <PartImg source={pick} />
                     </span>
                     <span className="slot__plate">
                       <FitText className="slot__name">{pick.name.toUpperCase()}</FitText>
@@ -249,7 +314,7 @@ export function FusionLab({ go }: { go: Go }) {
                     {pick ? (
                       <>
                         <span className="cluster__art">
-                          <Asset slot={`parts/${pick.slug}`} label={pick.name} />
+                          <PartImg source={pick} />
                         </span>
                         <FitText className="cluster__name">{pick.name.toUpperCase()}</FitText>
                       </>
@@ -276,11 +341,7 @@ export function FusionLab({ go }: { go: Go }) {
             {picks.map((pick, i) => (
               <div className={`adds${pick ? " is-filled" : ""}`} key={i}>
                 <span className="adds__art">
-                  {pick ? (
-                    <Asset slot={`parts/${pick.slug}`} label={pick.name} />
-                  ) : (
-                    <Asset slot="ui/tbd" label="" />
-                  )}
+                  {pick ? <PartImg source={pick} /> : <Asset slot="ui/tbd" label="" />}
                 </span>
                 <div className="adds__text">
                   {pick ? (
@@ -342,16 +403,18 @@ export function FusionLab({ go }: { go: Go }) {
               ‹
             </button>
             <div className="rail" ref={rail}>
+              <SummonRailCard onOpen={() => setSummonQuery("")} />
               {visible.map((s) => (
                 <button
                   key={s.slug}
                   type="button"
-                  className={`pcard${takenSlugs.has(s.slug) ? " is-taken" : ""}`}
+                  className={`pcard${takenSlugs.has(s.slug) ? " is-taken" : ""}${flash === s.slug ? " is-flash" : ""}`}
                   onClick={() => place(s)}
                   title={ready && !takenSlugs.has(s.slug) ? `Swap ${s.name} into part 4` : s.name}
                 >
                   <span className="pcard__art">
-                    <Asset slot={`parts/${s.slug}`} label={s.name} />
+                    <PartImg source={s} />
+                    {s.custom && <span className="pcard__summoned">SUMMONED</span>}
                     {takenSlugs.has(s.slug) && <span className="pcard__check">✓</span>}
                   </span>
                   <span className="pcard__plate">
@@ -371,14 +434,39 @@ export function FusionLab({ go }: { go: Go }) {
             </button>
           </div>
         ) : (
-          <Empty
-            title={searching ? `Nothing matches “${query}”` : "The gene library is empty"}
-            hint={searching ? "Try another animal — or tap a category to browse." : undefined}
-          />
+          <div className="picker__empty">
+            <Empty
+              title={searching ? `Nothing matches “${query}”` : "The gene library is empty"}
+              hint={
+                searching
+                  ? "No problem — the summoning circle can call brand-new creatures."
+                  : undefined
+              }
+            />
+            {searching && (
+              <Btn
+                accent="purple"
+                size="lg"
+                icon="icons/nav_fusion"
+                onClick={() => setSummonQuery(query.trim())}
+              >
+                {`SUMMON “${query.trim().toUpperCase()}”`}
+              </Btn>
+            )}
+          </div>
         )}
       </Panel>
 
       {error && <div className="error">{error}</div>}
+
+      {summonQuery !== null && (
+        <SummonModal
+          initialQuery={summonQuery}
+          onClose={() => setSummonQuery(null)}
+          onMatched={summonPlace}
+          onConjured={summonConjured}
+        />
+      )}
 
       <footer className="lab__foot">
         <Btn accent="ghost" onClick={() => go({ name: "home" })}>
