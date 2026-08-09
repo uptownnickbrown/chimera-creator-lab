@@ -58,12 +58,12 @@
     "strengths": [
       "Very tough armor from shell and bony plates makes front and back hard to crack.",
       "Multiple long necks can attack or guard different angles at the same time.",
-      "Venomous bites can quickly weaken even huge enemies if they stay close too long.\nWarning hoods and hissing display can scare off nervous or smaller foes before a fight.\nGreat in rivers, swamps, and muddy shallows; can wait in ambush for a very long time.\nPartial regeneration lets it slowly regrow damaged necks and some shell spikes between battles."
+      "Venomous bites can quickly weaken even huge enemies if they stay close too long."
     ],
     "weaknesses": [
       "Slow on open land; fast ground predators and flyers can circle it and poke at weak spots.",
       "Needs water or damp mud to stay strong; dries out and tires quickly in hot, dry places.",
-      "Softest spots are the belly and the base of the necks under the shell edge.\nRegeneration is limited and slow; if many heads are knocked out at once, it can\u2019t fix them mid-battle.\nVenom works best up close; long\u2011range and flying enemies can stay out of its bite zone.\nHeavy body makes climbing almost impossible and jumping not an option."
+      "Softest spots are the belly and the base of the necks under the shell edge."
     ],
     "environment_affinities": {
       "deep_ocean": -1,

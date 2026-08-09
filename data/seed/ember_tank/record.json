@@ -57,11 +57,12 @@
     "strengths": [
       "Extremely tough armor from overlapping bone plates and scales makes it hard to hurt with normal hits.",
       "Gets stronger and more dangerous the hotter the battlefield becomes, thanks to its Heatcharge power.",
-      "Tail club and rolling ball attacks are great for guarding choke points and knocking enemies away from allies.\nVenomous bite that also heats up over time makes grapples and close duels risky for opponents.\nCan handle fire, lava, and explosions with ease, and even uses them to power up."
+      "Tail club and rolling ball attacks are great for guarding choke points and knocking enemies away from allies."
     ],
     "weaknesses": [
       "Very slow on land and cannot jump well, so fast or flying enemies can outmaneuver it.",
-      "Overheats if it stays at max heat too long in places with no way to cool down, making it tired and sluggish afterward.\nPoor at long-range combat; almost all attacks are short or close range.\nHeavy armor and body weight make it sink or struggle in deep mud, swamps, and water.\nCold, wet, or icy areas drain its Heatcharge, weakening both armor and attacks until it can warm up again."
+      "Overheats if it stays at max heat too long in places with no way to cool down, making it tired and sluggish afterward.",
+      "Poor at long-range combat; almost all attacks are short or close range."
     ],
     "environment_affinities": {
       "deep_ocean": -2,
