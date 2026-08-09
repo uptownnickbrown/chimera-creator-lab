@@ -18,6 +18,7 @@ import {
   PartImg,
   RarityBadge,
   StatRow,
+  TraitChips,
 } from "./ui";
 
 /* Four abilities all wearing the same glyph reads as a placeholder; the stat
@@ -29,25 +30,13 @@ const ABILITY_ICONS = [
   "icons/stat_speed",
 ];
 
-/* A few early seed records glued extra list entries into one string with a
-   raw '","' separator (a data-side parse slip). The kid never sees that
-   artifact: split the entries apart, strip stray quotes, and keep the three
-   the reveal composition is built around — clean records already have three,
-   so this is a no-op for them. Every kept sentence renders in full. */
-function cleanFacts(rows: string[], max = 3): string[] {
-  return rows
-    .flatMap((r) => r.split(/"\s*,\s*"/))
-    .map((r) => r.replace(/^"+|"+$/g, "").trim())
-    .filter(Boolean)
-    .slice(0, max);
-}
-
 /* Gradual disclosure is the product: until the FIRST streamed field lands
    (the name — server-side it parses ~1-2s into the stream), poll fast so the
    kid sees it the moment it exists; then back off to easy cruising. */
 const POLL_FAST_MS = 450;
 const POLL_MS = 1500;
-/** White-out length; the reveal mounts underneath it and is lit as it clears. */
+/** Arrival bloom length — a fast light-bloom iris that NEVER goes full white
+    (the old full-screen flash is gone; prefers-reduced-motion drops it). */
 const FLASH_MS = 300;
 
 export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
@@ -163,7 +152,7 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
   if (!revealed && !imageFailed) {
     return (
       <>
-        {flashing && <div className="rv__flash" aria-hidden="true" />}
+        {flashing && <div className="rv__bloom" aria-hidden="true" />}
         <FusionWait creature={creature} creatureId={creatureId} heroReady={heroReady} />
       </>
     );
@@ -175,7 +164,7 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
 
   return (
     <>
-      {flashing && <div className="rv__flash" aria-hidden="true" />}
+      {flashing && <div className="rv__bloom" aria-hidden="true" />}
       <div className="rv">
         <section className="rv__intro">
           <p className="eyebrow rv-in" style={anim(0)}>
@@ -238,21 +227,9 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
 
         <aside className="rv__side">
           <div className="rv__side-scroll">
-          <Panel title="TOP FACTS" accent="cyan">
-            {cleanFacts(creature.strengths).map((s, i) => (
-              <div className="fact rv-cascade" key={`s${i}`} style={anim(1150 + i * 110)}>
-                <Asset slot="icons/fact_strength" label="" className="fact__icon" />
-                <div>
-                  <div className="fact__title">STRENGTH</div>
-                  <div className="fact__blurb">{s}</div>
-                </div>
-              </div>
-            ))}
-          </Panel>
-
           <Panel title="AWESOME ABILITIES" accent="purple">
             {creature.abilities.map((a, i) => (
-              <div className="ability rv-cascade" key={a.name} style={anim(1250 + i * 130)}>
+              <div className="ability rv-cascade" key={a.name} style={anim(1150 + i * 130)}>
                 <Asset slot={ABILITY_ICONS[i % ABILITY_ICONS.length]} label="" className="ability__icon" tint="purple" />
                 <div>
                   <div className="ability__name">{a.name.toUpperCase()}</div>
@@ -261,6 +238,12 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
               </div>
             ))}
           </Panel>
+
+          {(creature.strengths.length > 0 || creature.weaknesses.length > 0) && (
+            <Panel title="KNOW YOUR CHIMERA" accent="cyan" className="rv-in">
+              <TraitChips strengths={creature.strengths} weaknesses={creature.weaknesses} />
+            </Panel>
+          )}
           </div>
         </aside>
 
@@ -280,12 +263,6 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
 
         <Panel title="CHIMERA STATS" accent="teal" className="rv__stats rv-slide">
           <StatRow stats={creature.core_stats} />
-          {creature.weaknesses.length > 0 && (
-            <div className="rv__watch">
-              <span className="rv__watch-key">WATCH OUT FOR</span>
-              <span className="rv__watch-text">{cleanFacts(creature.weaknesses).join(" · ")}</span>
-            </div>
-          )}
         </Panel>
 
         <footer className="rv__foot rv-in" style={anim(1700)}>

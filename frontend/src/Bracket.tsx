@@ -1,9 +1,18 @@
-/* Arena — tournament setup and the bracket board (spec §15, §7 PREDICT).
-   Eight entrants, quarterfinals to championship. Predicting and fighting live
-   on the match screen (Battle.tsx); the board is the map you tap into. */
+/* Arena — single active tournament (spec 2026-08-09).
+
+   There is never a choice between in-flight brackets: #/arena goes straight
+   into the current bracket with the NEXT MATCH called out huge, with a PAST
+   CHALLENGES shelf of finished tournaments underneath (champion thumb + name,
+   tap to revisit read-only, finale key art included). No current bracket ->
+   the eight-entrant setup. POST /tournaments 409s while one is active; the
+   setup answers with "finish or abandon?".
+
+   GET /tournaments/current answers with the live TournamentView (or JSON
+   null); the tournament-list walk stays as a fallback for an older server. */
 import { useCallback, useEffect, useState } from "react";
 import type { Go } from "./App";
 import { ApiError, api, type CreatureSummary, type TournamentView } from "./api";
+import { Finale, keyArtPath } from "./Finale";
 import {
   Asset,
   Badge,
@@ -22,21 +31,105 @@ const ENTRANTS = 8;
 
 export function Bracket({ go, tournamentId }: { go: Go; tournamentId?: number }) {
   if (tournamentId) return <BracketBoard go={go} tournamentId={tournamentId} />;
+  return <ArenaLanding go={go} />;
+}
+
+// -- landing: straight into the one live bracket, or into setup ---------------
+
+/** The current bracket, via the new contract with a list-derived fallback. */
+async function findCurrent(): Promise<number | null> {
+  try {
+    const cur = await api.getCurrentTournament();
+    return cur?.id ?? null;
+  } catch {
+    try {
+      const all = await api.listTournaments();
+      return all.find((t) => t.status !== "complete")?.id ?? null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+function ArenaLanding({ go }: { go: Go }) {
+  const [state, setState] = useState<
+    { kind: "loading" } | { kind: "current"; tid: number } | { kind: "setup" }
+  >({ kind: "loading" });
+
+  useEffect(() => {
+    let dead = false;
+    findCurrent().then((tid) => {
+      if (dead) return;
+      setState(tid ? { kind: "current", tid } : { kind: "setup" });
+    });
+    return () => {
+      dead = true;
+    };
+  }, []);
+
+  if (state.kind === "loading") return <Loading label="OPENING THE ARENA" />;
+  if (state.kind === "current")
+    return <BracketBoard go={go} tournamentId={state.tid} landing />;
   return <Setup go={go} />;
+}
+
+// -- past challenges shelf ------------------------------------------------------
+
+function championOf(t: TournamentView): CreatureSummary | undefined {
+  return t.entrants.find((c) => c.id === t.champion_id);
+}
+
+function PastShelf({ go, exceptId }: { go: Go; exceptId?: number }) {
+  const [past, setPast] = useState<TournamentView[]>([]);
+
+  useEffect(() => {
+    api
+      .listTournaments()
+      .then((all) =>
+        setPast(all.filter((t) => t.status === "complete" && t.id !== exceptId)),
+      )
+      .catch(() => setPast([]));
+  }, [exceptId]);
+
+  if (!past.length) return null;
+  return (
+    <Panel title="PAST CHALLENGES" accent="gold" className="shelf">
+      <div className="shelf__row">
+        {past.slice(0, 8).map((t) => {
+          const champ = championOf(t);
+          return (
+            <button
+              key={t.id}
+              type="button"
+              className="shelf__item"
+              onClick={() => go({ name: "arena", tid: t.id })}
+              title={`${t.name} — champion ${champ?.name ?? "unknown"}`}
+            >
+              <span className="shelf__art">
+                <CreatureImg creature={champ} />
+              </span>
+              <FitText className="shelf__champ">{(champ?.name ?? "CHAMPION").toUpperCase()}</FitText>
+              <span className="shelf__name">{t.name}</span>
+            </button>
+          );
+        })}
+      </div>
+    </Panel>
+  );
 }
 
 // -- setup --------------------------------------------------------------------
 
 function Setup({ go }: { go: Go }) {
   const [roster, setRoster] = useState<CreatureSummary[] | null>(null);
-  const [history, setHistory] = useState<TournamentView[]>([]);
   const [picked, setPicked] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  /** POST answered 409 — one bracket is already live. */
+  const [conflict, setConflict] = useState(false);
 
   useEffect(() => {
     api.listCreatures("newest").then(setRoster).catch(() => setRoster([]));
-    api.listTournaments().then(setHistory).catch(() => setHistory([]));
   }, []);
 
   function toggle(id: number) {
@@ -67,9 +160,34 @@ function Setup({ go }: { go: Go }) {
       const t = await api.createTournament(picked);
       go({ name: "arena", tid: t.id });
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "The arena is closed right now.");
+      if (e instanceof ApiError && e.status === 409) {
+        setConflict(true);
+      } else {
+        setError(e instanceof ApiError ? e.message : "The arena is closed right now.");
+      }
       setBusy(false);
     }
+  }
+
+  async function abandonAndStart() {
+    setBusy(true);
+    setError(null);
+    try {
+      const tid = await findCurrent();
+      if (tid) await api.deleteTournament(tid);
+      setConflict(false);
+      const t = await api.createTournament(picked);
+      go({ name: "arena", tid: t.id });
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "That bracket would not step aside.");
+      setBusy(false);
+    }
+  }
+
+  async function goCurrent() {
+    const tid = await findCurrent();
+    if (tid) go({ name: "arena", tid });
+    else setConflict(false);
   }
 
   if (!roster) return <Loading label="OPENING THE ARENA" />;
@@ -115,29 +233,6 @@ function Setup({ go }: { go: Go }) {
         </Panel>
 
         <aside className="arena__aside">
-          <Panel title="PAST TOURNAMENTS" accent="gold" className="arena__history">
-            {history.length ? (
-              <ul className="tlist">
-                {history.map((t) => (
-                  <li key={t.id}>
-                    <button type="button" onClick={() => go({ name: "arena", tid: t.id })}>
-                      <Asset
-                        slot={t.status === "complete" ? "trophy/badge_champion" : "icons/nav_arena"}
-                        label=""
-                        className="tlist__icon"
-                      />
-                      <FitText className="tlist__name">{t.name}</FitText>
-                      <Badge tone={t.status === "complete" ? "gold" : "cyan"}>
-                        {t.status.toUpperCase()}
-                      </Badge>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <Empty title="No tournaments yet" />
-            )}
-          </Panel>
           <Btn accent="ghost" onClick={randomEight} disabled={roster.length < ENTRANTS}>
             RANDOM EIGHT
           </Btn>
@@ -155,17 +250,55 @@ function Setup({ go }: { go: Go }) {
             HALL OF CHAMPIONS
           </Btn>
           {error && <div className="error">{error}</div>}
+          <PastShelf go={go} />
         </aside>
       </div>
+
+      {conflict && (
+        <div className="conflict" role="dialog" aria-label="A bracket is already running">
+          <div className="panel panel--gold conflict__card">
+            <div className="panel__body">
+              <h2 className="conflict__ask">FINISH OR ABANDON YOUR CURRENT BRACKET?</h2>
+              <p className="conflict__line">
+                Only one tournament runs at a time — one bracket is still in play.
+              </p>
+              <div className="conflict__row">
+                <Btn accent="teal" size="lg" onClick={goCurrent}>
+                  GO FINISH IT
+                </Btn>
+                <Btn accent="ghost" onClick={abandonAndStart} disabled={busy}>
+                  ABANDON IT — START FRESH
+                </Btn>
+              </div>
+              <Btn accent="ghost" size="sm" onClick={() => setConflict(false)}>
+                NEVER MIND
+              </Btn>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // -- the board ----------------------------------------------------------------
 
-function BracketBoard({ go, tournamentId }: { go: Go; tournamentId: number }) {
+function BracketBoard({
+  go,
+  tournamentId,
+  landing,
+}: {
+  go: Go;
+  tournamentId: number;
+  /** Landed here from #/arena — show the PAST CHALLENGES shelf. */
+  landing?: boolean;
+}) {
   const [t, setT] = useState<TournamentView | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [finale, setFinale] = useState(false);
+  /** ABANDON failsafe: quiet, two-tap. */
+  const [confirmAbandon, setConfirmAbandon] = useState(false);
+  const [abandonError, setAbandonError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -186,9 +319,25 @@ function BracketBoard({ go, tournamentId }: { go: Go; tournamentId: number }) {
   const champion = t.champion_id ? byId.get(t.champion_id) : null;
   const all = t.rounds.flatMap((r) => r.matches);
   const remaining = all.filter((m) => m.winner === null).length;
-  const next = all.find((m) => m.winner === null && m.a !== null && m.b !== null);
+  /* The server names the next match; the client-side scan is the fallback for
+     an older server (and the two agree by construction). */
+  const next =
+    all.find((m) => m.id === t.next_match_id) ??
+    all.find((m) => m.winner === null && m.a !== null && m.b !== null);
   const correct = all.filter((m) => m.prediction_correct === true).length;
   const called = all.filter((m) => m.prediction_correct !== null).length;
+  const nextA = next?.a ? byId.get(next.a) : null;
+  const nextB = next?.b ? byId.get(next.b) : null;
+  const hasFinaleArt = Boolean(keyArtPath(t)) || t.final_art === "pending";
+
+  async function abandon() {
+    try {
+      await api.deleteTournament(t!.id);
+      go({ name: "arena" });
+    } catch {
+      setAbandonError("The bracket would not fold. Try again in a moment.");
+    }
+  }
 
   return (
     <div className="arena screen-in">
@@ -209,18 +358,42 @@ function BracketBoard({ go, tournamentId }: { go: Go; tournamentId: number }) {
             )}
           </div>
         </div>
-        {next && (
-          <Btn
-            accent="teal"
-            size="lg"
-            icon="icons/nav_arena"
-            onClick={() => go({ name: "arena", tid: t.id, matchId: next.id })}
-            sub="STEP INTO THE ARENA"
-          >
-            NEXT BATTLE
-          </Btn>
-        )}
       </header>
+
+      {/* THE NEXT MATCH, called out huge — the one thing to do next. */}
+      {next && (
+        <button
+          type="button"
+          className="nextmatch"
+          onClick={() => go({ name: "arena", tid: t.id, matchId: next.id })}
+        >
+          <span className="nextmatch__key">NEXT MATCH</span>
+          <span className="nextmatch__pair">
+            <span className="nextmatch__fighter">
+              <span className="nextmatch__art">
+                <CreatureImg creature={nextA} />
+              </span>
+              <FitText className="nextmatch__name">
+                {(nextA?.name ?? "TBD").toUpperCase()}
+              </FitText>
+            </span>
+            <span className="nextmatch__vs">VS</span>
+            <span className="nextmatch__fighter">
+              <span className="nextmatch__art">
+                <CreatureImg creature={nextB} />
+              </span>
+              <FitText className="nextmatch__name">
+                {(nextB?.name ?? "TBD").toUpperCase()}
+              </FitText>
+            </span>
+          </span>
+          <span className="nextmatch__env">
+            <Asset slot={envIcon(next.environment)} label="" className="match__envicon" />
+            {envLabel(next.environment)}
+          </span>
+          <span className="nextmatch__cta">PREDICT &amp; FIGHT</span>
+        </button>
+      )}
 
       <div className="board">
         {t.rounds.map((round, ri) => (
@@ -287,7 +460,12 @@ function BracketBoard({ go, tournamentId }: { go: Go; tournamentId: number }) {
                 <>
                   <Asset slot="trophy/champion_cup" label="" className="crown__cup" />
                   <FitText className="crown__name">{(champion.name || "CHAMPION").toUpperCase()}</FitText>
-                  <Btn accent="gold" size="sm" onClick={() => go({ name: "hall" })}>
+                  {hasFinaleArt && (
+                    <Btn accent="gold" size="sm" onClick={() => setFinale(true)}>
+                      SEE THE FINALE
+                    </Btn>
+                  )}
+                  <Btn accent="ghost" size="sm" onClick={() => go({ name: "hall" })}>
                     HALL OF CHAMPIONS
                   </Btn>
                 </>
@@ -303,10 +481,26 @@ function BracketBoard({ go, tournamentId }: { go: Go; tournamentId: number }) {
         </div>
       </div>
 
+      {landing && <PastShelf go={go} exceptId={t.id} />}
+
       <footer className="arena__foot">
-        <Btn accent="ghost" onClick={() => go({ name: "arena" })}>
-          ALL TOURNAMENTS
-        </Btn>
+        {t.status !== "complete" &&
+          (confirmAbandon ? (
+            <div className="release release--row">
+              <p className="release__ask">Abandon this bracket? Its battles are lost.</p>
+              <Btn accent="ghost" size="sm" onClick={() => setConfirmAbandon(false)}>
+                KEEP PLAYING
+              </Btn>
+              <button type="button" className="release__go" onClick={abandon}>
+                YES — ABANDON
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="release__quiet" onClick={() => setConfirmAbandon(true)}>
+              ABANDON BRACKET
+            </button>
+          ))}
+        {abandonError && <div className="error">{abandonError}</div>}
         <Btn accent="ghost" onClick={() => go({ name: "codex" })}>
           BACK TO CODEX
         </Btn>
@@ -316,6 +510,10 @@ function BracketBoard({ go, tournamentId }: { go: Go; tournamentId: number }) {
           </Btn>
         )}
       </footer>
+
+      {finale && (
+        <Finale tournament={t} onClose={() => setFinale(false)} onHall={() => go({ name: "hall" })} />
+      )}
     </div>
   );
 }

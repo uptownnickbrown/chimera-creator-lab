@@ -20,10 +20,13 @@ import {
   Empty,
   FitText,
   Loading,
+  MoveChips,
   Panel,
+  PartImg,
   RarityBadge,
   Stage,
   StatRow,
+  TraitChips,
 } from "./ui";
 
 const SORTS: { key: CodexSort; label: string }[] = [
@@ -41,6 +44,9 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
   const [selected, setSelected] = useState<CreatureDetail | null>(null);
   const [query, setQuery] = useState("");
   const [libSources, setLibSources] = useState<SourceCreature[]>([]);
+  /** RELEASE (delete) failsafe: two-tap confirm, quiet. */
+  const [confirmRelease, setConfirmRelease] = useState(false);
+  const [releaseError, setReleaseError] = useState<string | null>(null);
 
   useEffect(() => {
     getLibraryCached()
@@ -48,14 +54,12 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
       .catch(() => undefined);
   }, []);
 
-  /* The four donor parts, resolved to library entries for their portraits. */
-  const parts = useMemo(() => {
-    if (!selected) return [];
-    const bySlug = new Map(libSources.map((s) => [s.slug, s]));
-    return (selected.sources ?? [])
-      .map((slug) => bySlug.get(slug))
-      .filter((s): s is SourceCreature => Boolean(s));
-  }, [selected, libSources]);
+  /* The four donor parts — library entries where they exist (painted portraits
+     or a summoned part's /media portrait), bare slugs otherwise. */
+  const libBySlug = useMemo(
+    () => new Map(libSources.map((s) => [s.slug, s])),
+    [libSources],
+  );
 
   const load = useCallback(async (which: CodexSort) => {
     setRows(await api.listCreatures(which).catch(() => []));
@@ -92,11 +96,30 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
     };
   }, [selectedId, rows]);
 
+  /* A new selection always resets the release confirm — no armed buttons. */
+  useEffect(() => {
+    setConfirmRelease(false);
+    setReleaseError(null);
+  }, [selected?.id]);
+
   async function toggleFavorite() {
     if (!selected) return;
     await api.toggleFavorite(selected.id);
     setSelected(await api.getCreature(selected.id));
     load(sort);
+  }
+
+  async function release() {
+    if (!selected) return;
+    try {
+      await api.deleteCreature(selected.id);
+      setSelected(null);
+      setConfirmRelease(false);
+      go({ name: "codex" });
+      load(sort);
+    } catch {
+      setReleaseError("The wild is not accepting releases right now. Try again soon.");
+    }
   }
 
   async function reroll() {
@@ -199,7 +222,7 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
 
       <aside className="codex__detail">
         {selected ? (
-          <Panel title="SELECTED CHIMERA" accent="cyan" className="detail">
+          <Panel accent="cyan" className="detail">
             <header className="detail__head">
               <div className="detail__id">
                 <h2 className="detail__name">
@@ -221,8 +244,10 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
               </button>
             </header>
 
+            {/* No pedestal in the codex detail: plain render, grounded on a
+                soft shadow (pedestal policy, UI_STANDARD). */}
             <div className="detail__stage">
-              <Stage creature={selected} gold={selected.championships > 0} caption="RENDER PENDING" />
+              <Stage plain creature={selected} gold={selected.championships > 0} caption="RENDER PENDING" />
             </div>
 
             <div className="detail__record">
@@ -233,28 +258,33 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
                 ["TITLES", String(selected.championships)],
               ].map(([k, v]) => (
                 <div key={k}>
-                  <div className="detail__k">{k}</div>
-                  <div className="detail__v num">{v}</div>
+                  <span className="detail__v num">{v}</span>
+                  <span className="detail__k">{k}</span>
                 </div>
               ))}
             </div>
 
-            <StatRow stats={selected.core_stats} />
+            <StatRow compact stats={selected.core_stats} />
 
-            {parts.length > 0 && (
+            {selected.sources.length > 0 && (
               <section className="detail__section">
                 <h3 className="detail__subhead">FUSED FROM</h3>
                 <div className="detail__parts">
-                  {parts.map((p) => (
-                    <div className="detail__part" key={p.slug} title={p.contribution || p.name}>
-                      <span className="detail__part-img">
-                        <Asset slot={`parts/${p.slug}`} label={p.name} />
-                      </span>
-                      <span className="detail__part-name">
-                        <FitText>{p.name.toUpperCase()}</FitText>
-                      </span>
-                    </div>
-                  ))}
+                  {selected.sources.map((slug) => {
+                    const p = libBySlug.get(slug);
+                    const name =
+                      p?.name ?? slug.replace(/^custom\//, "").replace(/[_-]/g, " ");
+                    return (
+                      <div className="detail__part" key={slug} title={p?.contribution || name}>
+                        <span className="detail__part-img">
+                          <PartImg source={p} slug={slug} label={name} />
+                        </span>
+                        <span className="detail__part-name">
+                          <FitText>{name.toUpperCase()}</FitText>
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -262,23 +292,20 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
             {selected.abilities.length > 0 && (
               <section className="detail__section">
                 <h3 className="detail__subhead">MOVES</h3>
-                <div className="detail__moves">
-                  {selected.abilities.map((a) => (
-                    <article className="detail__move" key={a.name}>
-                      <h4 className="detail__move-name">
-                        <FitText>{String(a.name ?? "").toUpperCase()}</FitText>
-                      </h4>
-                      <p className="detail__move-blurb">{a.blurb}</p>
-                    </article>
-                  ))}
-                </div>
+                <MoveChips abilities={selected.abilities} />
               </section>
             )}
 
-            {selected.fun_fact && (
-              <p className="detail__fact">
-                <b>FUN FACT</b> {selected.fun_fact}
-              </p>
+            {(selected.strengths.length > 0 ||
+              selected.weaknesses.length > 0 ||
+              selected.fun_fact) && (
+              <section className="detail__section">
+                <TraitChips
+                  strengths={selected.strengths}
+                  weaknesses={selected.weaknesses}
+                  funFact={selected.fun_fact || undefined}
+                />
+              </section>
             )}
 
             {Object.keys(selected.records).length > 0 && (
@@ -295,17 +322,43 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
               </div>
             )}
 
-            <div className="detail__actions">
-              <Btn accent="ghost" size="sm" onClick={reroll}>
-                REROLL NAME
-              </Btn>
-              <Btn accent="gold" size="sm" icon="icons/nav_arena" onClick={() => go({ name: "arena" })}>
-                GO TO ARENA
-              </Btn>
-            </div>
+            {confirmRelease ? (
+              <div className="release">
+                <p className="release__ask">
+                  Release {selected.name || "this chimera"} into the wild? It leaves your
+                  Codex forever.
+                </p>
+                <div className="release__row">
+                  <Btn accent="ghost" size="sm" onClick={() => setConfirmRelease(false)}>
+                    KEEP IT
+                  </Btn>
+                  <button type="button" className="release__go" onClick={release}>
+                    YES — RELEASE
+                  </button>
+                </div>
+                {releaseError && <div className="error">{releaseError}</div>}
+              </div>
+            ) : (
+              <div className="detail__actions">
+                <Btn accent="ghost" size="sm" onClick={reroll}>
+                  REROLL NAME
+                </Btn>
+                <Btn accent="gold" size="sm" icon="icons/nav_arena" onClick={() => go({ name: "arena" })}>
+                  GO TO ARENA
+                </Btn>
+                <button
+                  type="button"
+                  className="release__quiet"
+                  onClick={() => setConfirmRelease(true)}
+                  title={`Release ${selected.name || "this chimera"}`}
+                >
+                  RELEASE
+                </button>
+              </div>
+            )}
           </Panel>
         ) : (
-          <Panel title="SELECTED CHIMERA" accent="cyan" className="detail">
+          <Panel accent="cyan" className="detail">
             <Empty title="Nothing selected" hint="Tap a card to see its full record." />
           </Panel>
         )}

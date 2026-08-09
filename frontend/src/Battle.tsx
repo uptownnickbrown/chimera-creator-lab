@@ -2,23 +2,33 @@
    art-direction/battle.png).
 
    Two phases in one frame:
-     PREDICT  the arena is painted, both chimeras stand on side platforms
-              facing inward, and the two giant plates are the tap targets.
+     PREDICT  the arena is painted, both chimeras stand grounded facing
+              inward (no pedestal discs — contact shadows keep their feet on
+              the floor), and the two giant plates are the tap targets.
      RESULT   the loser's side dims, the winner takes the laurel, health bars
-              run down, three reason cards explain it and the beats play out
-              as a short cinematic.
+              run down, and the STORY takes center stage: a large readable
+              card that plays the beats one at a time — tap to advance, sized
+              so a parent can read it aloud. Reason cards explain the call.
 
-   Resolve is idempotent and permanently cached, so revisiting a finished match
-   replays exactly the same fight for free. */
+   Tapping either fighter's name chip (any phase) or its render (result
+   phase) opens the scout modal: hero, five stats, moves — codex language,
+   one tap anywhere to close. Nobody leaves the battle to scout.
+
+   Resolve is idempotent and permanently cached, so revisiting a finished
+   match replays exactly the same fight for free. When the championship match
+   resolves, the Finale takes over and the generated key art is the hero
+   moment. */
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Go } from "./App";
 import {
   api,
   type BattleView,
   type BracketMatch,
+  type CreatureDetail,
   type CreatureSummary,
   type TournamentView,
 } from "./api";
+import { Finale } from "./Finale";
 import {
   Asset,
   Badge,
@@ -26,16 +36,19 @@ import {
   CreatureImg,
   FitText,
   Loading,
+  MoveChips,
   Panel,
   RarityBadge,
   Stage,
+  StatRow,
   envIcon,
   envLabel,
   reasonIcon,
 } from "./ui";
 
 const MAX_HEALTH = 1000;
-const BEAT_MS = 1400;
+/** Slow enough to read aloud; a tap advances immediately. */
+const BEAT_MS = 5200;
 
 /** The battle's own a/b ordering is not the bracket's — always match by id. */
 function healthOf(battle: BattleView | null, id?: number): number {
@@ -43,6 +56,13 @@ function healthOf(battle: BattleView | null, id?: number): number {
   if (battle.creature_a_id === id) return battle.health_remaining.a;
   if (battle.creature_b_id === id) return battle.health_remaining.b;
   return MAX_HEALTH;
+}
+
+/** Confidence in kid language — "66%" is noise to an eight-year-old. */
+function verdictWord(confidence: number): string {
+  if (confidence >= 0.8) return "CLEAR WINNER!";
+  if (confidence >= 0.65) return "STRONG WIN!";
+  return "CLOSE ONE!";
 }
 
 export function Battle({
@@ -61,6 +81,8 @@ export function Battle({
   const [beat, setBeat] = useState(0);
   const [health, setHealth] = useState(false);
   const [ceremony, setCeremony] = useState(false);
+  /** Scout modal: which creature id is open (null = closed). */
+  const [scoutId, setScoutId] = useState<number | null>(null);
   const beatTimer = useRef<number | null>(null);
 
   const resolve = useCallback(async () => {
@@ -103,20 +125,20 @@ export function Battle({
         return n + 1;
       });
     };
-    beatTimer.current = setTimeout(step, 900) as unknown as number;
+    beatTimer.current = setTimeout(step, 1400) as unknown as number;
     return () => {
       clearTimeout(h);
       if (beatTimer.current) clearTimeout(beatTimer.current);
     };
   }, [battle]);
 
-  /** Scrubbing the pips takes the cinematic off autoplay. */
+  /** A tap on the story card (or a pip) takes the cinematic off autoplay. */
   function scrub(i: number) {
     if (beatTimer.current) clearTimeout(beatTimer.current);
-    setBeat(i);
+    setBeat(Math.max(0, Math.min(i, (battle?.beats.length ?? 1) - 1)));
   }
 
-  /* A completed bracket earns its ceremony — once, when the final resolves. */
+  /* A completed bracket earns its finale — once, when the final resolves. */
   const isFinal = t ? t.rounds[t.rounds.length - 1]?.matches[0]?.id === matchId : false;
   useEffect(() => {
     if (battle && t?.status === "complete" && isFinal) setCeremony(true);
@@ -157,6 +179,7 @@ export function Battle({
   }
 
   const showResult = Boolean(battle);
+  const lastBeat = battle ? battle.beats.length - 1 : 0;
 
   return (
     <div className="battle screen-in">
@@ -186,22 +209,12 @@ export function Battle({
           health={healthOf(battle, a?.id)}
           animate={health}
           onPick={!showResult && a ? () => predict(a.id) : undefined}
+          onScout={a ? () => setScoutId(a.id) : undefined}
         />
 
         <div className="battle__center">
           {showResult && battle ? (
             <>
-              {predicted !== null && (
-                <div className="verdict">
-                  <div className="verdict__label">YOU PICKED</div>
-                  <FitText className="verdict__pick">
-                    {(byId.get(predicted)?.name ?? "—").toUpperCase()}
-                  </FitText>
-                  <div className={`verdict__result${battle.prediction_correct ? " is-correct" : " is-wrong"}`}>
-                    {battle.prediction_correct ? "CORRECT!" : "NOT THIS TIME"}
-                  </div>
-                </div>
-              )}
               <div className="winner">
                 <div className="winner__label">★ WINNER ★</div>
                 <div className="winner__wreath">
@@ -217,11 +230,38 @@ export function Battle({
                     <Asset slot="trophy/laurel" label="" />
                   </span>
                 </div>
-                <div className="winner__confidence num">
-                  CONFIDENCE {Math.round(battle.confidence * 100)}%
+                <div className="winner__confidence">
+                  <span className="winner__word">{verdictWord(battle.confidence)}</span>
+                  {predicted !== null && (
+                    <Badge tone={battle.prediction_correct ? "green" : "red"}>
+                      {battle.prediction_correct ? "YOU CALLED IT!" : "NOT YOUR PICK"}
+                    </Badge>
+                  )}
                   {battle.cached && <Badge tone="muted">REPLAY</Badge>}
                 </div>
               </div>
+
+              {/* THE BATTLE STORY — the main event after the winner banner:
+                  one beat at a time, big type, tap to turn the page. */}
+              <button type="button" className="story" onClick={() => scrub(beat + 1)}>
+                <span className="story__key">THE BATTLE STORY</span>
+                <span className="story__line" key={beat}>
+                  {battle.beats[Math.min(beat, lastBeat)]}
+                </span>
+                <span className="story__row">
+                  <span className="story__pips">
+                    {battle.beats.map((_, i) => (
+                      <i
+                        key={i}
+                        className={`story__pip${i === beat ? " is-on" : ""}${i < beat ? " is-past" : ""}`}
+                      />
+                    ))}
+                  </span>
+                  <span className="story__hint">
+                    {beat < lastBeat ? "TAP FOR WHAT HAPPENS NEXT" : "THE END"}
+                  </span>
+                </span>
+              </button>
             </>
           ) : (
             <div className="predict">
@@ -274,6 +314,7 @@ export function Battle({
           health={healthOf(battle, b?.id)}
           animate={health}
           onPick={!showResult && b ? () => predict(b.id) : undefined}
+          onScout={b ? () => setScoutId(b.id) : undefined}
         />
       </section>
 
@@ -295,25 +336,6 @@ export function Battle({
                 <div className="reason__blurb">{r.blurb}</div>
               </div>
             ))}
-          </div>
-
-          {/* the fight as a short cinematic: one beat at a time, tappable pips */}
-          <div className="cine">
-            <span className="cine__label">HOW IT PLAYED OUT</span>
-            <p className="cine__line" key={beat}>
-              {battle.beats[Math.min(beat, battle.beats.length - 1)]}
-            </p>
-            <div className="cine__pips">
-              {battle.beats.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={`cine__pip${i === beat ? " is-on" : ""}${i < beat ? " is-past" : ""}`}
-                  onClick={() => scrub(i)}
-                  aria-label={`Beat ${i + 1}`}
-                />
-              ))}
-            </div>
           </div>
         </section>
       )}
@@ -362,8 +384,8 @@ export function Battle({
               <Asset slot="trophy/champion_cup" label="" className="tracker__cup" />
               <FitText className="tracker__name">{(champion.name || "CHAMPION").toUpperCase()}</FitText>
               <div className="tracker__label">ARENA CHAMPION</div>
-              <Btn accent="gold" size="sm" onClick={() => go({ name: "hall" })}>
-                HALL OF CHAMPIONS
+              <Btn accent="gold" size="sm" onClick={() => setCeremony(true)}>
+                SEE THE FINALE
               </Btn>
             </div>
           ) : (
@@ -401,28 +423,20 @@ export function Battle({
         <Btn accent="cyan" onClick={() => go({ name: "arena", tid: t.id })}>
           VIEW BRACKET
         </Btn>
-        <Btn accent="ghost" onClick={() => go({ name: "codex" })}>
-          BACK TO CODEX
-        </Btn>
       </footer>
 
-      {ceremony && champion && (
-        <Ceremony
-          champion={champion}
-          art={keyArt(t)}
+      {scoutId !== null && <ScoutModal creatureId={scoutId} onClose={() => setScoutId(null)} />}
+
+      {ceremony && (
+        <Finale
+          tournament={t}
+          beats={isFinal ? battle?.beats : undefined}
           onClose={() => setCeremony(false)}
           onHall={() => go({ name: "hall" })}
         />
       )}
     </div>
   );
-}
-
-/** `final_art` is "pending" while the championship key art renders, then a
-    /media path, then absent when the lab never made one. Only a path paints. */
-function keyArt(t: TournamentView): string | null {
-  const art = t.final_art;
-  return typeof art === "string" && (art.startsWith("/") || art.startsWith("http")) ? art : null;
 }
 
 function Corner({
@@ -435,6 +449,7 @@ function Corner({
   health,
   animate,
   onPick,
+  onScout,
 }: {
   creature?: CreatureSummary;
   side: "left" | "right";
@@ -445,35 +460,40 @@ function Corner({
   health: number;
   animate: boolean;
   onPick?: () => void;
+  onScout?: () => void;
 }) {
   const pct = Math.max(0, Math.min(100, ((animate ? health : MAX_HEALTH) / MAX_HEALTH) * 100));
   // Before the bell everyone is on full health — a red bar would lie about it.
   const tone = !resolved ? "cyan" : winner ? "green" : "red";
+  /* In the predict phase the big render is the PICK target; after the bell it
+     becomes a scout target. The name chip scouts in every phase. */
+  const stageAction = onPick ?? (resolved ? onScout : undefined);
   return (
     <div className={`corner corner--${side}${winner ? " is-winner" : ""}${loser ? " is-out" : ""}`}>
-      <div className="corner__id">
+      <button type="button" className="corner__id" onClick={onScout} disabled={!onScout} title={creature ? `Scout ${creature.name}` : undefined}>
         <span className="corner__badge">
           <CreatureImg creature={creature} />
         </span>
-        <div className="corner__text">
+        <span className="corner__text">
           <FitText className="corner__name">{(creature?.name || "TBD").toUpperCase()}</FitText>
-          <div className="corner__meta">
+          <span className="corner__meta">
             {creature && <RarityBadge rarity={creature.rarity} />}
             {picked && <Badge tone="purple">YOUR PICK</Badge>}
             {winner && <Badge tone="gold">WINNER</Badge>}
-          </div>
-        </div>
-      </div>
+          </span>
+        </span>
+      </button>
 
       <button
         type="button"
         className="corner__stage"
-        onClick={onPick}
-        disabled={!onPick}
-        aria-label={onPick ? `Pick ${creature?.name}` : undefined}
+        onClick={stageAction}
+        disabled={!stageAction}
+        aria-label={onPick ? `Pick ${creature?.name}` : creature ? `Scout ${creature.name}` : undefined}
       >
-        {/* the right-hand fighter is mirrored so the two face each other */}
-        <Stage creature={creature} gold={winner} flip={side === "right"} caption="RENDER PENDING" />
+        {/* No pedestal discs in the arena: grounded plain stage, feet on a
+            contact shadow. The right-hand fighter mirrors to face inward. */}
+        <Stage plain creature={creature} gold={winner} flip={side === "right"} caption="RENDER PENDING" />
       </button>
 
       <div className="corner__health">
@@ -494,44 +514,62 @@ function Corner({
   );
 }
 
-function Ceremony({
-  champion,
-  art,
-  onClose,
-  onHall,
-}: {
-  champion: CreatureSummary;
-  art: string | null;
-  onClose: () => void;
-  onHall: () => void;
-}) {
+/** The in-battle scout card: the fighter's codex record without leaving the
+    match. One tap anywhere closes it. */
+function ScoutModal({ creatureId, onClose }: { creatureId: number; onClose: () => void }) {
+  const [detail, setDetail] = useState<CreatureDetail | null>(null);
+
+  useEffect(() => {
+    let dead = false;
+    setDetail(null);
+    api
+      .getCreature(creatureId)
+      .then((d) => !dead && setDetail(d))
+      .catch(() => !dead && setDetail(null));
+    return () => {
+      dead = true;
+    };
+  }, [creatureId]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    addEventListener("keydown", onKey);
+    return () => removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   return (
-    <div className="ceremony" role="dialog" aria-label="Champion crowned">
-      <div className="ceremony__confetti" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
-      <div className="ceremony__card">
-        <p className="eyebrow">THE BRACKET IS DECIDED</p>
-        <h2 className="display display--xl ceremony__title">CHAMPION!</h2>
-        <div className="ceremony__stage">
-          {art ? (
-            <img className="ceremony__art" src={art} alt={`${champion.name} championship art`} />
-          ) : (
-            <Stage creature={champion} gold caption="RENDER PENDING" />
-          )}
-        </div>
-        <div className="ceremony__name">{(champion.name || "CHAMPION").toUpperCase()}</div>
-        <div className="ceremony__sub">{champion.title || champion.role}</div>
-        <div className="ceremony__foot">
-          <Btn accent="gold" size="lg" icon="icons/tile_hall" onClick={onHall}>
-            HALL OF CHAMPIONS
-          </Btn>
-          <Btn accent="ghost" onClick={onClose}>
-            SEE THE FINAL
-          </Btn>
-        </div>
+    <div className="scout" role="dialog" aria-label="Fighter stats" onClick={onClose}>
+      <div className="panel panel--cyan scout__card">
+        {detail ? (
+          <div className="panel__body scout__body">
+            <header className="detail__head">
+              <div className="detail__id">
+                <h2 className="detail__name">
+                  <FitText>{(detail.name || "UNNAMED").toUpperCase()}</FitText>
+                </h2>
+                <div className="detail__badges">
+                  <RarityBadge rarity={detail.rarity} />
+                  <span className="muted">{detail.title || detail.role}</span>
+                </div>
+              </div>
+              <span className="scout__record num">
+                {detail.wins}W · {detail.losses}L
+              </span>
+            </header>
+            <div className="scout__stage">
+              <Stage plain creature={detail} caption="RENDER PENDING" />
+            </div>
+            <StatRow compact stats={detail.core_stats} />
+            {detail.abilities.length > 0 && <MoveChips abilities={detail.abilities} />}
+            <span className="scout__hint">TAP ANYWHERE TO CLOSE</span>
+          </div>
+        ) : (
+          <div className="panel__body">
+            <Loading label="SCOUTING" />
+          </div>
+        )}
       </div>
     </div>
   );

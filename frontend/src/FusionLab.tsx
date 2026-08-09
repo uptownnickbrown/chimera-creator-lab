@@ -76,6 +76,8 @@ export function FusionLab({ go }: { go: Go }) {
   const [query, setQuery] = useState("");
   /** Summon modal: null = closed, string = open with that prefill. */
   const [summonQuery, setSummonQuery] = useState<string | null>(null);
+  /** Quiet remove failsafe on SUMMONED cards: slug awaiting confirm. */
+  const [removing, setRemoving] = useState<string | null>(null);
   /** Slug that just flew into a slot — wears a highlight pulse briefly. */
   const [flash, setFlash] = useState<string | null>(null);
   const rail = useRef<HTMLDivElement | null>(null);
@@ -170,6 +172,20 @@ export function FusionLab({ go }: { go: Go }) {
   );
 
   useEffect(() => () => clearTimeout(flashTimer.current), []);
+
+  /** Release a summoned part for good (kid-safe: two-tap, quiet). */
+  const removeCustom = useCallback(async (source: SourceCreature) => {
+    try {
+      await api.deleteCustomPart(source.slug);
+      setSources((prev) => (prev ?? []).filter((s) => s.slug !== source.slug));
+      setPicks((prev) => prev.map((p) => (p?.slug === source.slug ? null : p)));
+      refreshLibrary().catch(() => {});
+    } catch {
+      setError("That creature would not go back into the wild. Try again soon.");
+    } finally {
+      setRemoving(null);
+    }
+  }, []);
 
   /* While any summoned part is missing its portrait, poll the library until
      the render lands (backend paints in ~26s; give up after ~4 min). */
@@ -416,6 +432,56 @@ export function FusionLab({ go }: { go: Go }) {
                     <PartImg source={s} />
                     {s.custom && <span className="pcard__summoned">SUMMONED</span>}
                     {takenSlugs.has(s.slug) && <span className="pcard__check">✓</span>}
+                    {s.custom && removing !== s.slug && (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        className="pcard__remove"
+                        aria-label={`Release ${s.name}`}
+                        title={`Release ${s.name}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRemoving(s.slug);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.stopPropagation();
+                            setRemoving(s.slug);
+                          }
+                        }}
+                      >
+                        ✕
+                      </span>
+                    )}
+                    {removing === s.slug && (
+                      <span className="pcard__confirm" onClick={(e) => e.stopPropagation()}>
+                        <span className="pcard__confirm-ask">RELEASE IT FOREVER?</span>
+                        <span className="pcard__confirm-row">
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            className="pcard__confirm-no"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setRemoving(null);
+                            }}
+                          >
+                            KEEP
+                          </span>
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            className="pcard__confirm-yes"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeCustom(s);
+                            }}
+                          >
+                            RELEASE
+                          </span>
+                        </span>
+                      </span>
+                    )}
                   </span>
                   <span className="pcard__plate">
                     <Asset

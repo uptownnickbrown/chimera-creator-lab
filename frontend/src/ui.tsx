@@ -5,7 +5,7 @@
    crafted holo-plate, because a creature without a render is not a missing
    asset slot. Never an emoji (ARCHITECTURE.md non-negotiable). */
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { CoreStats, CreatureSummary, SourceCreature } from "./api";
+import type { Ability, CoreStats, CreatureSummary, SourceCreature } from "./api";
 
 /* One map from the slot names screens ask for to the files the art pipeline
    actually ships. Screens keep their readable names; new art only ever needs a
@@ -249,11 +249,12 @@ export function hasArt(c: Pick<CreatureSummary, "hero_image_path" | "thumb_path"
 export function FitText({
   children,
   className = "",
-  min = 8,
+  min = 13,
 }: {
   children: React.ReactNode;
   className?: string;
-  /** Smallest font-size in px before the CSS backstop takes over. */
+  /** Smallest font-size in px before the CSS backstop takes over.
+      13px is the app-wide floor (UI_STANDARD §Type scale) — never lower. */
   min?: number;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -436,8 +437,114 @@ const STAT_TINT: Record<string, "purple" | "gold" | "teal" | "green" | "red" | u
   special: "red",
 };
 
+/** A few early seed records glued list entries into one string with a raw
+    '","' separator; split them apart so the kid never reads the artifact.
+    Backend budgets (2026-08): strengths/weaknesses ≤70 chars each. */
+export function cleanList(rows: string[], max = 4): string[] {
+  return rows
+    .flatMap((r) => r.split(/"\s*,\s*"/))
+    .map((r) => r.replace(/^"+|"+$/g, "").trim())
+    .filter(Boolean)
+    .slice(0, max);
+}
+
+/** A chip label carved from the front of a kid-readable sentence. The full
+    sentence is one tap away in the reader line — the chip is a handle, the
+    copy itself is never truncated. */
+function chipLabel(text: string, words = 3): string {
+  return text
+    .split(/\s+/)
+    .slice(0, words)
+    .join(" ")
+    .replace(/[.,;:!?'"]+$/, "")
+    .toUpperCase();
+}
+
+/** MOVES as big tappable name-chips that open one blurb at a time in a
+    reader line — visible-without-scroll beats all-text-expanded. Shared by
+    the Codex detail panel and the Battle stat modal. */
+export function MoveChips({ abilities }: { abilities: Ability[] }) {
+  const [open, setOpen] = useState(0);
+  if (!abilities.length) return null;
+  const current = abilities[Math.min(open, abilities.length - 1)];
+  return (
+    <div className="chips">
+      <div className="chips__row">
+        {abilities.map((a, i) => (
+          <button
+            key={a.name}
+            type="button"
+            className={`chip chip--purple${i === open ? " is-open" : ""}`}
+            onClick={() => setOpen(i)}
+          >
+            {String(a.name ?? "").toUpperCase()}
+          </button>
+        ))}
+      </div>
+      <p className="chips__reader chips__reader--purple" key={current.name}>
+        <b>{String(current.name ?? "").toUpperCase()}</b> {current.blurb}
+      </p>
+    </div>
+  );
+}
+
+/** STRONG AT / WATCH OUT (and optionally FUN FACT) as compact chip rows.
+    Tapping a chip reads the full line in the shared reader — one at a time,
+    never a wall of text. */
+export function TraitChips({
+  strengths,
+  weaknesses,
+  funFact,
+}: {
+  strengths: string[];
+  weaknesses: string[];
+  funFact?: string;
+}) {
+  const s = cleanList(strengths);
+  const w = cleanList(weaknesses);
+  type Item = { key: string; kind: "strength" | "weakness" | "fact"; text: string };
+  const items: Item[] = [
+    ...s.map((text, i) => ({ key: `s${i}`, kind: "strength" as const, text })),
+    ...w.map((text, i) => ({ key: `w${i}`, kind: "weakness" as const, text })),
+    ...(funFact ? [{ key: "f", kind: "fact" as const, text: funFact }] : []),
+  ];
+  const [openKey, setOpenKey] = useState<string | null>(items[0]?.key ?? null);
+  if (!items.length) return null;
+  const open = items.find((x) => x.key === openKey) ?? items[0];
+  const tone = { strength: "green", weakness: "red", fact: "gold" } as const;
+  const row = (kind: Item["kind"], label: string) => {
+    const mine = items.filter((x) => x.kind === kind);
+    if (!mine.length) return null;
+    return (
+      <div className="traits__row" key={kind}>
+        <span className={`traits__key traits__key--${tone[kind]}`}>{label}</span>
+        {mine.map((x) => (
+          <button
+            key={x.key}
+            type="button"
+            className={`chip chip--${tone[x.kind]}${x.key === open.key ? " is-open" : ""}`}
+            onClick={() => setOpenKey(x.key)}
+          >
+            {x.kind === "fact" ? "TAP TO READ" : chipLabel(x.text)}
+          </button>
+        ))}
+      </div>
+    );
+  };
+  return (
+    <div className="chips traits">
+      {row("strength", "STRONG AT")}
+      {row("weakness", "WATCH OUT")}
+      {row("fact", "FUN FACT")}
+      <p className={`chips__reader chips__reader--${tone[open.kind]}`} key={open.key}>
+        {open.text}
+      </p>
+    </div>
+  );
+}
+
 /** The five child-facing stats (spec §12), tabular numerals, 0-100. */
-export function StatRow({ stats }: { stats: Partial<CoreStats> }) {
+export function StatRow({ stats, compact }: { stats: Partial<CoreStats>; compact?: boolean }) {
   const entries: [string, number][] = [
     ["power", stats.power ?? 0],
     ["speed", stats.speed ?? 0],
@@ -446,7 +553,7 @@ export function StatRow({ stats }: { stats: Partial<CoreStats> }) {
     ["special", stats.special ?? 0],
   ];
   return (
-    <div className="statrow">
+    <div className={`statrow${compact ? " statrow--compact" : ""}`}>
       {entries.map(([key, value]) => (
         <div className="stat" key={key}>
           <span className={`stat__ring t-${STAT_TONES[key] === "orange" ? "red" : STAT_TONES[key]}`}>
@@ -470,6 +577,7 @@ export function Stage({
   fusing,
   gold,
   flip,
+  plain,
   children,
   className = "",
 }: {
@@ -479,17 +587,23 @@ export function Stage({
   gold?: boolean;
   /** Mirror the render so two fighters face each other across the arena. */
   flip?: boolean;
+  /** No pedestal disc: the render stands grounded on a soft elliptical shadow.
+      Pedestal policy (UI_STANDARD): codex detail + battle = plain;
+      Home / Hall / Reveal keep the painted platform. */
+  plain?: boolean;
   children?: React.ReactNode;
   className?: string;
 }) {
   return (
     <div
-      className={`stage${fusing ? " stage--fusing" : ""}${gold ? " stage--gold" : ""} ${className}`}
+      className={`stage${fusing ? " stage--fusing" : ""}${gold ? " stage--gold" : ""}${plain ? " stage--plain" : ""} ${className}`}
     >
       <div className="stage__glow" />
-      <div className="stage__platform">
-        <Asset slot={gold ? "lab/platform_gold" : "lab/platform"} label="" />
-      </div>
+      {!plain && (
+        <div className="stage__platform">
+          <Asset slot={gold ? "lab/platform_gold" : "lab/platform"} label="" />
+        </div>
+      )}
       <div className="stage__contact" />
       <div className={`stage__subject${flip ? " is-flipped" : ""}`}>
         {children ??

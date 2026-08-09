@@ -2,30 +2,28 @@
    rather than a spinner (ARCHITECTURE.md: staged reveal; brief: never a bare
    spinner).
 
-   Phase A  IGNITION   the four chosen portraits fly into the chamber and orbit
-   Phase B  SPLICING   name slams in, stat bars fill, ability chips glow on
-   Phase C  MEANWHILE  the codex carousel plays while the hero render cooks
+   Phase A  IGNITION    the four chosen portraits fly into the chamber and orbit
+   Phase B  SPLICING    name slams in; while the genome streams, the center
+                        stage spotlights each source creature in turn — the
+                        portrait enlarges toward center over the vortex with a
+                        holo plate of what it contributes
+   Phase C  WALKTHROUGH once the record completes and the hero still paints,
+                        the ability walkthrough takes over the spotlight
+
+   The right panel is a CODEX PREVIEW — the same visual language as the codex
+   detail panel, filling in chunk by chunk as the record streams: name slams
+   in, title/rarity land, stat bars animate, move chips glow on one by one,
+   strengths/weaknesses chips arrive, and RENDER INCOMING marks where the hero
+   will land. Big type; this is the primary progressive-disclosure surface.
 
    Every progress milestone is real: the conduit fills off record_status /
    ability_names / core_stats / image_started / image_status, never off a bare
-   timer. BODY FORGE ignites on the backend's image_started signal (the render
-   task actually running) and then crawls asymptotically toward 90 — honest
-   start, theatrical middle, capped until image_status flips.
-
-   Once the record completes and the hero is still painting (the longest
-   stretch), the ability chips become an interactive walkthrough: an auto-tour
-   spotlights each ability (then strengths/weaknesses) every ~6s, and tapping
-   a chip holds the spotlight there. */
+   timer. BODY FORGE ignites on the backend's image_started signal and then
+   crawls asymptotically toward 90 — honest start, theatrical middle. */
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import {
-  api,
-  getLibraryCached,
-  type Ability,
-  type CreatureDetail,
-  type CreatureSummary,
-  type SourceCreature,
-} from "./api";
-import { Asset, Badge, CreatureImg, Meter, PartImg, RarityBadge } from "./ui";
+import type { Ability, CreatureDetail, SourceCreature } from "./api";
+import { getLibraryCached } from "./api";
+import { Asset, Badge, FitText, Meter, PartImg, RarityBadge, cleanList } from "./ui";
 
 /* -- picks handoff ----------------------------------------------------------
    FusionLab -> Reveal goes through a hash change, so the chosen four would be
@@ -52,8 +50,9 @@ const VERBS = [
   "Fusing",
 ];
 const LINE_MS = 2500;
-const CARD_MS = 4000;
 const SPARKS = 18;
+/** Source-creature spotlight cadence while the genome streams. */
+const SRC_MS = 4600;
 /** Auto-tour cadence through the ability walkthrough. */
 const TOUR_MS = 6000;
 /** How long a tap holds the spotlight before the tour resumes. */
@@ -70,29 +69,15 @@ const STAT_TONES: Record<string, string> = {
 
 type StageState = "done" | "active" | "waiting";
 
-/** One carousel slide — either a past creature or a source-creature fact. */
-type Slide =
-  | { kind: "creature"; creature: CreatureSummary; ability: string }
-  | { kind: "fact"; source: SourceCreature };
-
 /** One stop on the ability walkthrough tour. */
 type TourItem =
   | { kind: "ability"; ability: Ability; index: number }
   | { kind: "strength"; text: string }
   | { kind: "weakness"; text: string };
 
-/* A few early seed records glued list entries into one string with a raw
-   '","' separator; split them apart so the tour never reads the artifact. */
-function tidyFacts(rows: string[]): string[] {
-  return rows
-    .flatMap((r) => r.split(/"\s*,\s*"/))
-    .map((r) => r.replace(/^"+|"+$/g, "").trim())
-    .filter(Boolean);
-}
-
 /** Resolve an ability's fused-from names (or slugs) to library entries so the
-    walkthrough can show their painted portraits. Unmatched names are skipped —
-    a missing portrait must never render as a gap marker mid-theatre. */
+    walkthrough can show their real portraits — including a summoned part's
+    /media portrait (PartImg owns that), never a gap marker mid-theatre. */
 function matchSources(names: string[], pool: SourceCreature[]): SourceCreature[] {
   const canon = (s: string) => s.trim().toLowerCase().replace(/[\s_-]+/g, " ");
   return names
@@ -116,9 +101,7 @@ export function FusionWait({
   const [sources, setSources] = useState<SourceCreature[]>(
     () => readPicks(creatureId) ?? [],
   );
-  const [slides, setSlides] = useState<Slide[]>([]);
   const [line, setLine] = useState(0);
-  const [card, setCard] = useState(0);
   const [statsIn, setStatsIn] = useState(false);
 
   const recordDone = creature?.record_status === "complete";
@@ -143,51 +126,6 @@ export function FusionWait({
     };
   }, [slugKey]);
 
-  /* Phase C content, fetched once. The codex list carries no ability names
-     (they only stream while a record is generating), so the newest few are
-     re-read as details to get one headline ability each. */
-  useEffect(() => {
-    let dead = false;
-    api
-      .listCreatures("newest")
-      .then(async (rows) => {
-        const usable = rows.filter(
-          (c) =>
-            c.id !== creatureId &&
-            c.image_status === "complete" &&
-            Boolean(c.name) &&
-            Boolean(c.thumb_path || c.hero_image_path),
-        );
-        if (dead) return;
-        if (!usable.length) return;
-        setSlides(usable.slice(0, 6).map((c) => ({ kind: "creature", creature: c, ability: "" })));
-        const detailed = await Promise.all(
-          usable.slice(0, 6).map((c) =>
-            api
-              .getCreature(c.id)
-              .then((d) => d.abilities[0]?.name ?? d.role ?? "")
-              .catch(() => ""),
-          ),
-        );
-        if (dead) return;
-        setSlides(
-          usable
-            .slice(0, 6)
-            .map((c, i) => ({ kind: "creature", creature: c, ability: detailed[i] })),
-        );
-      })
-      .catch(() => undefined);
-    return () => {
-      dead = true;
-    };
-  }, [creatureId]);
-
-  /* First creature ever: tease the four sources instead of an empty carousel. */
-  const deck: Slide[] = useMemo(
-    () => (slides.length ? slides : sources.map((s) => ({ kind: "fact", source: s }))),
-    [slides, sources],
-  );
-
   const lines = useMemo(() => buildLines(sources), [sources]);
 
   useEffect(() => {
@@ -195,12 +133,6 @@ export function FusionWait({
     const t = setInterval(() => setLine((i) => (i + 1) % lines.length), LINE_MS);
     return () => clearInterval(t);
   }, [lines.length]);
-
-  useEffect(() => {
-    if (deck.length < 2) return;
-    const t = setInterval(() => setCard((i) => (i + 1) % deck.length), CARD_MS);
-    return () => clearInterval(t);
-  }, [deck.length]);
 
   const stats = creature?.core_stats ?? {};
   const hasStats = typeof stats.power === "number";
@@ -218,15 +150,15 @@ export function FusionWait({
   /* -- ability walkthrough (record done, hero still painting) -------------- */
   const abilities = creature?.abilities ?? [];
   const walkthroughOn = recordDone && !heroReady && abilities.length > 0;
-  const strengths = creature?.strengths ?? [];
-  const weaknesses = creature?.weaknesses ?? [];
+  const strengths = useMemo(() => cleanList(creature?.strengths ?? []), [creature?.strengths]);
+  const weaknesses = useMemo(() => cleanList(creature?.weaknesses ?? []), [creature?.weaknesses]);
 
   const tour: TourItem[] = useMemo(() => {
     if (!walkthroughOn) return [];
     return [
       ...abilities.map((ability, index): TourItem => ({ kind: "ability", ability, index })),
-      ...tidyFacts(strengths).map((text): TourItem => ({ kind: "strength", text })),
-      ...tidyFacts(weaknesses).map((text): TourItem => ({ kind: "weakness", text })),
+      ...strengths.map((text): TourItem => ({ kind: "strength", text })),
+      ...weaknesses.map((text): TourItem => ({ kind: "weakness", text })),
     ];
     // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by content lengths
   }, [walkthroughOn, abilities.length, strengths.length, weaknesses.length]);
@@ -253,6 +185,16 @@ export function FusionWait({
   const spotSources =
     spot?.kind === "ability" ? matchSources(spot.ability.sources, sources) : [];
 
+  /* -- source spotlight: one donor at a time while the genome streams ------- */
+  const [srcIx, setSrcIx] = useState(0);
+  const spotlightSources = !walkthroughOn && sources.length > 0;
+  useEffect(() => {
+    if (!spotlightSources || sources.length < 2) return;
+    const t = setInterval(() => setSrcIx((i) => (i + 1) % sources.length), SRC_MS);
+    return () => clearInterval(t);
+  }, [spotlightSources, sources.length]);
+  const srcSpot = spotlightSources ? sources[srcIx % sources.length] : null;
+
   /* -- conduit: BODY FORGE ignites on the backend's image_started signal ---- */
   const imageStarted = Boolean(creature?.image_started) || imageDone;
   const [forge, setForge] = useState(0);
@@ -273,6 +215,9 @@ export function FusionWait({
   }, [imageStarted, imageDone]);
 
   const conduit = conduitStages(creature, heroReady, imageStarted, forge);
+  /* Conduit labels carry the state; the status line speaks only for the two
+     download moments (the old footer chatter is gone). */
+  const status = heroReady ? "RENDER COMPLETE" : imageDone ? "DOWNLOADING THE FINISHED RENDER" : null;
 
   return (
     <div className="fw">
@@ -400,6 +345,20 @@ export function FusionWait({
                 </div>
               ))}
             </div>
+
+            {/* Source spotlight: the donor's portrait enlarges toward center
+                over the vortex with a holo plate of what it contributes. */}
+            {srcSpot && (
+              <div className="fw__srcspot" key={srcSpot.slug}>
+                <span className="fw__srcspot-art">
+                  <PartImg source={srcSpot} />
+                </span>
+                <div className="fw__srcspot-plate">
+                  <FitText className="fw__srcspot-name">{srcSpot.name.toUpperCase()}</FitText>
+                  <p className="fw__srcspot-line">{contributionOf(srcSpot)}</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="fw__name-slot">
@@ -437,7 +396,7 @@ export function FusionWait({
                       <span className="fw__spot-fused">FUSED FROM</span>
                       {spotSources.map((s) => (
                         <span className="fw__spot-src" key={s.slug} title={s.name}>
-                          <Asset slot={`parts/${s.slug}`} label={s.name} />
+                          <PartImg source={s} />
                         </span>
                       ))}
                     </div>
@@ -446,7 +405,7 @@ export function FusionWait({
               ) : (
                 <>
                   <span className="fw__spot-key">
-                    {spot.kind === "strength" ? "STRENGTH" : "WATCH OUT FOR"}
+                    {spot.kind === "strength" ? "STRONG AT" : "WATCH OUT"}
                   </span>
                   <p className="fw__spot-blurb">{spot.text}</p>
                 </>
@@ -458,67 +417,97 @@ export function FusionWait({
           )}
         </section>
 
+        {/* CODEX PREVIEW — the record forming as a codex card, chunk by chunk. */}
         <section className="fw__rail">
-          <div className={`panel panel--cyan fw__panel fw__meanwhile${deck.length ? " is-on" : ""}`}>
+          <div className="panel panel--purple fw__panel fw__preview">
             <header className="panel__head">
-              <h2>{slides.length ? "MEANWHILE IN YOUR LAB" : "WHILE YOU WAIT"}</h2>
+              <h2>CODEX PREVIEW</h2>
+              {recordDone && <Badge tone="green">COMPLETE</Badge>}
             </header>
-            <div className="panel__body">
-              <div className="fw__deck">
-                {deck.map((slide, i) => (
-                  <article
-                    className={`fw__slide${i === card % deck.length ? " is-on" : ""}`}
-                    key={slide.kind === "creature" ? `c${slide.creature.id}` : `s${slide.source.slug}`}
-                  >
-                    {slide.kind === "creature" ? (
-                      <>
-                        <div className="fw__slide-art">
-                          <CreatureImg creature={slide.creature} />
-                        </div>
-                        <h3 className="fw__slide-name">{slide.creature.name.toUpperCase()}</h3>
-                        <div className="fw__slide-meta">
-                          <RarityBadge rarity={slide.creature.rarity} />
-                          <span className="num">
-                            {slide.creature.wins}W - {slide.creature.losses}L
-                          </span>
-                        </div>
-                        {slide.ability && (
-                          <p className="fw__slide-line">
-                            <span className="fw__slide-key">SIGNATURE</span>
-                            {slide.ability}
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <div className="fw__slide-art">
-                          <PartImg source={slide.source} />
-                        </div>
-                        <h3 className="fw__slide-name">{slide.source.name.toUpperCase()}</h3>
-                        <p className="fw__slide-line">
-                          <span className="fw__slide-key">DID YOU KNOW</span>
-                          {slide.source.blurb || slide.source.contribution}
-                        </p>
-                      </>
-                    )}
-                  </article>
-                ))}
-                {!deck.length && (
-                  <article className="fw__slide is-on">
-                    <h3 className="fw__slide-name">YOUR FIRST CHIMERA</h3>
-                    <p className="fw__slide-line">
-                      Every creature you build lands in the Codex, ready to battle.
-                    </p>
-                  </article>
-                )}
+            <div className="panel__body fw__pv">
+              {creature?.name ? (
+                <div className="fw__pv-name" key={creature.name}>
+                  <FitText>{creature.name.toUpperCase()}</FitText>
+                </div>
+              ) : (
+                <div className="fw__pv-waitline">
+                  <span className="fw__dots">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  READING THE GENOME
+                </div>
+              )}
+
+              {(creature?.title || creature?.rarity) && (
+                <div className="fw__pv-sub">
+                  {creature?.rarity && <RarityBadge rarity={creature.rarity} />}
+                  {creature?.title && <span className="fw__pv-title">{creature.title}</span>}
+                </div>
+              )}
+
+              <div className="fw__pv-stats">
+                {STAT_KEYS.map((key) => {
+                  const value = (stats as Record<string, number | string>)[key];
+                  const known = typeof value === "number";
+                  return (
+                    <div className={`fw__pv-stat${known ? " is-in" : ""}`} key={key}>
+                      <span className="fw__pv-statname">
+                        {key === "special" ? stats.special_name || "SPECIAL" : key}
+                      </span>
+                      <Meter value={known && statsIn ? (value as number) : 0} tone={STAT_TONES[key]} />
+                    </div>
+                  );
+                })}
               </div>
-              {deck.length > 1 && (
-                <div className="fw__dots fw__dots--deck">
-                  {deck.map((_, i) => (
-                    <i key={i} className={i === card % deck.length ? "is-on" : ""} />
+
+              {abilityNames.length > 0 && (
+                <div className="fw__pv-chips">
+                  {abilityNames.map((name) => (
+                    <span className="chip chip--purple is-lit" key={name}>
+                      {name.toUpperCase()}
+                    </span>
                   ))}
                 </div>
               )}
+
+              {(strengths.length > 0 || weaknesses.length > 0) && (
+                <div className="fw__pv-traits">
+                  {strengths.length > 0 && (
+                    <div className="traits__row">
+                      <span className="traits__key traits__key--green">STRONG AT</span>
+                      {strengths.slice(0, 2).map((text) => (
+                        <span className="chip chip--green is-lit" key={text}>
+                          {text.split(/\s+/).slice(0, 3).join(" ").replace(/[.,;:!?'"]+$/, "").toUpperCase()}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {weaknesses.length > 0 && (
+                    <div className="traits__row">
+                      <span className="traits__key traits__key--red">WATCH OUT</span>
+                      {weaknesses.slice(0, 2).map((text) => (
+                        <span className="chip chip--red is-lit" key={text}>
+                          {text.split(/\s+/).slice(0, 3).join(" ").replace(/[.,;:!?'"]+$/, "").toUpperCase()}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className={`fw__pv-render${imageStarted ? " is-painting" : ""}`}>
+                <span className="fw__pv-renderlabel">
+                  {heroReady
+                    ? "RENDER COMPLETE"
+                    : imageDone
+                      ? "ALMOST HERE…"
+                      : imageStarted
+                        ? "RENDER INCOMING…"
+                        : "THE HERO LANDS HERE"}
+                </span>
+              </div>
             </div>
           </div>
         </section>
@@ -539,20 +528,17 @@ export function FusionWait({
             </div>
           ))}
         </div>
-        <p className="fw__status">
-          {heroReady
-            ? "RENDER COMPLETE"
-            : imageDone
-              ? "DOWNLOADING THE FINISHED RENDER"
-              : recordDone
-                ? "PAINTING THE HERO RENDER — THIS IS THE SLOW, GOOD BIT"
-                : imageStarted
-                  ? "PAINT IS ALREADY FLOWING — STILL READING THE GENOME"
-                  : "READING THE FUSED GENOME"}
-        </p>
+        {status && <p className="fw__status">{status}</p>}
       </footer>
     </div>
   );
+}
+
+/** The child-facing "what this part adds" line for the source spotlight. */
+function contributionOf(s: SourceCreature): string {
+  if (s.contribution) return s.contribution;
+  if (s.traits?.length) return `Adds ${s.traits.slice(0, 3).join(", ")}.`;
+  return s.blurb || "Adds its own wild traits.";
 }
 
 /** Playful lab copy built from what each chosen part actually contributes. */

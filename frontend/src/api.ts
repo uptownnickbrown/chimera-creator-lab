@@ -158,8 +158,11 @@ export interface TournamentView {
   entrants: CreatureSummary[];
   created_at: string | null;
   completed_at: string | null;
-  /** Championship key art: "pending" while it renders, then a /media path.
-      Optional — the ceremony composites its own finale when it is absent. */
+  /** First unresolved match with both fighters seated — the arena's "jump
+      back in" target. Null once the bracket is complete. */
+  next_match_id?: string | null;
+  /** Championship key art: null (never started / failed), "pending" while it
+      renders, then a /media path. Only a path paints. */
   final_art?: string | null;
 }
 
@@ -245,9 +248,22 @@ export const api = {
   summon: (query: string) => request<SummonResponse>("POST", "/library/summon", { query }),
 
   listTournaments: () => request<TournamentView[]>("GET", "/tournaments"),
+  /** The single active bracket (single-tournament arena), or null. POST
+      /tournaments 409s while one is active; DELETE abandons it. */
+  getCurrentTournament: () => request<TournamentView | null>("GET", "/tournaments/current"),
   createTournament: (entrant_ids: number[], name?: string) =>
     request<TournamentView>("POST", "/tournaments", { entrant_ids, name }),
   getTournament: (id: number) => request<TournamentView>("GET", `/tournaments/${id}`),
+  deleteTournament: (id: number) =>
+    request<{ tournament_id: number; deleted: boolean }>("DELETE", `/tournaments/${id}`),
+  deleteCreature: (id: number) =>
+    request<{ creature_id: number; deleted: boolean }>("DELETE", `/creatures/${id}`),
+  /** SUMMONED parts only — the 160 curated parts answer 403. */
+  deleteCustomPart: (slug: string) =>
+    request<{ slug: string; deleted: boolean }>(
+      "DELETE",
+      `/library/custom/${slug.replace(/^custom\//, "")}`,
+    ),
   predict: (tournamentId: number, matchId: string, pick_id: number) =>
     request<TournamentView>(
       "POST",

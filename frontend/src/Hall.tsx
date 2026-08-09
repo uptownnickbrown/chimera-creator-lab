@@ -3,17 +3,25 @@
    pedestal, records hang as plaques, and the winners' ladder runs beside it. */
 import { useEffect, useState } from "react";
 import type { Go } from "./App";
-import { api, type HallView } from "./api";
+import { api, type HallView, type TournamentView } from "./api";
+import { Finale, keyArtPath } from "./Finale";
 import { Asset, Badge, Btn, CreatureImg, Empty, FitText, Loading, Panel, Stage } from "./ui";
 
 export function Hall({ go }: { go: Go }) {
   const [hall, setHall] = useState<HallView | null>(null);
+  /** Completed tournaments whose finals key art exists — the keepsakes. */
+  const [finales, setFinales] = useState<TournamentView[]>([]);
+  const [openFinale, setOpenFinale] = useState<TournamentView | null>(null);
 
   useEffect(() => {
     api
       .getHall()
       .then(setHall)
       .catch(() => setHall({ champions: [], top_winners: [], records: [] }));
+    api
+      .listTournaments()
+      .then((all) => setFinales(all.filter((t) => t.status === "complete" && keyArtPath(t))))
+      .catch(() => setFinales([]));
   }, []);
 
   if (!hall) return <Loading label="OPENING THE HALL" />;
@@ -119,6 +127,37 @@ export function Hall({ go }: { go: Go }) {
             )}
           </Panel>
 
+          {finales.length > 0 && (
+            <Panel title="FAMOUS FINALES" accent="gold" className="hall__finales">
+              <div className="finales">
+                {finales.slice(0, 3).map((t) => {
+                  const champ = t.entrants.find((c) => c.id === t.champion_id);
+                  return (
+                    <button
+                      type="button"
+                      className="finales__item"
+                      key={t.id}
+                      onClick={() => setOpenFinale(t)}
+                      title={`${t.name} — see the finale`}
+                    >
+                      <img
+                        className="finales__art"
+                        src={keyArtPath(t) ?? undefined}
+                        alt={`${t.name} championship final`}
+                      />
+                      <span className="finales__plate">
+                        <FitText className="finales__champ">
+                          {(champ?.name ?? "CHAMPION").toUpperCase()}
+                        </FitText>
+                        <span className="finales__t">{t.name}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </Panel>
+          )}
+
           {rest.length > 0 && (
             <Panel title="PAST CHAMPIONS" accent="gold" className="hall__past">
               <div className="pastrow">
@@ -141,6 +180,14 @@ export function Hall({ go }: { go: Go }) {
           )}
         </div>
       </div>
+
+      {openFinale && (
+        <Finale
+          tournament={openFinale}
+          onClose={() => setOpenFinale(null)}
+          onHall={() => setOpenFinale(null)}
+        />
+      )}
 
       <footer className="hall__foot">
         <Btn accent="ghost" onClick={() => go({ name: "codex" })}>

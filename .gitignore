@@ -31,3 +31,9 @@ research/bakeoff/review/*.png
 
 # runtime-generated creature media (backend-owned, served at /media)
 media/
+
+# QA screenshot sweeps (regenerable via scripts/qa_screens.py, hundreds of MB)
+qa/
+
+# Claude Code scratch: agent worktrees, local settings
+.claude/
