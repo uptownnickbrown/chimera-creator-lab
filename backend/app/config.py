@@ -13,9 +13,15 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 @dataclass(frozen=True)
 class Settings:
     # SQLite for dev/test; Railway injects a Postgres DATABASE_URL in prod.
+    # The default is ABSOLUTE on purpose. A relative "./chimera.db" resolves
+    # against the process's working directory, so starting uvicorn from
+    # backend/ instead of the repo root silently opened a DIFFERENT, empty
+    # database — which then looked like a first run and let the starter seeder
+    # write its art over the real player's media. One repo, one dev database,
+    # wherever you launch from.
     database_url: str = field(
         default_factory=lambda: _normalize_db_url(
-            os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./chimera.db")
+            os.environ.get("DATABASE_URL", f"sqlite+aiosqlite:///{REPO_ROOT / 'chimera.db'}")
         )
     )
     env: str = field(default_factory=lambda: os.environ.get("CHIMERA_ENV", "dev"))

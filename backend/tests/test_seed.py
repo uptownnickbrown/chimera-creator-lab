@@ -124,6 +124,34 @@ async def test_any_existing_creature_means_no_op(seed_env):
     assert [c.name for c in rows] == ["Wreck"]
 
 
+async def test_existing_art_blocks_seeding_an_empty_table(seed_env):
+    """The 2026-08-09 data loss, pinned.
+
+    A server booted against the WRONG (empty) database while sharing the real
+    player's media dir. The table looked like a first run, so the seeder copied
+    its starter heroes over media/creatures/{id}.png — destroying seven of
+    Henry's creature renders. Art already on disk now vetoes seeding.
+    """
+    from sqlalchemy import select
+
+    from app.db import session_factory
+    from app.models import Creature
+    from app.services.seed import seed_if_empty
+
+    _build_seed_pack(seed_env / "data")
+
+    media = seed_env / "media" / "creatures"
+    media.mkdir(parents=True, exist_ok=True)
+    precious = media / "1.png"
+    precious.write_bytes(b"\x89PNG\r\n\x1a\n-henrys-creature")
+
+    async with session_factory()() as db:
+        assert await seed_if_empty(db) == 0
+    async with session_factory()() as db:
+        assert list((await db.execute(select(Creature))).scalars()) == []
+    assert precious.read_bytes() == b"\x89PNG\r\n\x1a\n-henrys-creature"
+
+
 async def test_missing_manifest_is_a_quiet_no_op(seed_env):
     from sqlalchemy import select
 

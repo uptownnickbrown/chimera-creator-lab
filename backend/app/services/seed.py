@@ -68,6 +68,21 @@ async def seed_if_empty(session: AsyncSession) -> int:
     media = settings.media_dir / "creatures"
     media.mkdir(parents=True, exist_ok=True)
 
+    # An empty table plus a media dir that ALREADY HAS ART is not a first run —
+    # it is a database pointed somewhere unexpected. Seeding here would copy the
+    # starter heroes over files named {id}.png that belong to a real player's
+    # creatures, which is exactly what happened on 2026-08-09 (recovered via
+    # scripts/recover_heroes.py). Art on disk wins over an empty table, always.
+    existing_art = next(media.iterdir(), None)
+    if existing_art is not None:
+        log.warning(
+            "seed: creatures table is empty but %s already holds art (e.g. %s) "
+            "— refusing to seed. This database is almost certainly not the one "
+            "that media belongs to; check DATABASE_URL and CHIMERA_MEDIA_DIR.",
+            media, existing_art.name,
+        )
+        return 0
+
     created = 0
     for key in keys:
         entry = seed_dir / key
