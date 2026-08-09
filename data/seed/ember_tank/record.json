@@ -1,0 +1,93 @@
+{
+  "key": "ember_tank",
+  "sources": [
+    "flame-salamander",
+    "ankylosaurus",
+    "pangolin",
+    "gila-monster"
+  ],
+  "target_rarity": "Rare",
+  "record": {
+    "name": "Coalcrusher Salamandril",
+    "title": "The Ember-Armored Tank",
+    "anatomy_plan": "Core body is a downsized ankylosaur tank (about 3 m long) fused with pangolin scale layering: low, wide torso, short pillar legs, and a heavy tail club. Armor plates mix ankylosaur bone scutes with pangolin-style overlapping scales, giving a flexible yet rock-hard shell. Flame Salamander magic infuses the skin and plates: they glow like cooling coals, grow hotter and tougher in heat, and can scorch anything that grapples them. Gila Monster traits shape the blunt, broad head, thick tail base, beaded skin texture between plates, and locked-on mildly venomous bite. Nervous system and glands blend flame energy (from salamander) with slow-burning lizard venom (from Gila), so it heats up in battle and delivers burning venom in close range. Pangolin muscles and joints allow it to curl into a spiky armored ember-ball, with ankylosaur tail bones forming the core of its rolling smash attacks.",
+    "role": "Bruiser / Area Control",
+    "core_stats": {
+      "power": 76,
+      "speed": 32,
+      "armor": 90,
+      "size": 58,
+      "special_name": "Heatcharge",
+      "special": 82
+    },
+    "abilities": [
+      {
+        "name": "Magma Maul",
+        "blurb": "It slams its glowing tail club down, sending a short shockwave of heat and stone chunks around it.",
+        "sources": [
+          "Ankylosaurus",
+          "Flame Salamander"
+        ]
+      },
+      {
+        "name": "Ember Coil",
+        "blurb": "It curls into a burning, spiky ball and rolls a short distance, knocking foes flying and scorching anything it bumps.",
+        "sources": [
+          "Pangolin",
+          "Flame Salamander"
+        ]
+      },
+      {
+        "name": "Cinder Clamp",
+        "blurb": "It locks on with a grinding, venom-laced bite that also sizzles with heat the longer it holds.",
+        "sources": [
+          "Gila Monster",
+          "Flame Salamander"
+        ]
+      },
+      {
+        "name": "Coalplated Bulwark",
+        "blurb": "Its overlapping bone-and-scale armor flares hot, turning aside blows and burning attackers who strike it in close.",
+        "sources": [
+          "Ankylosaurus",
+          "Pangolin"
+        ]
+      }
+    ],
+    "strengths": [
+      "Extremely tough armor from overlapping bone plates and scales makes it hard to hurt with normal hits.",
+      "Gets stronger and more dangerous the hotter the battlefield becomes, thanks to its Heatcharge power.",
+      "Tail club and rolling ball attacks are great for guarding choke points and knocking enemies away from allies.\nVenomous bite that also heats up over time makes grapples and close duels risky for opponents.\nCan handle fire, lava, and explosions with ease, and even uses them to power up."
+    ],
+    "weaknesses": [
+      "Very slow on land and cannot jump well, so fast or flying enemies can outmaneuver it.",
+      "Overheats if it stays at max heat too long in places with no way to cool down, making it tired and sluggish afterward.\nPoor at long-range combat; almost all attacks are short or close range.\nHeavy armor and body weight make it sink or struggle in deep mud, swamps, and water.\nCold, wet, or icy areas drain its Heatcharge, weakening both armor and attacks until it can warm up again."
+    ],
+    "environment_affinities": {
+      "deep_ocean": -2,
+      "storm_coast": -1,
+      "volcanic_shore": 2,
+      "jungle_canyon": 0,
+      "frozen_ridge": -2,
+      "open_sky": -1,
+      "desert_ruins": 2,
+      "swamp": -1,
+      "city_harbor": 0
+    },
+    "sim_profile": {
+      "land_speed": 28,
+      "swim_speed": 10,
+      "flight_speed": 0,
+      "bite_force": 70,
+      "armor_rating": 93,
+      "intelligence": 48,
+      "endurance": 85,
+      "regeneration": 40,
+      "attack_range": 30,
+      "maneuverability": 35
+    },
+    "visual_spec": "A low, wide, quadruped tank-creature about 3 meters long, built close to the ground like a small ankylosaurus. Its back and tail are covered in thick, knobbly bone plates that blend into overlapping pangolin-style scales, forming a continuous shell that curves down the sides like a living rock shield. The plates and scales are matte black at the edges but glow from within with ember-orange and deep red cracks, like cooling lava seams. Between the big plates, the skin shows as dense, bead-like bumps in black and hot orange bands, echoing a Gila Monster pattern.\n\nThe head is blunt and heavy with a wide, armored snout, small dark eyes set under bony ridges, and short horn-like knobs over the brows. The jaw is thick and powerful with slightly visible grooved teeth when it opens its mouth; a faint orange glow and a hint of heat shimmer can be seen inside. Its tongue is long and narrow, able to flick out further than you expect, with a faint coal-red tint.\n\nThe body is low and muscular with short, sturdy legs that end in strong, clawed feet built for pushing through rubble and hard soil. Each limb shows bands of beaded skin between hardened scale plates. The underside is less heavily armored but still rough and scaled, colored dark charcoal with scattered ember speckles.\n\nIts tail is thick at the base and ends in a heavy, rounded club made from fused bone and layered scales, shaped like a molten-rock hammer. The club glows brightest at the core, with cracks of orange-yellow heat and a darker, crusted rock surface. When it moves or tenses, small heat waves shimmer around the hotter parts, and tiny sparks sometimes flake off the tail tip.\n\nColor palette is mostly charcoal black, deep ash gray, and bronze-brown scales, lit by glowing lava-orange and ember-red veins inside the armor. Textures range from rough stone and cracked lava on the big plates, to hard overlapping reptile scales on the sides, to bead-like bumps on the head and limbs. The overall look is of a walking coal furnace shaped like an armored dinosaur-pangolin hybrid, slow but unstoppable, radiating soft orange light onto the dusty ground beneath it.",
+    "rarity": "Rare",
+    "fun_fact": "When it naps in warm sand or on sun-baked rock, its armor cools and turns almost fully black, making it look like a pile of rocks\u2014until a tiny orange eye opens and the cracks start to glow again."
+  }
+}

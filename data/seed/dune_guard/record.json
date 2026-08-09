@@ -1,0 +1,94 @@
+{
+  "key": "dune_guard",
+  "sources": [
+    "stone-golem",
+    "glyptodon",
+    "scorpion",
+    "thorny-devil"
+  ],
+  "target_rarity": "Uncommon",
+  "record": {
+    "name": "Glypthorn Golem",
+    "title": "The Spiked Stone Tank",
+    "anatomy_plan": "Base frame is a squat, four-legged stone glyptodon: the Stone Golem provides overall rocky body, rune core, and reassembly magic; the Glyptodon shapes the low, wide body plan, domed back armor, and heavy tail; the Scorpion adds a segmented, over-back tail ending in a rocky stinger and extra jointed limbs for digging and gripping; the Thorny Devil spreads cone-shaped stone spines over the shell, limbs, and a false rocky head hump behind the true head for decoy defense. Together this makes one compact, spiny, rock-armored tank creature that walks and digs slowly but is very hard to push or flip.",
+    "role": "Defender / Area Denial",
+    "core_stats": {
+      "power": 62,
+      "speed": 24,
+      "armor": 88,
+      "size": 70,
+      "special_name": "Spines",
+      "special": 76
+    },
+    "abilities": [
+      {
+        "name": "Quake Club",
+        "blurb": "It slams its spiky stone tail to shake the ground and knock close foes off their feet.",
+        "sources": [
+          "Stone Golem",
+          "Glyptodon"
+        ]
+      },
+      {
+        "name": "Rune Sting",
+        "blurb": "Its glowing stone stinger jabs out with a numbing venom that also makes armor crack.",
+        "sources": [
+          "Stone Golem",
+          "Scorpion"
+        ]
+      },
+      {
+        "name": "Spine Fortress",
+        "blurb": "When it tucks in, its shell bristles so much that biting or climbing it really hurts attackers.",
+        "sources": [
+          "Glyptodon",
+          "Thorny Devil"
+        ]
+      },
+      {
+        "name": "Burrow Bulwark",
+        "blurb": "It half-buries itself in loose ground, leaving only a spiky shell trap sticking out.",
+        "sources": [
+          "Scorpion",
+          "Glyptodon"
+        ]
+      }
+    ],
+    "strengths": [
+      "Very hard to knock over or push thanks to low, wide stone body",
+      "Rocky shell and spines make it tough to damage with bites, claws, or simple hits",
+      "Tail attacks can shake the ground and break formations at close range only, good for guarding chokepoints and gates, not for chasing fast foes around open fields; it also resists sand and grit that would bother soft-skinned creatures because most of its body is solid stone rather than exposed flesh; it can wait in ambush half-buried for a long time without needing much energy, so it is strong in planned defenses but weak in sudden chases or long hunts; finally, it can slowly pull loose rocks and gravel to patch chips in its shell if stone is nearby, giving it staying power in rocky arenas but not in places with only soft soil or snow, where its body slowly wears down without easy repair."
+    ],
+    "weaknesses": [
+      "Very slow on land and does not jump, so fast enemies can run around it or ignore it",
+      "Tail swings and ground-quakes only reach a short distance; ranged attackers are a big problem",
+      "Heavy stone body sinks and struggles in deep water and thick swamp mud; it is a poor swimmer and can be stuck or tipped there away from stone to repair with its magic, so long fights far from rock leave it chipped and tired with no way to fully reset between battles"
+    ],
+    "environment_affinities": {
+      "deep_ocean": -2,
+      "storm_coast": -1,
+      "volcanic_shore": 1,
+      "jungle_canyon": 0,
+      "frozen_ridge": -1,
+      "open_sky": -2,
+      "desert_ruins": 2,
+      "swamp": -1,
+      "city_harbor": 1
+    },
+    "sim_profile": {
+      "land_speed": 18,
+      "swim_speed": 5,
+      "flight_speed": 0,
+      "bite_force": 40,
+      "armor_rating": 90,
+      "intelligence": 38,
+      "endurance": 82,
+      "regeneration": 55,
+      "attack_range": 22,
+      "maneuverability": 20
+    },
+    "visual_spec": "A low, tank-like quadruped made of rough granite and sandstone blocks, about the size of a small car, with a domed back like a giant armadillo fused from fitted stone tiles. Each back plate is studded with short, cone-shaped spikes, like a huge thorny devil lizard turned to rock. The spikes vary in size, forming rows and clusters, with the biggest along the spine and tail root. The stone colors are weathered tans, greys, and ochres, with some plates darker and others pale, giving a mosaic look. Glowing amber runes trace thin lines through the cracks between stones, especially around the shoulders, hips, and tail base, like soft lava light peeking through. Dust and tiny pebbles crumble from its joints when it moves.\n\nThe body is wide and close to the ground, supported by four thick, pillar-like legs that end in broad, stubby stone claws for pushing and digging rather than fast running. The front limbs are slightly more jointed and scorpion-like, with small, rocky gripping pincers at the wrists, useful for steadying itself on rocks. The head is short and blocky with a beak-like stone snout and narrow, glowing amber eyes set under bony brow ridges. Just behind the real head rises a lumpy second bump covered in extra spines, shaped like a fake head; when it tucks its neck down, this fake, spiky head hump is what shows.\n\nFrom the rear of the shell grows a thick, glyptodon-style tail that soon shifts into a segmented, scorpion-like stone tail arching up and over the back. Each tail segment is ringed with small spines, and the very end forms a heavy, clubbed stinger: a rounded, mace-like tip with 4\u20136 blunt spikes and a sharp central barb. The barb glows softly with the same amber rune-light, especially near the tip. The overall surface texture is that of chipped rock and dry desert stone, with some patches of faint greenish lichen or moss tucked into deep cracks, showing age. Under moonlight or magical glow, some of the spines and tail plates faintly shimmer with a bluish sheen, hinting at the scorpion side, but the overall feel is of a spiky living boulder built for defense and close-up smashing.",
+    "rarity": "Uncommon",
+    "fun_fact": "Its rocky spines can pick up tiny drops of water from dew and fog, letting it slowly drink even in very dry deserts."
+  }
+}

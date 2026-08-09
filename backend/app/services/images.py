@@ -33,7 +33,10 @@ HERO_STYLE = (
     "body visible, dynamic three-quarter hero pose, not touching the image "
     "edges. Fierce and epic but suitable for a 7-year-old: no gore, no "
     "blood. Absolutely no text, letters, numbers, logos, or watermarks. "
-    "Transparent background. Creature description: "
+    "Transparent background — the isolated creature ONLY: no scenery, no "
+    "terrain base, no backdrop or environment, even if the description "
+    "mentions surroundings (at most a soft contact shadow under its feet). "
+    "Creature description: "
 )
 
 

@@ -1,0 +1,94 @@
+{
+  "key": "ever_pal",
+  "sources": [
+    "phoenix",
+    "dodo",
+    "axolotl",
+    "immortal-jellyfish"
+  ],
+  "target_rarity": "Uncommon",
+  "record": {
+    "name": "PhoDodolotl",
+    "title": "The Snuggly Ever-Returner",
+    "anatomy_plan": "Overall body plan is a plump, dodo\u2011sized land-and-water bird, built for waddling and paddling, not fierce flying. Skeleton, bulk, and basic posture come from the Dodo (round body, sturdy legs, big hooked beak). Skin and outer covering fuse Phoenix feathers with Axolotl skin: soft downy feathers on the body shift into smooth, slightly squishy, moist skin along the neck, belly, and tail, with gentle heat instead of blazing fire. Wing-structures are halfway between dodo wings and phoenix wings: short, rounded, feathery arms that can\u2019t truly fly but can flap for puff-jumps and slow glides. Respiratory and gill systems mix Axolotl and Immortal Jellyfish: feathery external gills frill out around the neck like a pink jelly mane, glowing softly and letting it breathe underwater; these frills are laced with tiny, mild jellyfish-style stingers. Circulation and healing: Axolotl limb-regrowth plus the Immortal Jellyfish age-restart loop give it cartoonish regeneration; damaged parts shrivel into ash-jelly blobs, then regrow as smaller, baby-fuzzy bits. Energy and heat powers mix Phoenix solar fire with Jellyfish glow: instead of huge infernos, it makes warm, harmless-looking sun-puffs and bright flares that dazzle and sting slightly if touched. Nervous system and behavior: Dodo curiosity and calm, Axolotl smiley face, Jellyfish simple instincts; it is friendly, distractible, and not very bright, but very hard to keep down. Tail and rear: long phoenix-style tail feathers, but more like glowing, soft streamers made of warm light and fuzzy down, with axolotl-like moist texture and subtle jelly translucence at the tips. Overall: a cuddly, semi-aquatic, glowing, rebounding puffball that waddles, paddles, puff-glides, and never quite stays knocked out.",
+    "role": "Annoying Tank / Regenerator",
+    "core_stats": {
+      "power": 32,
+      "speed": 28,
+      "armor": 35,
+      "size": 30,
+      "special_name": "Rebirth",
+      "special": 92
+    },
+    "abilities": [
+      {
+        "name": "Sun-Puff Bubble",
+        "blurb": "It flaps its tiny wings to pop a warm, glowing bubble that dazzles and lightly zaps anything too close.",
+        "sources": [
+          "Phoenix",
+          "Immortal Jellyfish"
+        ]
+      },
+      {
+        "name": "Gulp \u2018n\u2019 Waddle",
+        "blurb": "With a happy hop it sucks in water and air, then blasts it out to scoot forward in a silly turbo-waddle.",
+        "sources": [
+          "Dodo",
+          "Axolotl"
+        ]
+      },
+      {
+        "name": "Sparkle Stingo",
+        "blurb": "Its neck-frills and tail glow bright and give a soft, tingly sting that makes foes numb and sleepy instead of hurt.",
+        "sources": [
+          "Axolotl",
+          "Immortal Jellyfish"
+        ]
+      },
+      {
+        "name": "Comfy Ash-Nap",
+        "blurb": "When it\u2019s really hurt, it melts into a warm ash-jelly puddle and wakes up minutes later as a smaller, extra-cute baby puff.",
+        "sources": [
+          "Phoenix",
+          "Immortal Jellyfish"
+        ]
+      }
+    ],
+    "strengths": [
+      "Extremely hard to defeat for long thanks to mix of rebirth and fast regeneration",
+      "Adorable, non-threatening look makes many foes underestimate or even befriend it",
+      "Can live on land and in water, waddling on shore and paddling underwater with ease, so it\u2019s tricky to corner or trap permanently in one place, especially in lakes or harbors with hiding spots to nap-regrow in peace, often slipping away through small gaps while foes are distracted by its glowing tail or stunned by its gentle stings, then coming back later fully refreshed and even sillier than before if given enough time to complete its ash-jelly baby cycle between scuffles, making it a long-term nuisance rather than a one-time threat in most battles, especially for slower, clumsier enemies who can\u2019t chase it through mixed land-water terrain or keep watch during its naps and rebirths in reeds or shallow pools that match its natural environment best, which is why local kids often see the same PhoDodolotl again and again even after adults swear they \u201cgot rid of it yesterday!\u201d and why it\u2019s known more as a stubborn mascot than a real monster in many regions where it appears"
+    ],
+    "weaknesses": [
+      "Very low burst power; its attacks mostly dazzle, nudge, and tingle instead of doing big damage",
+      "Slow on land and in air; a determined fast foe can outrun, outfly, or ignore it",
+      "Needs moisture and soft shade to stay comfy; dry heat or desert conditions quickly tire and weaken it, shrinking its glow and slowing its healing power until it must curl into a nap puddle for safety, which makes it easy to pick up or move around while it\u2019s dozy and half-regrown, even by much smaller creatures or kids who find it in such harsh places, so it strongly avoids these biomes when it can"
+    ],
+    "environment_affinities": {
+      "deep_ocean": -1,
+      "storm_coast": 1,
+      "volcanic_shore": -1,
+      "jungle_canyon": 2,
+      "frozen_ridge": -1,
+      "open_sky": -2,
+      "desert_ruins": -2,
+      "swamp": 2,
+      "city_harbor": 1
+    },
+    "sim_profile": {
+      "land_speed": 24,
+      "swim_speed": 46,
+      "flight_speed": 8,
+      "bite_force": 30,
+      "armor_rating": 34,
+      "intelligence": 38,
+      "endurance": 80,
+      "regeneration": 95,
+      "attack_range": 15,
+      "maneuverability": 41
+    },
+    "visual_spec": "A round, dodo-sized creature with a plump, egg-shaped body and sturdy, stumpy legs ending in three wide, splayed toes. Its overall body plan is like a small, chubby bird that waddles more than it walks. The torso is covered in soft, fluffy down that shifts from pale blue-grey on the belly to warm golden-orange on the back, as if it\u2019s always catching the light of a sunset. The feathers look extra soft and slightly glowing at the tips, with a fine dust of faint, warm sparks drifting off when it moves. \n\nIts wings are short and rounded like a dodo\u2019s, but each feather is edged in glowing orange and crimson, creating the feel of tiny phoenix wings trying to burst into flame but staying gentle and huggable instead. When the wings open, the underside shows a gradient of cream to bright gold, with a fuzzy texture instead of sharp quills. They are clearly too small for real flying, but big enough to flap for hops and glides.\n\nThe head is an adorable mix of dodo and axolotl. It has a big hooked beak, but the beak is smooth and slightly translucent, colored soft pearly pink with a hint of jelly-like shine along the edges, making it look more like polished candy than a weapon. Its eyes are large, round, and dark, with a permanent sparkle, set widely on the sides of the head to give an innocent, curious look. The mouth line curves in a subtle smile like an axolotl, softening the beak\u2019s hook and making the whole face seem friendly.\n\nAround its neck and behind its cheeks grows a fancy collar of axolotl-style frilly gills, thick and feathery. These fronds fan out in three layered rows, colored translucent pink and coral-red, with tiny branching filaments that glow softly from within. Little points along the frills hint at jellyfish stingers, but they look like twinkling fairy lights rather than dangerous barbs. In dimmer light, the frill glows brighter, like a living neon scarf.\n\nRunning down its back and along its sides, the fluffy feathers thin and blend into smooth, slightly moist skin, like a salamander\u2019s, with tiny sparkling freckles of gold and soft red. The skin has a gentle shimmer, as if lit from inside by a calm ember. Its tail is long compared to its body, starting thick and dodo-like at the base but ending in a fountain of long phoenix tail-feathers. These tail-feathers are soft, droopy plumes that trail behind it like glowing ribbons, colored bright gold, orange, and crimson, with translucent jellyfish-like tips that flicker with light when it is excited. The tail can curl around its body like a warm blanket when it rests.\n\nFrom underneath, near the belly and tail, its body becomes paler, shifting to creamy white and light pink tones, with a smooth, plush texture like a mix of down and soft rubber. The legs are feathered on top and smooth-skinned below, ending in slightly webbed toes with tiny claws, showing it is built for both waddling on land and paddling in water. When wet, drops bead and slide off its feathers, leaving a faint trail of ripples in the air like heat-shimmer.\n\nIn water, the feather tips loosen and float, giving the whole creature a puffball halo effect, and the neck frills wave and glow like a tiny coral reef around its face. Its small, rounded wings and tail-feathers trail behind like streams of sunrise-colored light. \n\nOverall, the PhoDodolotl looks like an impossibly cuddly, semi-aquatic, glowing dodo-phoenix mix with axolotl frill-mane and hints of translucent jellyfish shimmer. Its colors are gentle but bright\u2014soft blues and creams on the body, warm golds and oranges on the feathers, and pink-coral glow on the gills and tail tips\u2014making it look more like a living plush toy crossed with a tiny sunrise than a monster.",
+    "rarity": "Uncommon",
+    "fun_fact": "When it takes a big nap after being knocked out, it sometimes wakes up a bit smaller and extra fluffy, like it accidentally pressed its own reset button to become a baby again."
+  }
+}

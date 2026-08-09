@@ -1,0 +1,95 @@
+{
+  "key": "swamp_king",
+  "sources": [
+    "hydra",
+    "sarcosuchus",
+    "king-cobra",
+    "alligator-snapping-turtle"
+  ],
+  "target_rarity": "Rare",
+  "record": {
+    "name": "Cobracanth Hydra",
+    "title": "The Venomback River Tyrant",
+    "anatomy_plan": "Base body is a giant semi-aquatic crocodile-turtle from Sarcosuchus (overall size, long tail, powerful limbs) and Alligator Snapping Turtle (broad spiked shell, heavy bone armor). The torso is widened and domed into a jagged shell plate that runs from neck roots to hips. From the front of the shell rise five long, flexible necks instead of nine: these use Hydra length and spacing, but are muscled and jointed like a King Cobra spine so they can rear high and sway. Each head is a hybrid crocodile-cobra: long, narrow snout with Sarcosuchus teeth in front, but the back of each skull widens into a cobra-style hood covered in small armored scales. Inside the mouth sit shortened cobra fangs plus a turtle-like hooked beak ridge for crushing. The tail combines Sarcosuchus power with a snapping turtle\u2019s ridged top, ending in a spade-like fin for swimming bursts. Skin and scales mix: the underside is tough but smoother crocodile hide; sides and limbs are Hydra-style bog-green scales; back and upper shell are thick overlapping osteoderms and turtle scutes forming three big ridges. Regeneration is toned down: only necks and some shell spikes regrow, slowly, using Hydra myth. Venom is stored in cobra-like glands feeding both fangs and special salivary grooves along the Sarcosuchus teeth for wide venom spread. Overall, it moves like a heavy river crocodile that can suddenly rear a forest of hooded serpent heads from a living tank-shell.",
+    "role": "Bruiser / Zone Control",
+    "core_stats": {
+      "power": 82,
+      "speed": 38,
+      "armor": 88,
+      "size": 84,
+      "special_name": "HydraVenom",
+      "special": 79
+    },
+    "abilities": [
+      {
+        "name": "Venom Storm Bite",
+        "blurb": "Five hooded heads snap and spray nerve venom in all directions at once!",
+        "sources": [
+          "Hydra",
+          "King Cobra",
+          "Sarcosuchus"
+        ]
+      },
+      {
+        "name": "Shellfort Ambush",
+        "blurb": "It lies like a rocky turtle island, then explodes up with a crushing beak-lunge!",
+        "sources": [
+          "Alligator Snapping Turtle",
+          "Sarcosuchus"
+        ]
+      },
+      {
+        "name": "Hydra Hood Halo",
+        "blurb": "The raised necks flare glowing hoods that scare foes and soak up the first hits.",
+        "sources": [
+          "Hydra",
+          "King Cobra"
+        ]
+      },
+      {
+        "name": "Bog Drag Roll",
+        "blurb": "It hooks an enemy, yanks them into mud, and spins in a thunderous death roll.",
+        "sources": [
+          "Sarcosuchus",
+          "Alligator Snapping Turtle"
+        ]
+      }
+    ],
+    "strengths": [
+      "Very tough armor from shell and bony plates makes front and back hard to crack.",
+      "Multiple long necks can attack or guard different angles at the same time.",
+      "Venomous bites can quickly weaken even huge enemies if they stay close too long.\nWarning hoods and hissing display can scare off nervous or smaller foes before a fight.\nGreat in rivers, swamps, and muddy shallows; can wait in ambush for a very long time.\nPartial regeneration lets it slowly regrow damaged necks and some shell spikes between battles."
+    ],
+    "weaknesses": [
+      "Slow on open land; fast ground predators and flyers can circle it and poke at weak spots.",
+      "Needs water or damp mud to stay strong; dries out and tires quickly in hot, dry places.",
+      "Softest spots are the belly and the base of the necks under the shell edge.\nRegeneration is limited and slow; if many heads are knocked out at once, it can\u2019t fix them mid-battle.\nVenom works best up close; long\u2011range and flying enemies can stay out of its bite zone.\nHeavy body makes climbing almost impossible and jumping not an option."
+    ],
+    "environment_affinities": {
+      "deep_ocean": -1,
+      "storm_coast": 1,
+      "volcanic_shore": -1,
+      "jungle_canyon": 1,
+      "frozen_ridge": -2,
+      "open_sky": -2,
+      "desert_ruins": -2,
+      "swamp": 2,
+      "city_harbor": 1
+    },
+    "sim_profile": {
+      "land_speed": 32,
+      "swim_speed": 71,
+      "flight_speed": 0,
+      "bite_force": 86,
+      "armor_rating": 92,
+      "intelligence": 52,
+      "endurance": 88,
+      "regeneration": 58,
+      "attack_range": 54,
+      "maneuverability": 35
+    },
+    "visual_spec": "Massive semi-aquatic reptile-turtle about 10\u201312 meters long from snout to tail. Body is low and broad with a heavy, domed shell fused into the back, like a giant snapping turtle stretched over a crocodile frame. The shell has three jagged ridges running from shoulders to hips, each lined with rough, triangular spikes; scutes are cracked and uneven like old stone, with mossy green and dark charcoal colors and patches of brown mud and slime clinging in the grooves. Under the shell, the sides and neck roots are covered in overlapping bog\u2011green and olive-bronze scales, some smooth like crocodile hide, others pebbly like old turtle plates. The underside is a tough, dull yellow\u2011tan armor belly. Four thick, squat legs end in wide, clawed feet that look part crocodile, part turtle, with webbing between the toes and dark claws like blunt hooks for gripping mud.\n\nFrom the front edge of the shell rise five long serpent necks spaced in a loose fan: one center, two slightly higher on each side. Each neck is thick at the base and flexible along its length, able to coil and curve high above the body. Scales along the necks are smaller and shinier, a mix of swampy green, olive, and bronze with faint pale banding like a king cobra. Around each head is a wide, flattened hood that can flare out into a broad oval disk; the hoods are patterned with pale yellow and dark charcoal eye\u2011shapes that look like staring spots when spread. The heads themselves are crocodile\u2011like at the snout, long and narrow with rows of sharp interlocking teeth, but the front of the jaws curve slightly into a hooked beak edge like a snapping turtle. When the mouths open, you see needle\u2011bright fangs near the front and a rough, pink tongue that can wiggle like a lure. Thin wisps of greenish mist and tiny droplets drip from the teeth when venom readies, hissing faintly where they land on wet mud.\n\nThe eyes on each head are large and golden\u2011amber with slit pupils, set under bony ridges that give a permanent frown. Small armored scales ring the eyes, hinting at Sarcosuchus bone plates. The main body\u2019s head is hidden by the forest of necks, but from above the creature looks like a moving island: a rocky, spiked shell, ridged crocodile tail, and five swaying serpent heads forming a crown over the front. The tail is long and muscled, with a tall, ridged top like a crocodile\u2019s but chunkier near the base with turtle-like scutes, ending in a flattened paddle used for sudden swimming bursts. Colors over the whole creature are swamp tones: bog\u2011green, dark olive, muddy brown, and charcoal, with a few lighter tan scars and chipped spikes. The skin texture ranges from rough stone-like shell to pebbled armor plates to smooth, glossy snake scales on the upper necks and hoods. It is often shown half-submerged at a riverbank or in murky swamp water, shell and tail breaking the surface like a cluster of boulders while the five hooded heads loom above, some flared wide, some peering low and close to the water.",
+    "rarity": "Rare",
+    "fun_fact": "When it\u2019s lazy, the Cobracanth Hydra leaves only one or two heads up to watch while the others curl on the shell like sleeping snakes."
+  }
+}

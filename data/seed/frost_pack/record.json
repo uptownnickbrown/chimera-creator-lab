@@ -1,0 +1,97 @@
+{
+  "key": "frost_pack",
+  "sources": [
+    "fenrir",
+    "dire-wolf",
+    "snow-leopard",
+    "wolverine"
+  ],
+  "target_rarity": "Epic",
+  "record": {
+    "name": "Frostfang Fenrune",
+    "title": "The Unchained Mountain Howler",
+    "anatomy_plan": "Base body is a giant wolf (Fenrir scale, Dire Wolf build): deep chest, heavy shoulders, long legs built for bounding. Skull and jaw follow Fenrir\u2019s huge moon-bite shape but thickened and widened like a Dire Wolf for bone-crushing strength. Spine, hips, and rear legs borrow Snow Leopard springiness for cliff-leap power. Paws mix Snow Leopard and Wolverine: oversized, wide, fur-padded \u201csnowshoes\u201d with half-retractable catlike claws for grip on rock and ice. Tail is long and thick like a Snow Leopard\u2019s, with Wolverine-like toughness, used for balance and for wrapping around the body in blizzards. Fur systems combine Dire Wolf\u2019s ruff, Snow Leopard\u2019s dense underfur, and Wolverine\u2019s oily frost-proof coat: triple-layered, very warm, water-shedding. Mythic Fenrir power alters connective tissues and bones: every time it is tightly trapped or held, micro-growth plates trigger, making it a bit larger and tougher, but this costs huge energy. Remnant silver chain links from Fenrir\u2019s myth coil into a natural bony collar fused to the neck and shoulders, giving partial armor but adding weight. Senses and hunting style mix Dire Wolf pack instincts (though these are now loose roaming bands) with Snow Leopard\u2019s silent stalking and Wolverine boldness, making it an ambush bruiser that can also chase over long snowy ground.",
+    "role": "Ambush Bruiser / Escape Artist",
+    "core_stats": {
+      "power": 88,
+      "speed": 67,
+      "armor": 74,
+      "size": 86,
+      "special_name": "Unchained",
+      "special": 90
+    },
+    "abilities": [
+      {
+        "name": "Avalanche Pounce",
+        "blurb": "It leaps downhill like a snowy thunderbolt, smashing foes flat with all four paws at once!",
+        "sources": [
+          "Fenrir",
+          "Snow Leopard",
+          "Dire Wolf"
+        ]
+      },
+      {
+        "name": "Moonbreak Bite",
+        "blurb": "Its giant jaws clamp with bone-cracking force, sending a freezing shock through anything they crush!",
+        "sources": [
+          "Fenrir",
+          "Dire Wolf",
+          "Wolverine"
+        ]
+      },
+      {
+        "name": "Chainbreaker Surge",
+        "blurb": "When something pins it down, it swells with stormy power, snapping free and shoving everything back!",
+        "sources": [
+          "Fenrir",
+          "Wolverine"
+        ]
+      },
+      {
+        "name": "Ghost-Track Stalker",
+        "blurb": "It pads over deep snow without sinking, vanishing into blizzards and cliff shadows before it strikes!",
+        "sources": [
+          "Snow Leopard",
+          "Wolverine",
+          "Dire Wolf"
+        ]
+      }
+    ],
+    "strengths": [
+      "Huge power and slam damage up close, especially when leaping from higher ground or downhill snow",
+      "Bite is both wide and crushing, great at cracking armor, shields, and frozen barriers",
+      "Very hard to trap or cage; restraint makes it briefly stronger and able to burst free (but tires it out)"
+    ],
+    "weaknesses": [
+      "Body is massive and heavy, so it cannot turn quickly on flat open ground and is clumsy in tight spaces",
+      "Thick cold-adapted fur makes it overheat fast in warm or dry places and weak in deserts or lava zones",
+      "Needs lots of food; long battles without rest drain its strength and shrink its Chainbreaker power gains"
+    ],
+    "environment_affinities": {
+      "deep_ocean": -2,
+      "storm_coast": 0,
+      "volcanic_shore": -2,
+      "jungle_canyon": -1,
+      "frozen_ridge": 2,
+      "open_sky": -1,
+      "desert_ruins": -2,
+      "swamp": -1,
+      "city_harbor": 0
+    },
+    "sim_profile": {
+      "land_speed": 62,
+      "swim_speed": 10,
+      "flight_speed": 0,
+      "bite_force": 92,
+      "armor_rating": 78,
+      "intelligence": 72,
+      "endurance": 69,
+      "regeneration": 40,
+      "attack_range": 25,
+      "maneuverability": 48
+    },
+    "visual_spec": "A gigantic wolf-cat beast the size of a small house, standing four-legged like a wolf on a snowy mountain ledge. Its body is long and powerful with thick shoulders and hips, built for bounding and pouncing. The head is a huge wolf skull with an extra-wide, heavy jaw; its mouth can open almost to a half circle, showing big crushing fangs and thick back molars built to crack frozen bone. Eyes glow pale ice-blue, set under a heavy brow. Around its neck and shoulders is a shaggy storm-grey ruff like Fenrir\u2019s, and half-buried in the fur is a collar of old silver chain links fused into bony plates; the links hang and swing when it moves. \n\nIts fur is triple-layered and extra thick: base color smoky grey fading to pale snow-grey on belly and legs, with faint darker rosettes like a snow leopard along its flanks and hips. Over the ribs are two broken tan streaks echoing a wolverine\u2019s side stripes. The coat looks slightly glossy and oily, with frost crystals clinging to the outer hairs. The back and shoulders carry longer, shaggier guard hairs that stir like storm clouds in the wind.\n\nThe legs are stocky yet long, with dense muscle like a dire wolf but jointed more flexibly like a big cat for leaping. Paws are very large and wide, like fluffy snow pads, fur spilling between thick toes. Each toe holds curved, catlike claws that are partly retractable: in a resting pose they are mostly hidden, but when the creature grips ice or rock they extend in sharp arcs. The tail is nearly as long as the body, thick and heavily furred, with a big plume at the tip; it curls and wraps around the body when the beast lies down, or streams behind it when it leaps.\n\nIts overall posture is wolfish but with a catlike smoothness: shoulders rolling, spine flexing deeply in mid-bounds. The back shows subtle ridges of muscle under the fur. Scattered across its flanks and forelegs are tiny scars where the fused chains meet the skin, giving a faint metallic glint. Snow dust and frost crystals swirl around its legs and stream off its guard hairs.",
+    "rarity": "Epic",
+    "fun_fact": "Every time a Frostfang Fenrune escapes a tight trap, tiny new silver chain links grow along its neck collar, so old ones can tell stories by how many links they carry."
+  }
+}
