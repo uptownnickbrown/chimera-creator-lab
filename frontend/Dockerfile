@@ -1,5 +1,6 @@
 # Dev-friendly image: the Vite dev server with HMR, source mounted by compose.
-# Swap for a multi-stage nginx build (Agora's frontend/Dockerfile) at deploy time.
+# NOT the production build — prod is the repo-root Dockerfile, which builds this
+# app and has FastAPI serve the result on one origin. See docs/DEPLOY.md.
 FROM node:22-alpine
 
 WORKDIR /app

@@ -1,0 +1,49 @@
+# Build context trimming. The context is dominated by art: frontend/public/assets
+# is ~231MB and IS required by the frontend build, so it is deliberately NOT
+# excluded. Everything below is either regenerable, runtime-only, or secret.
+
+# secrets — never, under any circumstance, into an image layer
+.env
+.env.*
+
+# git / tooling
+.git
+.gitignore
+.github
+.claude
+
+# python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+*.db
+*.db-wal
+*.db-shm
+
+# node / previous builds
+**/node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# runtime-generated creature media (~121MB). Lives on the Railway volume at
+# /data/media, never in the image.
+media/
+
+# QA sweeps, model bakeoff artifacts, raw asset renders — all large, all
+# regenerable, none of it shipped.
+qa/
+research/
+scripts/raw/
+art-direction/
+example-chimeras/
+
+# docs and specs are not needed at runtime
+docs/
+*.md
+
+# macOS
+.DS_Store
+**/.DS_Store

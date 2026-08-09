@@ -1,0 +1,26 @@
+# Railway service config. One service, built from the root Dockerfile, serving
+# the API, /media (persistent volume) and the SPA on a single origin.
+# Full runbook: docs/DEPLOY.md
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# /healthz is a static 200 with no database dependency: it answers "is this
+# container serving?", which is the only question a deploy gate should ask.
+# /readyz (DB round-trip) is for humans debugging, not for the gate.
+healthcheckPath = "/healthz"
+healthcheckTimeout = 300
+
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# A service with a mounted volume cannot run two containers at once, so the
+# replica count is not a choice. See DEPLOY.md "Deploy downtime".
+numReplicas = 1
+
+# No startCommand: the image's ENTRYPOINT (scripts/docker-entrypoint.sh) runs
+# `alembic upgrade head` and then uvicorn on $PORT. Setting a start command
+# here would bypass nothing — it is passed through to the entrypoint — but
+# leaving it empty keeps one source of truth.

@@ -17,7 +17,9 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import (
-    JSON,
+    JSON as _JSON,
+)
+from sqlalchemy import (
     Boolean,
     DateTime,
     Float,
@@ -28,9 +30,15 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy import Enum as SAEnum
+from sqlalchemy.dialects.postgresql import JSONB as _JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
+
+# Every JSON column below is JSONB on Postgres and plain JSON on SQLite. Bound
+# once here rather than per-column so new columns get it for free and the diff
+# stays at the import site. The alembic migration uses the same variant.
+JSON = _JSON().with_variant(_JSONB(astext_type=Text()), "postgresql")
 
 
 class ImageStatus(str, enum.Enum):

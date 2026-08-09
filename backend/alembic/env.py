@@ -1,8 +1,8 @@
 """Alembic environment (async engine, autogenerate against app.models).
 
-No initial migration is committed yet: dev runs on SQLite and the app
-create_all's at startup. Generate the first revision before the first Postgres
-deploy with `alembic revision --autogenerate -m "initial"`.
+Dev runs on SQLite and the app create_all's at startup; Postgres is migrated by
+`alembic upgrade head`, which the container entrypoint runs before uvicorn
+starts (scripts/docker-entrypoint.sh). The URL comes from DATABASE_URL.
 """
 from __future__ import annotations
 
