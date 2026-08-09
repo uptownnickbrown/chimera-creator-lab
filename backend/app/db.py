@@ -15,11 +15,29 @@ class Base(DeclarativeBase):
 
 def make_engine(url: str | None = None):
     url = url or get_settings().database_url
-    kwargs: dict = {"pool_pre_ping": True}
+    if url.startswith("sqlite") and ":memory:" not in url:
+        # SQLite under concurrent background tasks (observed 2026-08-09: a
+        # creature stranded at "generating" because its session open blocked
+        # while other work held the database):
+        # - NullPool: a fresh connection per session — no pool-checkout waits.
+        # - WAL: readers and writers never block each other.
+        # - Bounded busy wait: real contention raises loudly, never hangs.
+        from sqlalchemy import event
+        from sqlalchemy.pool import NullPool
+
+        eng = create_async_engine(url, poolclass=NullPool, connect_args={"timeout": 15})
+
+        @event.listens_for(eng.sync_engine, "connect")
+        def _sqlite_tune(dbapi_conn, _record):
+            cur = dbapi_conn.cursor()
+            cur.execute("PRAGMA journal_mode=WAL")
+            cur.execute("PRAGMA synchronous=NORMAL")
+            cur.close()
+
+        return eng
     if url.startswith("sqlite"):
-        # aiosqlite has no pooling knobs worth setting; keep defaults.
-        kwargs.pop("pool_pre_ping")
-    return create_async_engine(url, **kwargs)
+        return create_async_engine(url)
+    return create_async_engine(url, pool_pre_ping=True)
 
 
 def make_session_factory(engine=None) -> async_sessionmaker[AsyncSession]:

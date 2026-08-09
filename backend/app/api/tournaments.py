@@ -250,13 +250,20 @@ async def _final_art_task(tournament_id: int, a_id: int, b_id: int) -> None:
     """Background finals key-art render; owns its session (request one closes)."""
     from ..db import session_factory
 
+    # Load, CLOSE the session, render sessionless, reopen to write: holding a
+    # SQLite transaction across the ~74s render blocked every other writer
+    # (this is what stranded creatures at "generating", 2026-08-09).
     async with session_factory()() as db:
         fa = await db.get(Creature, a_id)
         fb = await db.get(Creature, b_id)
+        exists = (await db.get(Tournament, tournament_id)) is not None
+    if not (fa and fb and exists):
+        return
+    path = await images.generate_championship_art(fa, fb)
+    async with session_factory()() as db:
         t = await db.get(Tournament, tournament_id)
-        if not (fa and fb and t):
+        if t is None:
             return
-        path = await images.generate_championship_art(fa, fb)
         bracket = copy.deepcopy(t.bracket)
         bracket["final_art"] = path  # None -> ceremony uses composited finale
         t.bracket = bracket

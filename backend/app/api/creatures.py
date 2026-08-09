@@ -29,6 +29,8 @@ router = APIRouter(prefix="/api/creatures", tags=["creatures"])
 
 #: Absolute ceiling for the record phase (~26s typical) — see _generate_task.
 RECORD_DEADLINE_S = 180
+#: Outer fence over the WHOLE lifecycle (record + hero render + retries).
+TASK_DEADLINE_S = 420
 
 
 def spawn(coro, label: str) -> asyncio.Task:
@@ -110,15 +112,55 @@ def _record_fields(record) -> dict:
     }
 
 
+async def _mark_failed(creature_id: int, *, record_too: bool) -> None:
+    """Land a creature in the retryable failed state on a FRESH session."""
+    from ..db import session_factory
+
+    async with session_factory()() as db:
+        creature = await db.get(Creature, creature_id)
+        if creature is None:
+            return
+        if record_too and creature.record_status == RecordStatus.generating:
+            creature.record_status = RecordStatus.failed
+        if creature.image_status == ImageStatus.pending:
+            creature.image_status = ImageStatus.failed
+        await db.commit()
+
+
 async def _generate_task(creature_id: int, sources: list[str]) -> None:
-    """Owns the whole staged lifecycle for one creature: stream the record
-    (hero render fires early on visual_spec), then persist record fields,
-    then persist image fields. One writer, its own session — the request
-    session is long closed, and no stage may lose an earlier stage's work."""
+    """Outer fence: the whole lifecycle runs under an absolute deadline via
+    asyncio.wait + abandon — even a pathologically uncancellable hang cannot
+    strand a row at "generating"; the fence marks failure on its own fresh
+    session and the UI offers a retry."""
+    inner = asyncio.create_task(_generate_task_inner(creature_id, sources))
+    done, _ = await asyncio.wait({inner}, timeout=TASK_DEADLINE_S)
+    if inner in done:
+        inner.result()  # propagate real crashes to spawn's logger
+        return
+    inner.cancel()
+    log.error(
+        "generation task for %s exceeded %ss — abandoning it and marking the "
+        "row failed/retryable", creature_id, TASK_DEADLINE_S,
+    )
+    try:
+        await _mark_failed(creature_id, record_too=True)
+    finally:
+        generation.PROGRESS.pop(creature_id, None)
+
+
+async def _generate_task_inner(creature_id: int, sources: list[str]) -> None:
+    """The staged lifecycle: stream the record (hero render fires early on
+    visual_spec), persist record fields, then persist image fields.
+
+    Sessions open only around the actual reads/writes and are NEVER held
+    across an AI await — a long-lived SQLite transaction blocks every other
+    writer, and that is exactly how creatures stranded at "generating" while
+    a 74s finals render held one (observed live, 2026-08-09)."""
     from types import SimpleNamespace
 
     from ..db import session_factory
 
+    factory = session_factory()
     hero_task: asyncio.Task | None = None
 
     async def start_hero(spec: str) -> None:
@@ -131,62 +173,71 @@ async def _generate_task(creature_id: int, sources: list[str]) -> None:
         )
 
     log.info("generation task start: creature %s from %s", creature_id, sources)
-    async with session_factory()() as db:
+    async with factory() as db:
+        exists = await db.get(Creature, creature_id) is not None
+    if not exists:
+        return
+    log.info("generation task: row %s loaded, opening record stream", creature_id)
+
+    try:
+        # Record-phase ceiling (tighter than the outer fence, for a fast
+        # retry offer when only the text stream is stuck).
+        rec_task = asyncio.create_task(
+            generation.generate_creature_streaming(
+                creature_id, sources, on_visual_spec=start_hero
+            )
+        )
+        done, _ = await asyncio.wait({rec_task}, timeout=RECORD_DEADLINE_S)
+        if rec_task not in done:
+            rec_task.cancel()
+            raise RuntimeError(f"record generation exceeded {RECORD_DEADLINE_S}s deadline")
+        record = rec_task.result()
+    except Exception as exc:  # noqa: BLE001 - record failure must land as a state
+        log.warning("generation stream failed for %s: %s", creature_id, str(exc)[:200])
+        await _mark_failed(creature_id, record_too=True)
+        generation.PROGRESS.pop(creature_id, None)
+        return
+
+    async with factory() as db:
         creature = await db.get(Creature, creature_id)
         if creature is None:
             return
-        log.info("generation task: row %s loaded, opening record stream", creature_id)
-        try:
-            # Hard ceiling over the WHOLE record phase. asyncio.wait (not
-            # wait_for) so a pathologically uncancellable hang can't take this
-            # task down with it: on deadline we abandon the stuck coroutine and
-            # land the row in failed/retryable — a creature may never strand at
-            # "generating" (observed once: silent hang before the first chunk,
-            # inner watchdogs never fired).
-            rec_task = asyncio.create_task(
-                generation.generate_creature_streaming(
-                    creature_id, sources, on_visual_spec=start_hero
-                )
-            )
-            done, _ = await asyncio.wait({rec_task}, timeout=RECORD_DEADLINE_S)
-            if rec_task not in done:
-                rec_task.cancel()
-                raise RuntimeError(
-                    f"record generation exceeded {RECORD_DEADLINE_S}s deadline"
-                )
-            record = rec_task.result()
-            for field, value in _record_fields(record).items():
-                setattr(creature, field, value)
-            creature.record_status = RecordStatus.complete
-        except Exception as exc:  # noqa: BLE001 - record failure must land as a state
-            log.warning("generation stream failed for %s: %s", creature_id, str(exc)[:200])
-            creature.record_status = RecordStatus.failed
-            creature.image_status = ImageStatus.failed
-            await db.commit()
-            generation.PROGRESS.pop(creature_id, None)
-            return
+        for field, value in _record_fields(record).items():
+            setattr(creature, field, value)
+        creature.record_status = RecordStatus.complete
         await db.commit()
-        # Record fields are persisted; keep only the render-in-flight signal.
-        # The whole entry is cleaned up after the image stage commits.
-        generation.PROGRESS[creature_id] = {
-            "image_started": bool(generation.PROGRESS.get(creature_id, {}).get("image_started"))
-        }
+    log.info("generation task: record committed for %s", creature_id)
+    # Record fields are persisted; keep only the render-in-flight signal.
+    # The whole entry is cleaned up after the image stage commits.
+    generation.PROGRESS[creature_id] = {
+        "image_started": bool(generation.PROGRESS.get(creature_id, {}).get("image_started"))
+    }
 
-        try:
-            if hero_task is None:  # visual_spec never fired mid-stream; render now
-                generation.PROGRESS[creature_id]["image_started"] = True
-                hero = await images.generate_hero(creature)
-            else:
-                hero = await hero_task
+    try:
+        if hero_task is None:  # visual_spec never fired mid-stream; render now
+            generation.PROGRESS[creature_id]["image_started"] = True
+            hero = await images.generate_hero(
+                SimpleNamespace(id=creature_id, visual_spec=record.visual_spec, name=record.name)
+            )
+        else:
+            hero = await hero_task
+        thumb = (
+            await images.generate_thumb(SimpleNamespace(id=creature_id)) if hero else None
+        )
+        async with factory() as db:
+            creature = await db.get(Creature, creature_id)
+            if creature is None:
+                return
             if hero:
                 creature.hero_image_path = hero
-                creature.thumb_path = await images.generate_thumb(creature)
+                creature.thumb_path = thumb
                 creature.image_status = ImageStatus.complete
             else:
                 creature.image_status = ImageStatus.failed
             await db.commit()
-        finally:
-            generation.PROGRESS.pop(creature_id, None)
+        log.info("generation task: image committed for %s", creature_id)
+    finally:
+        generation.PROGRESS.pop(creature_id, None)
 
 
 @router.post("/{creature_id}/retry-image", response_model=CreateCreatureResponse)
@@ -206,25 +257,38 @@ async def retry_image(creature_id: int, db: AsyncSession = Depends(get_db)) -> C
 
 
 async def _retry_hero_task(creature_id: int) -> None:
-    """Hero-only re-render for the retry button; record is already saved."""
+    """Hero-only re-render for the retry button; record is already saved.
+    Sessions never span the render (see _generate_task_inner)."""
+    from types import SimpleNamespace
+
     from ..db import session_factory
 
     async with session_factory()() as db:
         creature = await db.get(Creature, creature_id)
         if creature is None:
             return
-        generation.PROGRESS[creature_id] = {"image_started": True}
-        try:
-            hero = await images.generate_hero(creature)
+        spec, name = creature.visual_spec, creature.name
+    generation.PROGRESS[creature_id] = {"image_started": True}
+    try:
+        hero = await images.generate_hero(
+            SimpleNamespace(id=creature_id, visual_spec=spec, name=name)
+        )
+        thumb = (
+            await images.generate_thumb(SimpleNamespace(id=creature_id)) if hero else None
+        )
+        async with session_factory()() as db:
+            creature = await db.get(Creature, creature_id)
+            if creature is None:
+                return
             if hero:
                 creature.hero_image_path = hero
-                creature.thumb_path = await images.generate_thumb(creature)
+                creature.thumb_path = thumb
                 creature.image_status = ImageStatus.complete
             else:
                 creature.image_status = ImageStatus.failed
             await db.commit()
-        finally:
-            generation.PROGRESS.pop(creature_id, None)
+    finally:
+        generation.PROGRESS.pop(creature_id, None)
 
 
 @router.get("", response_model=list[CreatureSummary])
