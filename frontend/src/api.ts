@@ -67,6 +67,8 @@ export interface CreatureSummary {
   image_status: ImageStatus;
   /** Streaming preview: ability names revealed so far. Empty once complete. */
   ability_names: string[];
+  /** True once the hero render task has actually started (BODY FORGE signal). */
+  image_started: boolean;
   hero_image_path: string | null;
   thumb_path: string | null;
   favorite: boolean;

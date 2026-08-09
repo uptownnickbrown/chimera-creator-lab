@@ -42,10 +42,10 @@ def summary(c: Creature) -> CreatureSummary:
 def detail(c: Creature) -> CreatureDetail:
     fought = c.wins + c.losses
     base = summary(c).model_dump()
+    partial = generation.PROGRESS.get(c.id, {})
     if c.record_status == RecordStatus.generating:
         # Fusion Wait: overlay whatever the record stream has revealed so far
         # (name at ~8s, stats ticking in after) onto the placeholder row.
-        partial = generation.PROGRESS.get(c.id, {})
         for key in ("name", "title", "rarity"):
             if partial.get(key):
                 base[key] = partial[key]
@@ -53,6 +53,9 @@ def detail(c: Creature) -> CreatureDetail:
             base["core_stats"] = partial["core_stats"]
         if partial.get("ability_names"):
             base["ability_names"] = partial["ability_names"]
+    if partial.get("image_started") and base["image_status"] == "pending":
+        # Honest BODY FORGE start signal while the hero render is in flight.
+        base["image_started"] = True
     return CreatureDetail(
         **base,
         abilities=c.abilities or [],

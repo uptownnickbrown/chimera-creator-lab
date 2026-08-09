@@ -31,6 +31,33 @@ async def test_create_then_get_flow(client):
     assert len(record["environment_affinities"]) == 9
     assert "sim_profile" not in record  # hidden stats never reach the child-facing API
     assert record["image_status"] in {"pending", "complete", "failed"}
+    assert record["image_started"] is False  # no render task in flight in stub mode
+
+
+async def test_image_started_surfaces_only_while_render_in_flight(client):
+    """The BODY FORGE signal: PROGRESS["image_started"] shows through detail()
+    while image_status is pending, and never once the image has settled."""
+    from app.api.common import detail
+    from app.models import Creature, ImageStatus, RecordStatus
+    from app.services import generation
+
+    def row(image_status: ImageStatus) -> Creature:
+        return Creature(
+            id=98765, name="Testling", title="", sources=[], rarity="Rare", role="",
+            core_stats={}, abilities=[], strengths=[], weaknesses=[],
+            environment_affinities={}, sim_profile={}, records={},
+            fun_fact="", anatomy_plan="", visual_spec="",
+            record_status=RecordStatus.complete, image_status=image_status,
+            favorite=False, wins=0, losses=0, championships=0,
+        )
+
+    assert detail(row(ImageStatus.pending)).image_started is False
+    generation.PROGRESS[98765] = {"image_started": True}
+    try:
+        assert detail(row(ImageStatus.pending)).image_started is True
+        assert detail(row(ImageStatus.complete)).image_started is False
+    finally:
+        generation.PROGRESS.pop(98765, None)
 
 
 async def test_generation_is_deterministic_in_the_sources(client):

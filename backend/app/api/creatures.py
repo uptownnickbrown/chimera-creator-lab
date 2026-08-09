@@ -119,6 +119,9 @@ async def _generate_task(creature_id: int, sources: list[str]) -> None:
 
     async def start_hero(spec: str) -> None:
         nonlocal hero_task
+        # Honest BODY FORGE signal: flagged the moment the render task exists,
+        # surfaced by detail() until image_status settles.
+        generation.PROGRESS.setdefault(creature_id, {})["image_started"] = True
         hero_task = asyncio.create_task(
             images.generate_hero(SimpleNamespace(id=creature_id, visual_spec=spec, name=""))
         )
@@ -142,19 +145,27 @@ async def _generate_task(creature_id: int, sources: list[str]) -> None:
             generation.PROGRESS.pop(creature_id, None)
             return
         await db.commit()
-        generation.PROGRESS.pop(creature_id, None)
+        # Record fields are persisted; keep only the render-in-flight signal.
+        # The whole entry is cleaned up after the image stage commits.
+        generation.PROGRESS[creature_id] = {
+            "image_started": bool(generation.PROGRESS.get(creature_id, {}).get("image_started"))
+        }
 
-        if hero_task is None:  # visual_spec never fired mid-stream; render now
-            hero = await images.generate_hero(creature)
-        else:
-            hero = await hero_task
-        if hero:
-            creature.hero_image_path = hero
-            creature.thumb_path = await images.generate_thumb(creature)
-            creature.image_status = ImageStatus.complete
-        else:
-            creature.image_status = ImageStatus.failed
-        await db.commit()
+        try:
+            if hero_task is None:  # visual_spec never fired mid-stream; render now
+                generation.PROGRESS[creature_id]["image_started"] = True
+                hero = await images.generate_hero(creature)
+            else:
+                hero = await hero_task
+            if hero:
+                creature.hero_image_path = hero
+                creature.thumb_path = await images.generate_thumb(creature)
+                creature.image_status = ImageStatus.complete
+            else:
+                creature.image_status = ImageStatus.failed
+            await db.commit()
+        finally:
+            generation.PROGRESS.pop(creature_id, None)
 
 
 @router.post("/{creature_id}/retry-image", response_model=CreateCreatureResponse)
@@ -181,14 +192,18 @@ async def _retry_hero_task(creature_id: int) -> None:
         creature = await db.get(Creature, creature_id)
         if creature is None:
             return
-        hero = await images.generate_hero(creature)
-        if hero:
-            creature.hero_image_path = hero
-            creature.thumb_path = await images.generate_thumb(creature)
-            creature.image_status = ImageStatus.complete
-        else:
-            creature.image_status = ImageStatus.failed
-        await db.commit()
+        generation.PROGRESS[creature_id] = {"image_started": True}
+        try:
+            hero = await images.generate_hero(creature)
+            if hero:
+                creature.hero_image_path = hero
+                creature.thumb_path = await images.generate_thumb(creature)
+                creature.image_status = ImageStatus.complete
+            else:
+                creature.image_status = ImageStatus.failed
+            await db.commit()
+        finally:
+            generation.PROGRESS.pop(creature_id, None)
 
 
 @router.get("", response_model=list[CreatureSummary])

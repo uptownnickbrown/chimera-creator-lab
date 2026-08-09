@@ -164,6 +164,11 @@ class CreatureSummary(Api):
     signature_ability: str = Field(
         default="", description="First ability name — carousel headline without a detail fetch"
     )
+    image_started: bool = Field(
+        default=False,
+        description="True once the hero render task has actually started — the honest "
+        "BODY FORGE signal for the Fusion Wait while image_status is still pending",
+    )
     hero_image_path: str | None = None
     thumb_path: str | None = None
     favorite: bool

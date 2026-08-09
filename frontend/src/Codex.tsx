@@ -4,7 +4,14 @@
    platform on the right. */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Go } from "./App";
-import { api, type CodexSort, type CreatureDetail, type CreatureSummary } from "./api";
+import {
+  api,
+  getLibraryCached,
+  type CodexSort,
+  type CreatureDetail,
+  type CreatureSummary,
+  type SourceCreature,
+} from "./api";
 import {
   Asset,
   Badge,
@@ -33,6 +40,22 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
   const [rows, setRows] = useState<CreatureSummary[] | null>(null);
   const [selected, setSelected] = useState<CreatureDetail | null>(null);
   const [query, setQuery] = useState("");
+  const [libSources, setLibSources] = useState<SourceCreature[]>([]);
+
+  useEffect(() => {
+    getLibraryCached()
+      .then((lib) => setLibSources(lib.sources))
+      .catch(() => undefined);
+  }, []);
+
+  /* The four donor parts, resolved to library entries for their portraits. */
+  const parts = useMemo(() => {
+    if (!selected) return [];
+    const bySlug = new Map(libSources.map((s) => [s.slug, s]));
+    return (selected.sources ?? [])
+      .map((slug) => bySlug.get(slug))
+      .filter((s): s is SourceCreature => Boolean(s));
+  }, [selected, libSources]);
 
   const load = useCallback(async (which: CodexSort) => {
     setRows(await api.listCreatures(which).catch(() => []));
@@ -217,6 +240,46 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
             </div>
 
             <StatRow stats={selected.core_stats} />
+
+            {parts.length > 0 && (
+              <section className="detail__section">
+                <h3 className="detail__subhead">FUSED FROM</h3>
+                <div className="detail__parts">
+                  {parts.map((p) => (
+                    <div className="detail__part" key={p.slug} title={p.contribution || p.name}>
+                      <span className="detail__part-img">
+                        <Asset slot={`parts/${p.slug}`} label={p.name} />
+                      </span>
+                      <span className="detail__part-name">
+                        <FitText>{p.name.toUpperCase()}</FitText>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {selected.abilities.length > 0 && (
+              <section className="detail__section">
+                <h3 className="detail__subhead">MOVES</h3>
+                <div className="detail__moves">
+                  {selected.abilities.map((a) => (
+                    <article className="detail__move" key={a.name}>
+                      <h4 className="detail__move-name">
+                        <FitText>{String(a.name ?? "").toUpperCase()}</FitText>
+                      </h4>
+                      <p className="detail__move-blurb">{a.blurb}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {selected.fun_fact && (
+              <p className="detail__fact">
+                <b>FUN FACT</b> {selected.fun_fact}
+              </p>
+            )}
 
             {Object.keys(selected.records).length > 0 && (
               <div className="detail__records">

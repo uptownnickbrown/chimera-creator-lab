@@ -980,8 +980,12 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 /* ── the five-stat row (created.png) ─────────────────────────────────────── */
 
 .statrow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
-.stat { display: grid; gap: 7px; justify-items: center; }
+/* Children stretch to the column (never wider), content centers inside —
+   justify-items:center let wide labels/bars paint past the panel edge. */
+.stat { display: grid; grid-template-columns: minmax(0, 1fr); gap: 7px; justify-items: stretch; min-width: 0; }
+.stat > * { max-width: 100%; }
 .stat__ring {
+  margin: 0 auto;
   display: grid;
   place-items: center;
   width: 46px;
@@ -1002,7 +1006,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   line-height: 1.1;
 }
 .stat .bars { width: 100%; }
-.stat__value { font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: 1; }
+.stat__value { font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: 1; text-align: center; }
 
 /* ═══ SCREENS ═══ */
 
@@ -1865,6 +1869,74 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 }
 .detail__k { font-family: var(--font-display); font-weight: 600; font-size: 11px; letter-spacing: 0.12em; color: var(--muted); }
 .detail__v { font-family: var(--font-display); font-weight: 700; font-size: 21px; line-height: 1.1; color: var(--cyan); }
+/* Codex detail: the full record — donor parts, moves, fun fact. */
+.detail__section { display: grid; gap: 8px; }
+.detail__subhead {
+  margin: 0;
+  padding-bottom: 4px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--cyan);
+  background: linear-gradient(90deg, rgba(79, 216, 255, 0.45), transparent) bottom / 100% 1px no-repeat;
+}
+.detail__parts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.detail__part { display: grid; gap: 4px; min-width: 0; }
+.detail__part-img {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border-radius: 9px;
+  background: linear-gradient(180deg, rgba(24, 36, 84, 0.5), rgba(8, 12, 32, 0.72));
+  box-shadow: inset 0 0 0 1px rgba(79, 216, 255, 0.28), inset 0 1px 0 rgba(140, 220, 255, 0.14);
+}
+.detail__part-img .asset { max-width: 100%; max-height: 100%; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5)); }
+.detail__part-name {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--muted);
+}
+.detail__moves { display: grid; gap: 7px; }
+.detail__move {
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: linear-gradient(165deg, rgba(64, 34, 110, 0.4), rgba(14, 9, 34, 0.66));
+  box-shadow: inset 0 0 0 1px rgba(168, 107, 255, 0.3), inset 0 1px 0 rgba(210, 170, 255, 0.14);
+}
+.detail__move-name {
+  margin: 0 0 3px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: 0.09em;
+  color: #d9c4ff;
+}
+.detail__move-blurb { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft, #c6d3ea); }
+.detail__fact {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #cfe0f4;
+  background: linear-gradient(165deg, rgba(20, 46, 66, 0.5), rgba(8, 16, 32, 0.7));
+  box-shadow: inset 0 0 0 1px rgba(79, 216, 255, 0.22);
+}
+.detail__fact b {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--gold, #ffd76a);
+}
 .detail__records { display: flex; flex-wrap: wrap; gap: 7px; }
 .plaque {
   display: inline-flex;
@@ -2819,17 +2891,116 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   letter-spacing: 0.1em;
   animation: fw-chip-in 480ms cubic-bezier(0.2, 1.2, 0.3, 1) both;
 }
-.fw__chip--ghost {
-  min-width: 86px;
-  height: 30px;
-  background: none;
-  box-shadow: inset 0 0 0 1px rgba(120, 155, 205, 0.28);
-  animation: none;
+/* Unstreamed ability slots: a deliberate dim-pulsing mystery plate, never an
+   empty outline that reads as a bug. */
+.fw__chip--mystery {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  padding: 6px 10px;
+  background: linear-gradient(180deg, rgba(120, 155, 205, 0.12), rgba(120, 155, 205, 0.03));
+  box-shadow: inset 0 0 0 1px rgba(140, 180, 230, 0.3);
+  color: rgba(160, 200, 245, 0.7);
+  font-size: 14px;
+  animation: fw-mystery 2.6s ease-in-out infinite;
+}
+.fw__chip--mystery:nth-child(odd) { animation-delay: 1.1s; }
+@keyframes fw-mystery {
+  0%, 100% { opacity: 0.38; }
+  50% { opacity: 0.85; }
 }
 @keyframes fw-chip-in {
   0% { opacity: 0; transform: scale(0.7); }
   60% { opacity: 1; transform: scale(1.07); }
   100% { opacity: 1; transform: none; }
+}
+
+/* Walkthrough mode: chips become real buttons — kid-sized touch targets. */
+.fw__chip--live {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 10px 14px;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #ecdfff;
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+.fw__chip--live:hover { transform: scale(1.02); }
+.fw__chip--live:active { transform: translateY(1px); }
+.fw__chip--live.is-spot {
+  box-shadow: inset 0 0 0 2px rgba(214, 178, 255, 0.95), 0 0 24px -4px var(--purple);
+  animation: fw-spot-pulse 2.2s ease-in-out infinite;
+}
+@keyframes fw-spot-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 2px rgba(214, 178, 255, 0.95), 0 0 18px -4px var(--purple); }
+  50% { box-shadow: inset 0 0 0 2px rgba(236, 214, 255, 1), 0 0 30px -2px var(--purple); }
+}
+
+/* The walkthrough spotlight card — one ability (or strength/weakness) at a
+   time, center stage under the creature name while the hero paints. The
+   chamber art flexes to make room; the rails never overflow. */
+.fw__spot {
+  display: grid;
+  gap: 6px;
+  width: min(100%, 460px);
+  justify-self: center;
+  margin-top: 8px;
+  text-align: left;
+  padding: 11px 13px 10px;
+  clip-path: var(--clip-notch-sm);
+  background: linear-gradient(170deg, rgba(168, 107, 255, 0.16), rgba(8, 12, 32, 0.55));
+  box-shadow: inset 0 0 0 1px rgba(168, 107, 255, 0.4), 0 0 22px -10px var(--purple);
+  animation: fw-line-in 360ms ease both;
+}
+.fw__spot-key {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+}
+.fw__spot-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  color: #f2e9ff;
+}
+.fw__spot-blurb { margin: 0; font-size: 13px; line-height: 1.45; color: var(--text-dim); }
+.fw__spot-sources { display: flex; align-items: center; gap: 7px; margin-top: 2px; }
+.fw__spot-fused {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+.fw__spot-src {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  padding: 2px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, rgba(16, 23, 51, 0.95), rgba(7, 10, 24, 0.98));
+  box-shadow: 0 0 0 1px rgba(79, 216, 255, 0.55), 0 0 14px -6px var(--cyan);
+  overflow: hidden;
+}
+.fw__spot-src .asset { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.fw__spot-hint {
+  margin-top: 1px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
 }
 
 .fw__chamber {
@@ -2934,23 +3105,36 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .fw__meanwhile { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .fw__meanwhile .panel__body { flex: 1; min-height: 0; gap: 10px; }
 .fw__deck { position: relative; flex: 1; min-height: 240px; }
+/* Sequenced slide swap: the outgoing slide fades fully OUT before the
+   incoming one fades in, and off slides go visibility:hidden — exactly one
+   slide's text is ever legible, no ghosting mid-crossfade. */
 .fw__slide {
   position: absolute; inset: 0;
   display: grid; grid-template-rows: auto auto auto auto; gap: 7px;
   justify-items: center; align-content: center; text-align: center;
-  opacity: 0; transform: scale(0.98);
-  transition: opacity 600ms ease, transform 600ms ease;
+  opacity: 0; transform: scale(0.98); visibility: hidden;
+  transition: opacity 240ms ease, transform 240ms ease, visibility 0s 240ms;
   pointer-events: none;
 }
-.fw__slide.is-on { opacity: 1; transform: none; }
-.fw__slide-art { display: grid; place-items: center; width: 100%; height: 168px; overflow: hidden; margin-bottom: 4px; }
-.fw__slide-art .asset,
+.fw__slide.is-on {
+  opacity: 1; transform: none; visibility: visible;
+  transition: opacity 320ms ease 300ms, transform 320ms ease 300ms, visibility 0s 300ms;
+}
+/* Transparent hero/thumb renders are NEVER cropped or corner-clipped: the
+   whole silhouette letterboxes inside the frame with breathing room. */
+.fw__slide-art { display: grid; place-items: center; width: 100%; height: 168px; margin-bottom: 4px; }
+.fw__slide-art .asset {
+  width: 100%;
+  height: 100%;
+  max-height: 168px;
+  padding: 4px 2px;
+  object-fit: contain;
+}
 .fw__slide-art .pending {
   width: auto;
   height: 100%;
   max-width: 100%;
   max-height: 168px;
-  object-fit: contain;
   clip-path: var(--clip-notch-sm);
 }
 .fw__slide-name { font-family: var(--font-display); font-weight: 700; font-size: 17px; letter-spacing: 0.06em; }
@@ -3243,8 +3427,9 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
     transition-duration: 220ms !important;
   }
   .fw__sparks, .fw__seg-flow, .fw__flashline, .rv__flash, .motes, .ceremony__confetti { display: none !important; }
-  .fw__slide { animation: none !important; opacity: 0 !important; }
-  .fw__slide.is-on { opacity: 1 !important; }
+  .fw__slide { animation: none !important; opacity: 0 !important; visibility: hidden !important; transition: none !important; }
+  .fw__slide.is-on { opacity: 1 !important; visibility: visible !important; }
+  .fw__chip--mystery, .fw__chip--live.is-spot { animation: none !important; }
   .fw__ticker-text { background: none !important; color: var(--text) !important; }
 }
 @keyframes rm-fade { from { opacity: 0; } to { opacity: 1; } }

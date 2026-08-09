@@ -328,9 +328,11 @@ async def generate_creature(sources: list[str], extra_instructions: str = "") ->
 # -- streaming generation (Fusion Wait experience) ----------------------------
 
 #: creature_id -> partial fields revealed so far ("name", "title", "rarity",
-#: "core_stats", "abilities_count"). Read by GET /api/creatures/{id} while
-#: record_status == generating. In-memory is correct here: single-player,
-#: single-process, and the map is only a progress mirror of work in flight.
+#: "core_stats", "abilities_count") plus "image_started" once the hero render
+#: task is actually running. Read by GET /api/creatures/{id} while the record
+#: streams and while the render is in flight. In-memory is correct here:
+#: single-player, single-process, and the map is only a progress mirror of
+#: work in flight.
 PROGRESS: dict[int, dict] = {}
 
 _FIELD_RE = {
@@ -430,7 +432,9 @@ async def generate_creature_streaming(
         buf += delta
         partial = _extract_partial(buf)
         if partial:
-            PROGRESS[creature_id] = partial
+            # Merge, never replace: start_hero drops "image_started" into this
+            # entry mid-stream and it must survive every later chunk.
+            PROGRESS.setdefault(creature_id, {}).update(partial)
         if not spec_fired and on_visual_spec and "visual_spec" in partial:
             spec_fired = True
             spec = json.loads(f'"{partial["visual_spec"]}"' if "\\" in partial["visual_spec"]
