@@ -1,0 +1,38 @@
+# What `railway up` may upload from this machine.
+#
+# The normal path to production is a git push — Railway builds from GitHub and
+# never sees this file. This exists for the manual `railway up` fallback, where
+# the CLI tars the working directory rather than a git tree: everything below is
+# either a secret, a local runtime artifact, or hundreds of megabytes of
+# regenerable scratch that has no business in a build context.
+#
+# Keep the secret lines in step with .dockerignore. Two different mechanisms
+# read these files, so a rule dropped from one is not covered by the other.
+
+# secrets — never leave this machine
+.env
+.env.*
+
+# local runtime state (the deploy has its own volume and database)
+media/
+*.db
+*.db-shm
+*.db-wal
+
+# regenerable scratch, hundreds of MB
+qa/
+scripts/raw/
+research/bakeoff/raw/
+research/bakeoff/cutout/
+
+# tooling
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+node_modules/
+dist/
+*.tsbuildinfo
+.claude/
+.DS_Store
