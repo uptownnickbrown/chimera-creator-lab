@@ -113,7 +113,11 @@ export function FusionWait({
       .listCreatures("newest")
       .then(async (rows) => {
         const usable = rows.filter(
-          (c) => c.id !== creatureId && c.image_status === "complete" && c.name,
+          (c) =>
+            c.id !== creatureId &&
+            c.image_status === "complete" &&
+            Boolean(c.name) &&
+            Boolean(c.thumb_path || c.hero_image_path),
         );
         if (dead) return;
         if (!usable.length) return;

@@ -1,6 +1,10 @@
-/* Shell: top nav + hash routing. No router library (Agora convention).
+/* Shell: the painted ground, the top bar and hash routing. No router library
+   (Agora convention).
 
-   #/home  #/lab  #/reveal/<id>  #/codex[/<id>]  #/arena[/<tid>[/<matchId>]]  #/hall */
+   #/home  #/lab  #/reveal/<id>  #/codex[/<id>]  #/arena[/<tid>[/<matchId>]]  #/hall
+
+   The lab plate is the app ground for every screen (UI_STANDARD §Layer stack);
+   arena routes swap it for the arena plate, the hall warms it to gold. */
 import { useCallback, useEffect, useState } from "react";
 import { api, type ProfileView } from "./api";
 import { Asset } from "./ui";
@@ -58,12 +62,18 @@ export function parseHash(hash: string): Route {
   }
 }
 
-const NAV: { label: string; route: Route; matches: Route["name"][] }[] = [
-  { label: "HOME", route: { name: "home" }, matches: ["home"] },
-  { label: "FUSION LAB", route: { name: "lab" }, matches: ["lab", "reveal"] },
-  { label: "CODEX", route: { name: "codex" }, matches: ["codex"] },
-  { label: "ARENA", route: { name: "arena" }, matches: ["arena", "hall"] },
+const NAV: { label: string; icon: string; route: Route; matches: Route["name"][] }[] = [
+  { label: "HOME", icon: "icons/nav_home", route: { name: "home" }, matches: ["home"] },
+  { label: "FUSION LAB", icon: "icons/nav_fusion", route: { name: "lab" }, matches: ["lab", "reveal"] },
+  { label: "CODEX", icon: "icons/nav_codex", route: { name: "codex" }, matches: ["codex"] },
+  { label: "ARENA", icon: "icons/nav_arena", route: { name: "arena" }, matches: ["arena", "hall"] },
 ];
+
+function sceneFor(route: Route): string {
+  if (route.name === "arena") return "arena";
+  if (route.name === "hall") return "gold";
+  return "lab";
+}
 
 export default function App() {
   const [route, setRoute] = useState<Route>(() => parseHash(location.hash));
@@ -93,63 +103,79 @@ export default function App() {
     refreshProfile();
   }, [refreshProfile, route.name]);
 
+  const key = `${route.name}:${"id" in route ? route.id : ""}${"tid" in route ? route.tid : ""}${
+    "matchId" in route ? route.matchId : ""
+  }`;
+
   return (
-    <div className="shell">
-      <header className="topbar">
-        <div className="brand">
-          <Asset slot="ui/logo" label="CC" className="brand__mark" />
-          <div>
-            <div className="brand__name">CHIMERA CREATOR</div>
-            <div className="brand__sub">NEON LAB</div>
-          </div>
-        </div>
+    <>
+      <div className="ground" data-scene={sceneFor(route)} aria-hidden="true">
+        <div className="ground__plate" />
+        <div className="ground__veil" />
+        <div className="ground__tint" />
+        <div className="motes" />
+        <div className="motes motes--far" />
+      </div>
 
-        <nav className="nav">
-          {NAV.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              className={`nav__tab${item.matches.includes(route.name) ? " is-active" : ""}`}
-              onClick={() => go(item.route)}
-            >
-              <Asset slot={`icons/nav_${item.label.split(" ")[0].toLowerCase()}`} label="" className="nav__icon" />
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="player">
-          <div className="player__chips">
-            <span className="chip">
-              <Asset slot="icons/xp" label="XP" className="chip__icon" />
-              <b className="num">{profile?.xp ?? 0}</b>
+      <div className="shell">
+        <header className="topbar">
+          <button type="button" className="brand" onClick={() => go({ name: "home" })}>
+            <Asset slot="ui/logo" label="" className="brand__mark" />
+            <span className="brand__text">
+              <span className="brand__name">CHIMERA</span>
+              <span className="brand__sub">CREATOR LAB</span>
             </span>
-            <span className="chip">
-              <Asset slot="icons/creatures" label="C" className="chip__icon" />
-              <b className="num">{profile?.total_creatures ?? 0}</b>
-            </span>
-          </div>
-          <Asset slot="ui/avatar" label={profile?.name ?? "?"} className="player__avatar" />
-          <div className="player__id">
-            <div className="player__name">{(profile?.name ?? "player").toUpperCase()}</div>
-            <div className="player__level">LVL {profile?.level ?? 1}</div>
-          </div>
-        </div>
-      </header>
+          </button>
 
-      <main className="screen">
-        {route.name === "home" && <Home go={go} profile={profile} />}
-        {route.name === "lab" && <FusionLab go={go} />}
-        {route.name === "reveal" && <Reveal go={go} creatureId={route.id} />}
-        {route.name === "codex" && <Codex go={go} selectedId={route.id} />}
-        {route.name === "arena" && !route.matchId && (
-          <Bracket go={go} tournamentId={route.tid} />
-        )}
-        {route.name === "arena" && route.matchId && route.tid && (
-          <Battle go={go} tournamentId={route.tid} matchId={route.matchId} />
-        )}
-        {route.name === "hall" && <Hall go={go} />}
-      </main>
-    </div>
+          <nav className="nav">
+            {NAV.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className={`nav__tab${item.matches.includes(route.name) ? " is-active" : ""}`}
+                onClick={() => go(item.route)}
+              >
+                <Asset slot={item.icon} label="" className="nav__icon" />
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="player">
+            <div className="player__chips">
+              <span className="chip chip--purple">
+                <Asset slot="icons/xp" label="" className="chip__icon" tint="purple" />
+                <b className="num">{profile?.xp ?? 0}</b>
+              </span>
+              <span className="chip">
+                <Asset slot="icons/creatures" label="" className="chip__icon" />
+                <b className="num">{profile?.total_creatures ?? 0}</b>
+              </span>
+            </div>
+            <span className="player__avatar">
+              <Asset slot="ui/avatar" label="" />
+            </span>
+            <div className="player__id">
+              <div className="player__name">{(profile?.name ?? "player").toUpperCase()}</div>
+              <div className="player__level">LVL {profile?.level ?? 1}</div>
+            </div>
+          </div>
+        </header>
+
+        <main className="screen" key={key}>
+          {route.name === "home" && <Home go={go} profile={profile} />}
+          {route.name === "lab" && <FusionLab go={go} />}
+          {route.name === "reveal" && <Reveal go={go} creatureId={route.id} />}
+          {route.name === "codex" && <Codex go={go} selectedId={route.id} />}
+          {route.name === "arena" && !route.matchId && (
+            <Bracket go={go} tournamentId={route.tid} />
+          )}
+          {route.name === "arena" && route.matchId && route.tid && (
+            <Battle go={go} tournamentId={route.tid} matchId={route.matchId} />
+          )}
+          {route.name === "hall" && <Hall go={go} />}
+        </main>
+      </div>
+    </>
   );
 }

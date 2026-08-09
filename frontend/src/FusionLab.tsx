@@ -1,15 +1,18 @@
-/* Screen 2 — Fusion Lab / ingredient selection (spec §17, §6 guided mode).
-   Browsing is visual: four slots, a scroller of big cards, and Randomize. */
-import { useEffect, useMemo, useState } from "react";
+/* Screen 2 — Fusion Lab / ingredient selection (spec §17, §6 guided mode,
+   art-direction/build.png).
+
+   Four slot cards on the left, the proto-fusion cluster hovering over the lab
+   platform in the middle, what-each-part-adds on the right, and one big
+   portrait rail underneath. Browsing is visual first: the search box is there
+   for the child who already knows the animal's name (and its misspellings). */
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Go } from "./App";
 import { api, ApiError, getLibraryCached, type SourceCreature } from "./api";
-import { Asset, Btn, Empty, Loading, Panel, Stage } from "./ui";
+import { Asset, Btn, Empty, FitText, Loading, Panel } from "./ui";
 import { stashPicks } from "./FusionWait";
 
-/* PLACEHOLDER — delete once data/source_creatures.json is authored. The real
-   library comes from GET /api/library; this only exists so the create -> reveal
-   loop is playable while that file is still being written. The banner above the
-   picker tells the player (and us) that these are stand-ins. */
+/* PLACEHOLDER — only reached if GET /api/library is empty or unreachable, so
+   the create -> reveal loop stays playable. The banner says so out loud. */
 const PLACEHOLDER_SOURCES: SourceCreature[] = [
   ["dragon", "Dragon", "mythic", "Adds horns, claws, and fiery breath."],
   ["stegosaurus", "Stegosaurus", "extinct", "Adds big armor plates and extra defense."],
@@ -37,7 +40,30 @@ const PLACEHOLDER_SOURCES: SourceCreature[] = [
 /* Guided mode (spec §6B): the picker nudges mythic / extinct / living / living
    but any four are legal — the category tabs are a suggestion, not a gate. */
 const SLOT_HINTS = ["mythic", "extinct", "living", "living"];
-const CATEGORIES = ["all", "mythic", "extinct", "living"];
+const CATEGORIES: { key: string; label: string; icon: string }[] = [
+  { key: "all", label: "ALL", icon: "icons/tile_codex" },
+  { key: "mythic", label: "MYTHIC", icon: "icons/cat_mythic" },
+  { key: "extinct", label: "EXTINCT", icon: "icons/cat_extinct" },
+  { key: "living", label: "LIVING", icon: "icons/cat_living" },
+];
+
+/** Everything a child might type: the name, the slug, the authored misspellings
+    (`aliases`), the tags, and what the part contributes. */
+function haystack(s: SourceCreature): string {
+  // Name, slug, authored misspellings and tags only: matching the contributes
+  // text too would return a tiger for "tiger stripes" on three other animals.
+  return [s.name, s.slug.replace(/[-_]/g, " "), ...(s.aliases ?? []), ...(s.tags ?? [])]
+    .join(" ")
+    .toLowerCase();
+}
+
+/** The child-facing "what it adds" line. `contribution` is built from the
+    authored `contributes` list; the list itself is the fallback. */
+function contributesOf(s: SourceCreature): string {
+  if (s.contribution) return s.contribution;
+  if (s.traits?.length) return `Adds ${s.traits.slice(0, 3).join(", ")}.`;
+  return "Adds its own wild traits.";
+}
 
 export function FusionLab({ go }: { go: Go }) {
   const [sources, setSources] = useState<SourceCreature[] | null>(null);
@@ -46,6 +72,8 @@ export function FusionLab({ go }: { go: Go }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const rail = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     getLibraryCached()
@@ -69,14 +97,20 @@ export function FusionLab({ go }: { go: Go }) {
   const ready = chosen.length === 4;
 
   const takenSlugs = useMemo(() => new Set(chosen.map((c) => c.slug)), [chosen]);
-  const activeCategory = category ?? SLOT_HINTS[activeSlot];
-  const visible = useMemo(
-    () =>
-      (sources ?? []).filter(
-        (s) => activeCategory === "all" || s.category === activeCategory,
-      ),
-    [sources, activeCategory],
-  );
+  const searching = query.trim().length > 0;
+  const activeCategory = searching ? "all" : category ?? SLOT_HINTS[activeSlot];
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (sources ?? []).filter((s) => {
+      if (!q && activeCategory !== "all" && s.category !== activeCategory) return false;
+      return !q || haystack(s).includes(q);
+    });
+  }, [sources, activeCategory, query]);
+
+  useEffect(() => {
+    rail.current?.scrollTo({ left: 0 });
+  }, [activeCategory, query]);
 
   function place(source: SourceCreature) {
     setError(null);
@@ -88,8 +122,7 @@ export function FusionLab({ go }: { go: Go }) {
         return next;
       }
       const slot = next.findIndex((p) => p === null);
-      if (slot === -1) return next;
-      next[slot] = source;
+      next[slot === -1 ? 3 : slot] = source; // full board: a tap swaps part 4
       return next;
     });
   }
@@ -98,14 +131,20 @@ export function FusionLab({ go }: { go: Go }) {
     setPicks((prev) => prev.map((p, i) => (i === index ? null : p)));
   }
 
+  /** Random, but guided: each slot draws from the category it nudges toward. */
   function randomize() {
     if (!sources) return;
-    const pool = [...sources];
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    setPicks([pool[0] ?? null, pool[1] ?? null, pool[2] ?? null, pool[3] ?? null]);
+    const used = new Set<string>();
+    const next = SLOT_HINTS.map((hint) => {
+      const pool = sources.filter((s) => s.category === hint && !used.has(s.slug));
+      const fallback = sources.filter((s) => !used.has(s.slug));
+      const from = pool.length ? pool : fallback;
+      if (!from.length) return null;
+      const pick = from[Math.floor(Math.random() * from.length)];
+      used.add(pick.slug);
+      return pick;
+    });
+    setPicks(next);
     setError(null);
   }
 
@@ -125,16 +164,21 @@ export function FusionLab({ go }: { go: Go }) {
     }
   }
 
+  function nudge(dir: 1 | -1) {
+    rail.current?.scrollBy({ left: dir * 560, behavior: "smooth" });
+  }
+
   if (!sources) return <Loading label="OPENING THE GENE LIBRARY" />;
 
   return (
-    <div className="lab">
+    <div className="lab screen-in">
       <header className="lab__head">
         <h1 className="display">
-          BUILD YOUR CHIMERA <span className="muted">— STEP {Math.min(chosen.length + 1, 4)} OF 4</span>
+          BUILD YOUR CHIMERA
+          <span className="lab__step"> — STEP {Math.min(chosen.length + 1, 4)} OF 4</span>
         </h1>
         <div className="steps">
-          <span className="steps__label num">{chosen.length} OF 4 PARTS CHOSEN</span>
+          <span className="steps__label">{chosen.length} OF 4 PARTS CHOSEN</span>
           <span className="steps__dots">
             {[0, 1, 2, 3].map((i) => (
               <i key={i} className={i < chosen.length ? "is-on" : ""} />
@@ -146,103 +190,189 @@ export function FusionLab({ go }: { go: Go }) {
       {usingPlaceholders && (
         <div className="notice">
           Placeholder parts — the authored gene library (data/source_creatures.json)
-          has not landed yet.
+          could not be read.
         </div>
       )}
 
       <div className="lab__main">
         <Panel title="YOUR CHIMERA PARTS" accent="purple" className="lab__slots">
-          {picks.map((pick, i) => (
-            <button
-              key={i}
-              type="button"
-              className={`slot${pick ? " is-filled" : ""}${i === activeSlot && !pick ? " is-active" : ""}`}
-              onClick={() => pick && clearSlot(i)}
-            >
-              <span className="slot__index num">{i + 1}</span>
-              {pick ? (
-                <>
-                  <Asset slot={`parts/${pick.slug}`} label={pick.name} className="slot__art" />
-                  <span className="slot__name">{pick.name.toUpperCase()}</span>
-                  <span className="slot__state">SELECTED</span>
-                </>
-              ) : (
-                <>
-                  <span className="slot__q">?</span>
-                  <span className="slot__name">CHOOSE PART</span>
-                  <span className="slot__state muted">{SLOT_HINTS[i].toUpperCase()}</span>
-                </>
-              )}
-            </button>
-          ))}
+          <div className="slots">
+            {picks.map((pick, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`slot${pick ? " is-filled" : ""}${i === activeSlot && !pick ? " is-active" : ""}`}
+                onClick={() => pick && clearSlot(i)}
+                title={pick ? `Remove ${pick.name}` : `Slot ${i + 1}`}
+              >
+                <span className="slot__index num">{i + 1}</span>
+                {pick ? (
+                  <>
+                    <span className="slot__art">
+                      <Asset slot={`parts/${pick.slug}`} label={pick.name} />
+                    </span>
+                    <span className="slot__plate">
+                      <FitText className="slot__name">{pick.name.toUpperCase()}</FitText>
+                      <span className="slot__state">SELECTED</span>
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="slot__art slot__art--empty">
+                      <Asset slot="ui/tbd" label="" />
+                      <b>?</b>
+                    </span>
+                    <span className="slot__plate">
+                      <span className="slot__name muted">CHOOSE PART</span>
+                      <span className="slot__state slot__state--hint">{SLOT_HINTS[i].toUpperCase()}</span>
+                    </span>
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
         </Panel>
 
-        <div className="lab__stage">
-          <Stage caption={chosen.length ? "FUSION PREVIEW" : "AWAITING PARTS"} fusing={ready} />
-        </div>
+        <section className="lab__stage">
+          <div className={`stage${ready ? " stage--fusing" : ""}`}>
+            <div className="stage__glow" />
+            <div className="stage__platform">
+              <Asset slot="lab/platform" label="" />
+            </div>
+            <div className="cluster">
+              {[0, 1, 2, 3].map((i) => {
+                const pick = picks[i];
+                return (
+                  <div className={`cluster__node cluster__node--${i}${pick ? " is-filled" : ""}`} key={i}>
+                    {pick ? (
+                      <>
+                        <span className="cluster__art">
+                          <Asset slot={`parts/${pick.slug}`} label={pick.name} />
+                        </span>
+                        <FitText className="cluster__name">{pick.name.toUpperCase()}</FitText>
+                      </>
+                    ) : (
+                      <span className="cluster__art cluster__art--empty">
+                        <Asset slot="ui/tbd" label="" />
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+              <div className="cluster__core" />
+            </div>
+          </div>
+          <p className="lab__hint">
+            {ready
+              ? "ALL FOUR PARTS LOCKED — FIRE THE CHAMBER"
+              : `PICK ${4 - chosen.length} MORE PART${4 - chosen.length === 1 ? "" : "S"} TO START THE FUSION`}
+          </p>
+        </section>
 
         <Panel title="WHAT EACH PART ADDS" accent="cyan" className="lab__adds">
-          {picks.map((pick, i) => (
-            <div className="adds" key={i}>
-              {pick ? (
-                <>
-                  <Asset slot={`parts/${pick.slug}`} label={pick.name} className="adds__art" />
-                  <div>
-                    <div className="adds__name">{pick.name.toUpperCase()}</div>
-                    <div className="adds__blurb">{pick.contribution || "Adds its own wild traits."}</div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="adds__art adds__art--empty">?</div>
-                  <div>
-                    <div className="adds__name muted">CHOOSE A PART</div>
-                    <div className="adds__blurb">Pick a creature to add its awesome powers!</div>
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
+          <div className="cascade adds__list">
+            {picks.map((pick, i) => (
+              <div className={`adds${pick ? " is-filled" : ""}`} key={i}>
+                <span className="adds__art">
+                  {pick ? (
+                    <Asset slot={`parts/${pick.slug}`} label={pick.name} />
+                  ) : (
+                    <Asset slot="ui/tbd" label="" />
+                  )}
+                </span>
+                <div className="adds__text">
+                  {pick ? (
+                    <>
+                      <FitText className="adds__name">{pick.name.toUpperCase()}</FitText>
+                      <div className="adds__blurb">{contributesOf(pick)}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="adds__name muted">CHOOSE A PART</div>
+                      <div className="adds__blurb">Pick a creature to add its powers!</div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </Panel>
       </div>
 
       <Panel
-        title={ready ? "ALL FOUR PARTS CHOSEN" : `CHOOSE PART ${activeSlot + 1}`}
         accent="teal"
         className="lab__picker"
+        title={ready ? "SWAP A PART — NEW PICKS LAND IN 4" : `CHOOSE PART ${activeSlot + 1}`}
         action={
-          <div className="cats">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c}
-                type="button"
-                className={`cat${activeCategory === c ? " is-active" : ""}`}
-                onClick={() => setCategory(c)}
-              >
-                {c.toUpperCase()}
-              </button>
-            ))}
+          <div className="picker__tools">
+            <div className="cats">
+              {CATEGORIES.map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  className={`cat${activeCategory === c.key && !searching ? " is-active" : ""}`}
+                  onClick={() => {
+                    setQuery("");
+                    setCategory(c.key);
+                  }}
+                >
+                  <Asset slot={c.icon} label="" className="cat__icon" tint="teal" />
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            <label className="search">
+              <Asset slot="icons/search" label="" className="search__icon" />
+              <input
+                type="search"
+                value={query}
+                placeholder="Search animals…"
+                onChange={(e) => setQuery(e.target.value)}
+                aria-label="Search the gene library"
+              />
+            </label>
           </div>
         }
       >
         {visible.length ? (
-          <div className="picker">
-            {visible.map((s) => (
-              <button
-                key={s.slug}
-                type="button"
-                className={`pcard${takenSlugs.has(s.slug) ? " is-taken" : ""}`}
-                onClick={() => place(s)}
-                disabled={ready && !takenSlugs.has(s.slug)}
-              >
-                <Asset slot={`parts/${s.slug}`} label={s.name} className="pcard__art" />
-                <span className="pcard__name">{s.name.toUpperCase()}</span>
-                <span className="pcard__cat">{s.category.toUpperCase()}</span>
-              </button>
-            ))}
+          <div className="railwrap">
+            <button type="button" className="rail__arrow rail__arrow--l" onClick={() => nudge(-1)} aria-label="Scroll left">
+              ‹
+            </button>
+            <div className="rail" ref={rail}>
+              {visible.map((s) => (
+                <button
+                  key={s.slug}
+                  type="button"
+                  className={`pcard${takenSlugs.has(s.slug) ? " is-taken" : ""}`}
+                  onClick={() => place(s)}
+                  title={ready && !takenSlugs.has(s.slug) ? `Swap ${s.name} into part 4` : s.name}
+                >
+                  <span className="pcard__art">
+                    <Asset slot={`parts/${s.slug}`} label={s.name} />
+                    {takenSlugs.has(s.slug) && <span className="pcard__check">✓</span>}
+                  </span>
+                  <span className="pcard__plate">
+                    <Asset
+                      slot={`icons/cat_${s.category}`}
+                      label=""
+                      className="pcard__cat"
+                      tint={s.category === "mythic" ? "purple" : s.category === "extinct" ? "gold" : "teal"}
+                    />
+                    <FitText className="pcard__name">{s.name.toUpperCase()}</FitText>
+                  </span>
+                </button>
+              ))}
+            </div>
+            <button type="button" className="rail__arrow rail__arrow--r" onClick={() => nudge(1)} aria-label="Scroll right">
+              ›
+            </button>
           </div>
         ) : (
-          <Empty title="The gene library is empty" hint="Authored source creatures have not landed yet." />
+          <Empty
+            title={searching ? `Nothing matches “${query}”` : "The gene library is empty"}
+            hint={searching ? "Try another animal — or tap a category to browse." : undefined}
+          />
         )}
       </Panel>
 
@@ -252,15 +382,16 @@ export function FusionLab({ go }: { go: Go }) {
         <Btn accent="ghost" onClick={() => go({ name: "home" })}>
           BACK TO HOME
         </Btn>
-        <Btn accent="purple" onClick={randomize} disabled={busy}>
+        <Btn accent="purple" size="lg" icon="icons/dice" onClick={randomize} disabled={busy}>
           RANDOMIZE
         </Btn>
         <Btn
-          accent="cyan"
+          accent="teal"
           size="lg"
+          icon="icons/nav_fusion"
           onClick={create}
           disabled={!ready || busy}
-          sub={ready ? "FUSE AND REVEAL" : "PICK FOUR PARTS FIRST"}
+          sub={ready ? "FUSE AND REVEAL" : `PICK ${4 - chosen.length} MORE`}
         >
           {busy ? "FUSING…" : "CREATE CHIMERA"}
         </Btn>

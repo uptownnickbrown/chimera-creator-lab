@@ -27,12 +27,15 @@ VIEWPORTS = {"ipad": (1180, 820), "desktop": (1440, 900)}
 
 # route -> (hash path, settle ms). Reveal needs an existing complete creature.
 SCREENS = {
-    "home": ("#/", 1200),
-    "lab": ("#/lab", 1200),
-    "codex": ("#/codex", 1200),
-    "reveal": ("#/reveal/1", 1500),
-    "arena": ("#/arena", 1200),
-    "hall": ("#/hall", 1200),
+    "home": ("#/", 1400),
+    "lab": ("#/lab", 1600),
+    "codex": ("#/codex", 1400),
+    "reveal": ("#/reveal/1", 2000),
+    "arena": ("#/arena", 1400),
+    "bracket": ("#/arena/1", 1400),
+    # An already-resolved match: the result view replays from cache, no AI call.
+    "battle": ("#/arena/1/r0m1", 4200),
+    "hall": ("#/hall", 1400),
 }
 
 

@@ -94,9 +94,14 @@ export interface SourceCreature {
   category: string;
   contribution: string;
   blurb: string;
+  /** The authored `contributes` list — what this part adds, child-facing. */
   traits: string[];
   tags: string[];
   art: string | null;
+  /** Authored misspellings and nicknames ("draggon", "wyvern"). Optional:
+      the field is in data/source_creatures.json and the picker searches it as
+      soon as /api/library starts serving it. */
+  aliases?: string[];
 }
 
 export interface Environment {
@@ -138,6 +143,9 @@ export interface TournamentView {
   entrants: CreatureSummary[];
   created_at: string | null;
   completed_at: string | null;
+  /** Championship key art: "pending" while it renders, then a /media path.
+      Optional — the ceremony composites its own finale when it is absent. */
+  final_art?: string | null;
 }
 
 export interface BattleReason {

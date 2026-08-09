@@ -8,7 +8,29 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from "re
 import type { Go } from "./App";
 import { api, type CreatureDetail } from "./api";
 import { FusionWait } from "./FusionWait";
-import { Asset, Badge, Btn, CreatureImg, Panel, RarityBadge, StatRow } from "./ui";
+import { Asset, Badge, Btn, CreatureImg, FitText, Panel, RarityBadge, StatRow } from "./ui";
+
+/* Four abilities all wearing the same glyph reads as a placeholder; the stat
+   icons give each one its own painted mark. */
+const ABILITY_ICONS = [
+  "icons/ability_generic",
+  "icons/stat_special",
+  "icons/stat_power",
+  "icons/stat_speed",
+];
+
+/* A few early seed records glued extra list entries into one string with a
+   raw '","' separator (a data-side parse slip). The kid never sees that
+   artifact: split the entries apart, strip stray quotes, and keep the three
+   the reveal composition is built around — clean records already have three,
+   so this is a no-op for them. Every kept sentence renders in full. */
+function cleanFacts(rows: string[], max = 3): string[] {
+  return rows
+    .flatMap((r) => r.split(/"\s*,\s*"/))
+    .map((r) => r.replace(/^"+|"+$/g, "").trim())
+    .filter(Boolean)
+    .slice(0, max);
+}
 
 const POLL_MS = 1500;
 /** White-out length; the reveal mounts underneath it and is lit as it clears. */
@@ -193,7 +215,7 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
         <aside className="rv__side">
           <div className="rv__side-scroll">
           <Panel title="TOP FACTS" accent="cyan">
-            {creature.strengths.map((s, i) => (
+            {cleanFacts(creature.strengths).map((s, i) => (
               <div className="fact rv-cascade" key={`s${i}`} style={anim(1150 + i * 110)}>
                 <Asset slot="icons/fact_strength" label="" className="fact__icon" />
                 <div>
@@ -207,7 +229,7 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
           <Panel title="AWESOME ABILITIES" accent="purple">
             {creature.abilities.map((a, i) => (
               <div className="ability rv-cascade" key={a.name} style={anim(1250 + i * 130)}>
-                <Asset slot="icons/ability_generic" label="" className="ability__icon" />
+                <Asset slot={ABILITY_ICONS[i % ABILITY_ICONS.length]} label="" className="ability__icon" tint="purple" />
                 <div>
                   <div className="ability__name">{a.name.toUpperCase()}</div>
                   <div className="ability__blurb">{a.blurb}</div>
@@ -224,7 +246,7 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
               <div className="fused__item" key={slug}>
                 {i > 0 && <span className="fused__plus">+</span>}
                 <Asset slot={`parts/${slug}`} label={slug} className="fused__art" />
-                <span className="fused__name">{slug.replace(/[_-]/g, " ").toUpperCase()}</span>
+                <FitText className="fused__name">{slug.replace(/[_-]/g, " ").toUpperCase()}</FitText>
               </div>
             ))}
           </div>
@@ -235,19 +257,19 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
           {creature.weaknesses.length > 0 && (
             <div className="rv__watch">
               <span className="rv__watch-key">WATCH OUT FOR</span>
-              <span className="rv__watch-text">{creature.weaknesses.join(" · ")}</span>
+              <span className="rv__watch-text">{cleanFacts(creature.weaknesses).join(" · ")}</span>
             </div>
           )}
         </Panel>
 
         <footer className="rv__foot rv-in" style={anim(1700)}>
-          <Btn accent="purple" size="lg" onClick={() => go({ name: "codex", id: creature.id })}>
+          <Btn accent="purple" size="lg" icon="icons/tile_codex" onClick={() => go({ name: "codex", id: creature.id })}>
             ADD TO CODEX
           </Btn>
-          <Btn accent="cyan" size="lg" onClick={() => go({ name: "lab" })}>
+          <Btn accent="cyan" size="lg" icon="icons/nav_fusion" onClick={() => go({ name: "lab" })}>
             MAKE ANOTHER
           </Btn>
-          <Btn accent="gold" size="lg" onClick={() => go({ name: "arena" })}>
+          <Btn accent="gold" size="lg" icon="icons/nav_arena" onClick={() => go({ name: "arena" })}>
             ENTER BRACKET
           </Btn>
         </footer>

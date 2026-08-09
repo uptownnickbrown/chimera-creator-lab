@@ -1,9 +1,23 @@
-/* Screen 4 — Codex (spec §14). Sorting reads as questions, never as a
-   spreadsheet config. Selected creature gets the detail panel on the right. */
-import { useCallback, useEffect, useState } from "react";
+/* Screen 4 — Codex (spec §14, art-direction/codex.png). Sorting reads as
+   questions, never as a spreadsheet config: a filter rail on the left, the
+   archive grid in the middle, and the selected chimera standing on its own
+   platform on the right. */
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Go } from "./App";
 import { api, type CodexSort, type CreatureDetail, type CreatureSummary } from "./api";
-import { Asset, Badge, Btn, CreatureCard, CreatureImg, Empty, Loading, Panel, RarityBadge, StatRow } from "./ui";
+import {
+  Asset,
+  Badge,
+  Btn,
+  CreatureCard,
+  Empty,
+  FitText,
+  Loading,
+  Panel,
+  RarityBadge,
+  Stage,
+  StatRow,
+} from "./ui";
 
 const SORTS: { key: CodexSort; label: string }[] = [
   { key: "newest", label: "ALL" },
@@ -18,6 +32,7 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
   const [sort, setSort] = useState<CodexSort>("newest");
   const [rows, setRows] = useState<CreatureSummary[] | null>(null);
   const [selected, setSelected] = useState<CreatureDetail | null>(null);
+  const [query, setQuery] = useState("");
 
   const load = useCallback(async (which: CodexSort) => {
     setRows(await api.listCreatures(which).catch(() => []));
@@ -27,8 +42,19 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
     load(sort);
   }, [load, sort]);
 
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return rows ?? [];
+    return (rows ?? []).filter((c) =>
+      `${c.name} ${c.title} ${c.rarity} ${c.role} ${c.sources.join(" ")}`.toLowerCase().includes(q),
+    );
+  }, [rows, query]);
+
   useEffect(() => {
-    const id = selectedId ?? rows?.[0]?.id;
+    /* Default to a chimera that actually has a render — landing on a failed
+       splice would show the child an empty pedestal for no reason. */
+    const first = rows?.find((c) => c.hero_image_path || c.thumb_path) ?? rows?.[0];
+    const id = selectedId ?? first?.id;
     if (!id) {
       setSelected(null);
       return;
@@ -59,12 +85,18 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
 
   if (!rows) return <Loading label="OPENING THE CODEX" />;
 
+  const favourites = rows.filter((c) => c.favorite).length;
+  const painted = rows.filter((c) => c.hero_image_path || c.thumb_path).length;
+
   return (
-    <div className="codex">
+    <div className="codex screen-in">
       <aside className="codex__rail">
-        <h1 className="display">MY CODEX</h1>
-        <p className="codex__sub">CREATURE ARCHIVE</p>
-        <p className="lede">Browse every chimera you have created.</p>
+        <header className="codex__title">
+          <h1 className="display display--xl">MY CODEX</h1>
+          <p className="codex__sub">CREATURE ARCHIVE</p>
+          <p className="lede">Every chimera you have ever built, kept forever.</p>
+        </header>
+
         <div className="codex__filters">
           {SORTS.map((s) => (
             <button
@@ -73,91 +105,144 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
               className={`filter${sort === s.key ? " is-active" : ""}`}
               onClick={() => setSort(s.key)}
             >
-              <Asset slot={`icons/sort_${s.key}`} label="" className="filter__icon" />
+              <Asset
+                slot={`icons/sort_${s.key}`}
+                label=""
+                className="filter__icon"
+                tint={s.key === "favorites" || s.key === "winners" ? "gold" : undefined}
+              />
               {s.label}
             </button>
           ))}
         </div>
-        <Panel title="CODEX PROGRESS" accent="purple">
+
+        <Panel title="CODEX PROGRESS" accent="purple" className="codex__progress">
           <div className="progress">
-            <div className="progress__value num">{rows.length}</div>
-            <div className="progress__label">CHIMERAS DISCOVERED</div>
+            <div className="progress__row">
+              <Asset slot="icons/tile_codex" label="" className="progress__icon" tint="purple" />
+              <div>
+                <div className="progress__value num">{rows.length}</div>
+                <div className="progress__label">CHIMERAS DISCOVERED</div>
+              </div>
+            </div>
+            <div className="progress__bar">
+              <span style={{ width: `${rows.length ? (painted / rows.length) * 100 : 0}%` }} />
+            </div>
+            <div className="progress__foot num">
+              {painted} PAINTED · {favourites} FAVOURITE{favourites === 1 ? "" : "S"}
+            </div>
           </div>
         </Panel>
       </aside>
 
-      <section className="codex__grid">
-        {rows.length ? (
-          <div className="grid">
-            {rows.map((c) => (
-              <CreatureCard
-                key={c.id}
-                creature={c}
-                selected={c.id === selected?.id}
-                onClick={() => go({ name: "codex", id: c.id })}
-                corner={c.championships > 0 ? <Badge tone="gold">CHAMP</Badge> : undefined}
-              />
-            ))}
+      <Panel
+        accent="cyan"
+        className="codex__grid"
+        title={`${SORTS.find((s) => s.key === sort)?.label ?? "ALL"} — ${visible.length}`}
+        action={
+          <label className="search">
+            <Asset slot="icons/search" label="" className="search__icon" />
+            <input
+              type="search"
+              value={query}
+              placeholder="Search chimeras…"
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Search your chimeras"
+            />
+          </label>
+        }
+      >
+        {visible.length ? (
+          <div className="codex__scroll">
+            <div className="grid">
+              {visible.map((c) => (
+                <CreatureCard
+                  key={c.id}
+                  creature={c}
+                  selected={c.id === selected?.id}
+                  onClick={() => go({ name: "codex", id: c.id })}
+                  corner={c.championships > 0 ? <Badge tone="gold">CHAMP</Badge> : undefined}
+                />
+              ))}
+            </div>
           </div>
         ) : (
           <Empty
-            title={sort === "favorites" ? "No favorites yet" : "No chimeras yet"}
-            hint="Build one in the Fusion Lab and it lands here forever."
+            title={query ? `Nothing matches “${query}”` : sort === "favorites" ? "No favourites yet" : "No chimeras yet"}
+            hint={query ? "Try another name." : "Build one in the Fusion Lab and it lands here forever."}
           />
         )}
-      </section>
+      </Panel>
 
       <aside className="codex__detail">
         {selected ? (
-          <Panel title="SELECTED CHIMERA" accent="cyan">
-            <h2 className="detail__name">{selected.name.toUpperCase()}</h2>
-            <div className="detail__badges">
-              <RarityBadge rarity={selected.rarity} />
-              <span className="muted">{selected.role}</span>
+          <Panel title="SELECTED CHIMERA" accent="cyan" className="detail">
+            <header className="detail__head">
+              <div className="detail__id">
+                <h2 className="detail__name">
+                  <FitText>{(selected.name || "UNNAMED SPLICE").toUpperCase()}</FitText>
+                </h2>
+                <div className="detail__badges">
+                  <RarityBadge rarity={selected.rarity} />
+                  <span className="muted">{selected.title || selected.role}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={`starbtn${selected.favorite ? " is-on" : ""}`}
+                onClick={toggleFavorite}
+                aria-label={selected.favorite ? "Remove favourite" : "Make favourite"}
+                title={selected.favorite ? "Remove favourite" : "Make favourite"}
+              >
+                <Asset slot="icons/star" label="" tint="gold" />
+              </button>
+            </header>
+
+            <div className="detail__stage">
+              <Stage creature={selected} gold={selected.championships > 0} caption="RENDER PENDING" />
             </div>
-            <CreatureImg creature={selected} prefer="hero" className="detail__art" />
+
             <div className="detail__record">
-              <div>
-                <div className="detail__k">WINS</div>
-                <div className="detail__v num">{selected.wins}</div>
-              </div>
-              <div>
-                <div className="detail__k">LOSSES</div>
-                <div className="detail__v num">{selected.losses}</div>
-              </div>
-              <div>
-                <div className="detail__k">WIN RATE</div>
-                <div className="detail__v num">{selected.win_rate}%</div>
-              </div>
-              <div>
-                <div className="detail__k">TITLES</div>
-                <div className="detail__v num">{selected.championships}</div>
-              </div>
+              {[
+                ["WINS", String(selected.wins)],
+                ["LOSSES", String(selected.losses)],
+                ["WIN RATE", `${selected.win_rate}%`],
+                ["TITLES", String(selected.championships)],
+              ].map(([k, v]) => (
+                <div key={k}>
+                  <div className="detail__k">{k}</div>
+                  <div className="detail__v num">{v}</div>
+                </div>
+              ))}
             </div>
+
             <StatRow stats={selected.core_stats} />
+
             {Object.keys(selected.records).length > 0 && (
               <div className="detail__records">
                 {Object.entries(selected.records).map(([k, v]) => (
-                  <Badge key={k} tone="gold">
-                    {String(v)}
-                  </Badge>
+                  <span className="plaque" key={k}>
+                    <Asset slot={`icons/record_${k}`} label="" className="plaque__icon" tint="gold" />
+                    <span className="plaque__text">
+                      <b>{k.replace(/_/g, " ").toUpperCase()}</b>
+                      {String(v)}
+                    </span>
+                  </span>
                 ))}
               </div>
             )}
+
             <div className="detail__actions">
-              <Btn accent={selected.favorite ? "gold" : "ghost"} onClick={toggleFavorite}>
-                {selected.favorite ? "FAVORITED" : "FAVORITE"}
-              </Btn>
-              <Btn accent="ghost" onClick={reroll}>
+              <Btn accent="ghost" size="sm" onClick={reroll}>
                 REROLL NAME
               </Btn>
-              <Btn accent="gold" onClick={() => go({ name: "arena" })}>
+              <Btn accent="gold" size="sm" icon="icons/nav_arena" onClick={() => go({ name: "arena" })}>
                 GO TO ARENA
               </Btn>
             </div>
           </Panel>
         ) : (
-          <Panel title="SELECTED CHIMERA" accent="cyan">
+          <Panel title="SELECTED CHIMERA" accent="cyan" className="detail">
             <Empty title="Nothing selected" hint="Tap a card to see its full record." />
           </Panel>
         )}
