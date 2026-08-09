@@ -59,10 +59,10 @@ async def _sweep_orphans() -> None:
     """In-flight generation tasks die with the process; on boot, any row still
     generating/pending is an orphan. Mark it failed so the UI's retry button
     can rescue it instead of polling a ghost forever."""
-    from sqlalchemy import update
+    from sqlalchemy import select, update
 
     from .db import session_factory
-    from .models import Creature, CustomPart, ImageStatus, RecordStatus
+    from .models import Creature, CustomPart, ImageStatus, RecordStatus, Tournament
 
     async with session_factory()() as db:
         rec = await db.execute(
@@ -82,11 +82,20 @@ async def _sweep_orphans() -> None:
             .where(CustomPart.portrait_status == ImageStatus.pending)
             .values(portrait_status=ImageStatus.failed)
         )
+        # Championship key art is stamped "pending" in the bracket blob while
+        # it renders. A dead process leaves that forever, and the Finale would
+        # sit painting at a canvas nobody is holding. Clear the ghost.
+        finals = 0
+        for t in (await db.execute(select(Tournament))).scalars():
+            if (t.bracket or {}).get("final_art") == "pending":
+                t.bracket = {**t.bracket, "final_art": None}
+                finals += 1
         await db.commit()
-        if rec.rowcount or img.rowcount or parts.rowcount:
+        if rec.rowcount or img.rowcount or parts.rowcount or finals:
             logging.getLogger("chimera").info(
-                "orphan sweep: %d records, %d images, %d part portraits marked failed",
-                rec.rowcount, img.rowcount, parts.rowcount)
+                "orphan sweep: %d records, %d images, %d part portraits, "
+                "%d finale renders cleared", rec.rowcount, img.rowcount,
+                parts.rowcount, finals)
 
 
 async def _seed_starter_crew() -> None:
