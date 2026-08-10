@@ -317,9 +317,39 @@ def fw_payload(state: str, cid: int, hero: dict | None) -> dict:
     return base
 
 
+_COOKIE: str | None = None
+
+
+def login(base: str) -> None:
+    """The PIN gate (armed on prod 2026-08-10) guards every /api read this
+    script derives real ids from — the urllib side must log in too, not just
+    the browser contexts, or build_screens silently loses reveal/bracket/
+    battle and the sweep crashes at battle_scout."""
+    global _COOKIE
+    pin = os.environ.get("CHIMERA_PIN")
+    if not pin:
+        return
+    req = urllib.request.Request(
+        f"{base}/api/auth/login",
+        data=json.dumps({"pin": pin}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            for header in r.headers.get_all("Set-Cookie") or []:
+                if header.startswith("chimera_session="):
+                    _COOKIE = header.split(";", 1)[0]
+    except Exception as exc:
+        print(f"  (login failed: {exc} — data-derived screens may be missing)")
+
+
 def fetch_json(base: str, path: str):
     try:
-        with urllib.request.urlopen(f"{base}{path}", timeout=5) as r:
+        req = urllib.request.Request(f"{base}{path}")
+        if _COOKIE:
+            req.add_header("Cookie", _COOKIE)
+        with urllib.request.urlopen(req, timeout=5) as r:
             return json.load(r)
     except Exception:
         return None
@@ -355,6 +385,7 @@ def current_payload(base: str) -> str | None:
 
 def main(base: str, out: Path) -> None:
     out.mkdir(parents=True, exist_ok=True)
+    login(base)
     SCREENS = build_screens(base)
     errors: dict[str, list[str]] = {}
     fonts: dict[str, dict] = {}
@@ -462,7 +493,8 @@ def main(base: str, out: Path) -> None:
                 except Exception:
                     print("  (battle_scout: fighter chip not clickable)")
 
-            shot("battle_scout", SCREENS["battle"][0], SCREENS["battle"][1], open_scout)
+            if "battle" in SCREENS:  # absent on a dataset with no fought battles
+                shot("battle_scout", SCREENS["battle"][0], SCREENS["battle"][1], open_scout)
 
             # Fusion Wait frozen states — detail endpoint stubbed, zero AI spend.
             hero = newest_hero(base)
