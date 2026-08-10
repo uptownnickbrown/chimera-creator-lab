@@ -201,6 +201,16 @@ class CreatureSummary(Api):
     created_at: datetime | None = None
 
 
+class RivalLine(Api):
+    """One side of a rivalry: this creature's record against a named rival,
+    counted over distinct cached matchups (a rival that has won in three
+    different arenas counts three)."""
+
+    name: str
+    wins: int
+    losses: int
+
+
 class CreatureDetail(CreatureSummary):
     abilities: list[dict]
     strengths: list[str]
@@ -211,6 +221,10 @@ class CreatureDetail(CreatureSummary):
     visual_spec: str
     records: dict
     win_rate: int = 0
+    #: The rival with the most wins over this creature (needs >= 2 to count).
+    nemesis: RivalLine | None = None
+    #: The rival this creature beats most (needs >= 2 wins to count).
+    favorite_victim: RivalLine | None = None
 
 
 class RenameResponse(Api):
@@ -405,6 +419,8 @@ class HallRecord(Api):
     label: str
     value: str
     creature: CreatureSummary | None = None
+    #: Player-held records (no creature to click): who holds it, e.g. "Henry".
+    holder: str = ""
 
 
 class HallView(Api):

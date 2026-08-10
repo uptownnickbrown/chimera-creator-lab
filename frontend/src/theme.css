@@ -2128,6 +2128,13 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   letter-spacing: 0.1em;
   color: #bafce9;
 }
+/* Every call right so far: the scoreboard goes gold. */
+.arena__calls.is-perfect {
+  background: rgba(247, 201, 75, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.55);
+  color: #ffe6a8;
+  text-shadow: 0 0 12px rgba(247, 201, 75, 0.55);
+}
 
 .arena__setup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(268px, 320px); align-items: start; gap: 16px; min-height: 0; }
 .arena__roster { max-height: 100%; }
@@ -4405,6 +4412,28 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   filter: drop-shadow(0 0 28px rgba(247, 201, 75, 0.55)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
 }
 .finale__title { margin: 0; font-size: 17px; color: #ffeec0; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9); }
+/* The player's own championship: 7 calls, 7 right. */
+.finale__perfect {
+  margin-top: 6px;
+  padding: 7px 16px;
+  clip-path: var(--clip-notch-sm);
+  background: linear-gradient(180deg, rgba(247, 201, 75, 0.28), rgba(64, 47, 16, 0.55));
+  box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.7), 0 0 26px rgba(247, 201, 75, 0.35);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  color: #ffe6a8;
+  text-shadow: 0 0 14px rgba(247, 201, 75, 0.6);
+  animation: perfect-stamp 640ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes perfect-stamp {
+  from { opacity: 0; transform: scale(1.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .finale__perfect { animation: none; }
+}
 .finale__foot { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 10px; }
 
 /* the anticipation stage while the painters work */
@@ -4810,4 +4839,55 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   .nextmatch__cta { grid-column: 2; justify-self: start; }
   .finale__name { font-size: 34px; }
   .scout__card { width: min(520px, 96vw); }
+}
+
+/* ── level-up moment ─────────────────────────────────────────────────────────
+   XP was always earned silently; a genuine level climb now gets ~4s of gold.
+   Pointer-events none: it announces, it never blocks a mid-mash tap. */
+.levelup {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: start center;
+  padding-top: 12vh;
+  pointer-events: none;
+}
+.levelup__card {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 16px 34px 18px;
+  clip-path: var(--clip-notch);
+  background: linear-gradient(180deg, rgba(64, 47, 16, 0.92), rgba(10, 8, 22, 0.94));
+  box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.75), 0 0 44px rgba(247, 201, 75, 0.4),
+    0 14px 40px rgba(0, 0, 0, 0.6);
+  animation: levelup-pop 560ms cubic-bezier(0.2, 1.5, 0.4, 1) both,
+    levelup-out 500ms ease 3.6s both;
+}
+.levelup__eyebrow {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: #ffeec0;
+}
+.levelup__num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 40px;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  text-shadow: 0 0 26px rgba(247, 201, 75, 0.7);
+}
+@keyframes levelup-pop {
+  from { opacity: 0; transform: translateY(-18px) scale(0.7); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes levelup-out {
+  to { opacity: 0; transform: translateY(-10px) scale(0.94); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .levelup__card { animation: none; }
 }

@@ -352,8 +352,12 @@ function BracketBoard({
                 : `${remaining} battle${remaining === 1 ? "" : "s"} to go`}
             </span>
             {called > 0 && (
-              <span className="arena__calls num">
-                PREDICTIONS {correct}/{called}
+              <span
+                className={`arena__calls num${
+                  called === all.length && correct === called ? " is-perfect" : ""
+                }`}
+              >
+                MY CALLS: {correct}/{called}
               </span>
             )}
           </div>

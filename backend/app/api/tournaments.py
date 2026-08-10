@@ -97,6 +97,31 @@ def _mutable_bracket(t: Tournament) -> dict:
     return copy.deepcopy(t.bracket or {})
 
 
+#: Size gap (core stats are 0-100) that makes a win a giant-slaying.
+GIANT_GAP = 25
+#: Below this confidence a battle reads as a photo finish — for both sides.
+CLOSE_CALL = 0.65
+
+
+def _battle_records(winner: Creature, loser: Creature, battle: Battle) -> None:
+    """Battle-earned records (spec §14/§16 'fun records'): permanent story
+    beats derived from data the battle already stores, written into the
+    Creature.records JSON the Codex plaques and Hall already render. Keys map
+    to painted plaque icons (ui.tsx SLOT_ALIASES). Last telling wins — the
+    freshest story is the one worth retelling. Losers earn records too; that
+    keeps the whole Codex alive, not just the winners' shelf."""
+    w, lo = dict(winner.records or {}), dict(loser.records or {})
+    w_size = (winner.core_stats or {}).get("size", 0)
+    l_size = (loser.core_stats or {}).get("size", 0)
+    if l_size - w_size >= GIANT_GAP:
+        w["giant_slayer"] = f"Beat {loser.name or 'a titan'} at size {l_size} vs {w_size}!"
+    if battle.confidence < CLOSE_CALL:
+        w["closest_call"] = f"Edged out {loser.name or 'a rival'} in a photo finish!"
+        lo["toughest"] = f"Pushed {winner.name or 'the winner'} to the very limit!"
+    winner.records = w
+    loser.records = lo
+
+
 # The bracket JSON is read-modify-written whole, and three writers can overlap:
 # predict, resolve (which holds its copy across a ~15s LLM await), and the
 # finals key-art task (~74s render deliberately overlapped with the final
@@ -285,13 +310,28 @@ async def resolve(
 
         winner.wins += 1
         loser.losses += 1
+        _battle_records(winner, loser, row)
 
         match["winner"] = winner_id
         match["battle_id"] = row.id
         if match["predicted"] is not None:
             match["prediction_correct"] = match["predicted"] == winner_id
+            # The Oracle score: predictions are the player's skill expression
+            # in a deterministic game, so every call feeds a lifetime tally
+            # and a streak in Profile.settings (JSON — no migration).
+            profile = await get_profile(db)
+            settings = dict(profile.settings or {})
+            settings["calls_made"] = int(settings.get("calls_made", 0)) + 1
             if match["prediction_correct"]:
-                award_xp(await get_profile(db), XP_CORRECT_PREDICTION)
+                award_xp(profile, XP_CORRECT_PREDICTION)
+                settings["calls_right"] = int(settings.get("calls_right", 0)) + 1
+                settings["call_streak"] = int(settings.get("call_streak", 0)) + 1
+                settings["best_call_streak"] = max(
+                    int(settings.get("best_call_streak", 0)), settings["call_streak"]
+                )
+            else:
+                settings["call_streak"] = 0
+            profile.settings = settings
 
         bracket_svc.advance(bracket, round_index, match_index, winner_id)
 
@@ -315,6 +355,17 @@ async def resolve(
                 records["champion"] = f"{champ.championships}-Time Champion"
                 records.setdefault("first_championship", t.name)
                 champ.records = records
+            # A perfect bracket — every match called, every call right — is
+            # the player's own championship.
+            all_matches = [m for r in bracket["rounds"] for m in r["matches"]]
+            if all_matches and all(
+                m.get("predicted") is not None and m.get("prediction_correct")
+                for m in all_matches
+            ):
+                profile = await get_profile(db)
+                settings = dict(profile.settings or {})
+                settings["perfect_brackets"] = int(settings.get("perfect_brackets", 0)) + 1
+                profile.settings = settings
 
         t.bracket = bracket
         await db.commit()  # inside the lock — see _bracket_lock

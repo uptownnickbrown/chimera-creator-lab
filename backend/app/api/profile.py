@@ -79,6 +79,23 @@ async def read_hall(db: AsyncSession = Depends(get_db)) -> HallView:
             value=str(most_wins.wins), creature=summary(most_wins),
         ))
 
+    # The player's own record on the wall: lifetime right calls (the Oracle
+    # score, written by resolve) belong beside the creatures' records.
+    profile = await get_profile(db)
+    settings = profile.settings or {}
+    calls_right = int(settings.get("calls_right", 0))
+    if calls_right > 0:
+        streak = int(settings.get("best_call_streak", 0))
+        perfect = int(settings.get("perfect_brackets", 0))
+        value = f"{calls_right} right"
+        if perfect:
+            value += f" · {perfect} perfect bracket{'s' if perfect != 1 else ''}"
+        elif streak >= 3:
+            value += f" · best streak {streak}"
+        records.append(HallRecord(
+            key="oracle", label="Master Predictor", value=value, holder=profile.name,
+        ))
+
     return HallView(
         champions=[summary(c) for c in champions],
         top_winners=[summary(c) for c in top_winners],

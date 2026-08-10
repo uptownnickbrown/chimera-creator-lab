@@ -87,6 +87,14 @@ export interface CreatureSummary {
   created_at: string | null;
 }
 
+/** A rivalry line: this creature's record against one named rival, counted
+    over distinct cached matchups (pair + environment). */
+export interface RivalLine {
+  name: string;
+  wins: number;
+  losses: number;
+}
+
 export interface CreatureDetail extends CreatureSummary {
   abilities: Ability[];
   strengths: string[];
@@ -97,6 +105,8 @@ export interface CreatureDetail extends CreatureSummary {
   visual_spec: string;
   records: Record<string, string>;
   win_rate: number;
+  nemesis: RivalLine | null;
+  favorite_victim: RivalLine | null;
 }
 
 export interface SourceCreature {
@@ -222,6 +232,8 @@ export interface HallRecord {
   label: string;
   value: string;
   creature: CreatureSummary | null;
+  /** Player-held records (no creature to click): who holds it, e.g. "Henry". */
+  holder: string;
 }
 
 export interface HallView {

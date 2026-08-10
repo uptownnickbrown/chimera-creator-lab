@@ -230,6 +230,9 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
           </h2>
           <div className="rv__badges rv-stamp" style={anim(760)}>
             <RarityBadge rarity={creature.rarity} />
+            {/* Fresh fusions only (not codex revisits): the +10 the server
+                already awarded, finally shown at the moment it was earned. */}
+            {waited.current && <Badge tone="gold">+10 XP</Badge>}
             {imageFailed && <Badge tone="red">ART PENDING</Badge>}
           </div>
           {title && (

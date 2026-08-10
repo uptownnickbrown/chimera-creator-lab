@@ -57,6 +57,10 @@ const SLOT_ALIASES: Record<string, string> = {
   "icons/record_champion": "trophy/badge_champion",
   "icons/record_toughest": "icons/stat_armor",
   "icons/record_special": "icons/stat_special",
+  // Battle-earned records (backend _battle_records) + the player's Oracle score.
+  "icons/record_giant_slayer": "icons/stat_size",
+  "icons/record_closest_call": "icons/endurance",
+  "icons/record_oracle": "icons/stat_special",
   "icons/star": "icons/fact_fun",
   "icons/search": "icons/range",
   "icons/dice": "icons/stat_special",

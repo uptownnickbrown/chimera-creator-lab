@@ -5,7 +5,7 @@
 
    The lab plate is the app ground for every screen (UI_STANDARD §Layer stack);
    arena routes swap it for the arena plate, the hall warms it to gold. */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, onAuthExpired, type ProfileView } from "./api";
 import Gate, { checkUnlocked } from "./Gate";
 import { Asset } from "./ui";
@@ -81,6 +81,11 @@ export default function App() {
   const [profile, setProfile] = useState<ProfileView | null>(null);
   // null = probing on boot; the gate only appears on a confirmed 401.
   const [unlocked, setUnlocked] = useState<boolean | null>(null);
+  /* XP exists but was invisible — the level-up gets its moment. The ref
+     remembers the last seen level so only a genuine climb celebrates (never
+     the boot fetch, never a re-render). */
+  const [levelUp, setLevelUp] = useState<number | null>(null);
+  const lastLevel = useRef<number | null>(null);
 
   useEffect(() => {
     checkUnlocked().then(setUnlocked);
@@ -101,11 +106,20 @@ export default function App() {
 
   const refreshProfile = useCallback(async () => {
     try {
-      setProfile(await api.getProfile());
+      const p = await api.getProfile();
+      setProfile(p);
+      if (lastLevel.current !== null && p.level > lastLevel.current) setLevelUp(p.level);
+      lastLevel.current = p.level;
     } catch {
       setProfile(null); // API asleep — the shell still renders.
     }
   }, []);
+
+  useEffect(() => {
+    if (levelUp === null) return;
+    const t = setTimeout(() => setLevelUp(null), 4200);
+    return () => clearTimeout(t);
+  }, [levelUp]);
 
   useEffect(() => {
     refreshProfile();
@@ -204,6 +218,15 @@ export default function App() {
           {route.name === "hall" && <Hall go={go} />}
         </main>
       </div>
+
+      {levelUp !== null && (
+        <div className="levelup" role="status" aria-live="polite">
+          <div className="levelup__card">
+            <p className="levelup__eyebrow">LAB UPGRADED</p>
+            <div className="levelup__num">LEVEL {levelUp}!</div>
+          </div>
+        </div>
+      )}
 
       {unlocked === false && (
         <Gate

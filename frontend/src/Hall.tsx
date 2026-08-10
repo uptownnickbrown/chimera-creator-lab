@@ -51,7 +51,9 @@ export function Hall({ go }: { go: Go }) {
                   <Asset slot={`icons/record_${r.key}`} label="" className="record__icon" tint="gold" />
                   <span className="record__text">
                     <span className="record__label">{r.label.toUpperCase()}</span>
-                    <FitText className="record__holder">{r.creature?.name || "UNCLAIMED"}</FitText>
+                    <FitText className="record__holder">
+                      {r.creature?.name || r.holder || "UNCLAIMED"}
+                    </FitText>
                   </span>
                   <span className="record__value num">{r.value}</span>
                 </button>

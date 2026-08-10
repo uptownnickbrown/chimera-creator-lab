@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import get_settings
 from ..db import get_db
-from ..models import Creature, ImageStatus, RecordStatus
+from ..models import Battle, Creature, ImageStatus, RecordStatus
 from ..schemas import (
     CreateCreatureRequest,
     CreateCreatureResponse,
@@ -20,6 +20,7 @@ from ..schemas import (
     DeleteCreatureResponse,
     FavoriteResponse,
     RenameResponse,
+    RivalLine,
 )
 from ..services import ai, generation, images, library
 from .common import XP_CREATE, award_xp, detail, get_creature, get_profile, summary
@@ -340,10 +341,52 @@ async def list_creatures(
     return [summary(c) for c in rows]
 
 
+#: A rivalry needs a pattern, not an incident — at least this many meetings.
+RIVALRY_MIN = 2
+
+
+async def _rivalry(
+    db: AsyncSession, creature_id: int
+) -> tuple[RivalLine | None, RivalLine | None]:
+    """NEMESIS / FAVORITE VICTIM from the permanent battle cache. Counts are
+    distinct cached matchups (pair + environment), so "0W · 3L" means the
+    rival has won in three different arenas — exactly the story that fuels
+    'build something that finally beats X'."""
+    rows = list((await db.execute(
+        select(Battle).where(
+            (Battle.creature_a_id == creature_id) | (Battle.creature_b_id == creature_id)
+        )
+    )).scalars())
+    wins: dict[int, int] = {}
+    losses: dict[int, int] = {}
+    for b in rows:
+        rival = b.creature_b_id if b.creature_a_id == creature_id else b.creature_a_id
+        bucket = wins if b.winner_id == creature_id else losses
+        bucket[rival] = bucket.get(rival, 0) + 1
+
+    async def line(rival_id: int | None) -> RivalLine | None:
+        if rival_id is None:
+            return None
+        rival = await db.get(Creature, rival_id)
+        if rival is None or not rival.name:  # released into the wild — no ghosts
+            return None
+        return RivalLine(
+            name=rival.name, wins=wins.get(rival_id, 0), losses=losses.get(rival_id, 0)
+        )
+
+    nemesis_id = max(losses, key=lambda r: (losses[r], -wins.get(r, 0)), default=None)
+    victim_id = max(wins, key=lambda r: (wins[r], -losses.get(r, 0)), default=None)
+    nemesis = await line(nemesis_id) if nemesis_id and losses[nemesis_id] >= RIVALRY_MIN else None
+    victim = await line(victim_id) if victim_id and wins[victim_id] >= RIVALRY_MIN else None
+    return nemesis, victim
+
+
 @router.get("/{creature_id}", response_model=CreatureDetail)
 async def read_creature(creature_id: int, db: AsyncSession = Depends(get_db)) -> CreatureDetail:
     """Full record. `image_status` drives the reveal-screen polling loop."""
-    return detail(await get_creature(db, creature_id))
+    d = detail(await get_creature(db, creature_id))
+    d.nemesis, d.favorite_victim = await _rivalry(db, creature_id)
+    return d
 
 
 @router.delete("/{creature_id}", response_model=DeleteCreatureResponse)

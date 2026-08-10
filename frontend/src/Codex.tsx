@@ -305,6 +305,31 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
                     ))}
                   </div>
                 )}
+                {/* Rivalries: the reason to revisit old chimeras — and the
+                    brief for "build something that finally beats X". */}
+                {(selected.nemesis || selected.favorite_victim) && (
+                  <div className="detail__records">
+                    {selected.nemesis && (
+                      <span className="plaque" key="nemesis">
+                        <Asset slot="icons/stat_power" label="" className="plaque__icon" tint="red" />
+                        <span className="plaque__text">
+                          <b>NEMESIS</b>
+                          {selected.nemesis.name} · {selected.nemesis.wins}W {selected.nemesis.losses}L
+                        </span>
+                      </span>
+                    )}
+                    {selected.favorite_victim && (
+                      <span className="plaque" key="victim">
+                        <Asset slot="trophy/badge_champion" label="" className="plaque__icon" tint="gold" />
+                        <span className="plaque__text">
+                          <b>ALWAYS BEATS</b>
+                          {selected.favorite_victim.name} · {selected.favorite_victim.wins}W{" "}
+                          {selected.favorite_victim.losses}L
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

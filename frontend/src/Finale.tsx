@@ -49,6 +49,16 @@ export function Finale({
 
   const art = keyArtPath(t);
   const stillPainting = !art && t.final_art === "pending";
+  /* Every match called AND every call right = the player's own championship.
+     Deterministic battles make predicting the skill — stamp it in gold. */
+  const allMatches = useMemo(() => t.rounds.flatMap((r) => r.matches), [t]);
+  const perfect =
+    allMatches.length > 0 && allMatches.every((m) => m.prediction_correct === true);
+  const perfectStamp = perfect && (
+    <div className="finale__perfect">
+      ★ PERFECT BRACKET — {allMatches.length} FOR {allMatches.length}! ★
+    </div>
+  );
   const byId = useMemo(() => new Map(t.entrants.map((c) => [c.id, c])), [t]);
   const champion = t.champion_id ? byId.get(t.champion_id) : null;
   const finalMatch = t.rounds[t.rounds.length - 1]?.matches[0];
@@ -125,6 +135,7 @@ export function Finale({
             {champion && (champion.title || champion.role) && (
               <p className="finale__title">{champion.title || champion.role}</p>
             )}
+            {perfectStamp}
             <div className="finale__foot">
               <Btn accent="gold" size="lg" icon="icons/tile_hall" onClick={onHall}>
                 HALL OF CHAMPIONS
@@ -177,6 +188,7 @@ export function Finale({
           </div>
           <div className="ceremony__name">{(champion?.name ?? "CHAMPION").toUpperCase()}</div>
           <div className="ceremony__sub">{champion?.title || champion?.role}</div>
+          {perfectStamp}
           <div className="ceremony__foot">
             <Btn accent="gold" size="lg" icon="icons/tile_hall" onClick={onHall}>
               HALL OF CHAMPIONS
