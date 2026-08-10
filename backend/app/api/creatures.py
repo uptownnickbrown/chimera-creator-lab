@@ -97,6 +97,10 @@ async def create_creature(
     db.add(creature)
     await db.flush()
     award_xp(await get_profile(db), XP_CREATE)
+    # Commit BEFORE the task exists: it opens a fresh session immediately, and
+    # if its existence check outruns this request's teardown commit it exits
+    # silently — leaving a row stuck at "generating" until the next reboot.
+    await db.commit()
     spawn(_generate_task(creature.id, list(body.source_slugs)), f"generate:{creature.id}")
     return CreateCreatureResponse(creature_id=creature.id, status="generating")
 
@@ -182,64 +186,78 @@ async def _generate_task_inner(creature_id: int, sources: list[str]) -> None:
     log.info("generation task: row %s loaded, opening record stream", creature_id)
 
     try:
-        # Record-phase ceiling (tighter than the outer fence, for a fast
-        # retry offer when only the text stream is stuck).
-        rec_task = asyncio.create_task(
-            generation.generate_creature_streaming(
-                creature_id, sources, on_visual_spec=start_hero
+        try:
+            # Record-phase ceiling (tighter than the outer fence, for a fast
+            # retry offer when only the text stream is stuck).
+            rec_task = asyncio.create_task(
+                generation.generate_creature_streaming(
+                    creature_id, sources, on_visual_spec=start_hero
+                )
             )
-        )
-        done, _ = await asyncio.wait({rec_task}, timeout=RECORD_DEADLINE_S)
-        if rec_task not in done:
-            rec_task.cancel()
-            raise RuntimeError(f"record generation exceeded {RECORD_DEADLINE_S}s deadline")
-        record = rec_task.result()
-    except Exception as exc:  # noqa: BLE001 - record failure must land as a state
-        log.warning("generation stream failed for %s: %s", creature_id, str(exc)[:200])
-        await _mark_failed(creature_id, record_too=True)
-        generation.PROGRESS.pop(creature_id, None)
-        return
+            done, _ = await asyncio.wait({rec_task}, timeout=RECORD_DEADLINE_S)
+            if rec_task not in done:
+                rec_task.cancel()
+                raise RuntimeError(f"record generation exceeded {RECORD_DEADLINE_S}s deadline")
+            record = rec_task.result()
 
-    async with factory() as db:
-        creature = await db.get(Creature, creature_id)
-        if creature is None:
+            async with factory() as db:
+                creature = await db.get(Creature, creature_id)
+                if creature is None:
+                    return
+                for field, value in _record_fields(record).items():
+                    setattr(creature, field, value)
+                creature.record_status = RecordStatus.complete
+                await db.commit()
+        except Exception as exc:  # noqa: BLE001 - record failure must land as a state
+            log.warning("generation stream failed for %s: %s", creature_id, str(exc)[:200])
+            await _mark_failed(creature_id, record_too=True)
+            generation.PROGRESS.pop(creature_id, None)
             return
-        for field, value in _record_fields(record).items():
-            setattr(creature, field, value)
-        creature.record_status = RecordStatus.complete
-        await db.commit()
-    log.info("generation task: record committed for %s", creature_id)
-    # Record fields are persisted; keep only the render-in-flight signal.
-    # The whole entry is cleaned up after the image stage commits.
-    generation.PROGRESS[creature_id] = {
-        "image_started": bool(generation.PROGRESS.get(creature_id, {}).get("image_started"))
-    }
+        log.info("generation task: record committed for %s", creature_id)
+        # Record fields are persisted; keep only the render-in-flight signal.
+        # The whole entry is cleaned up after the image stage commits.
+        generation.PROGRESS[creature_id] = {
+            "image_started": bool(generation.PROGRESS.get(creature_id, {}).get("image_started"))
+        }
 
-    try:
-        if hero_task is None:  # visual_spec never fired mid-stream; render now
-            generation.PROGRESS[creature_id]["image_started"] = True
-            hero = await images.generate_hero(
-                SimpleNamespace(id=creature_id, visual_spec=record.visual_spec, name=record.name)
-            )
-        else:
-            hero = await hero_task
-        thumb = (
-            await images.generate_thumb(SimpleNamespace(id=creature_id)) if hero else None
-        )
-        async with factory() as db:
-            creature = await db.get(Creature, creature_id)
-            if creature is None:
-                return
-            if hero:
-                creature.hero_image_path = hero
-                creature.thumb_path = thumb
-                creature.image_status = ImageStatus.complete
+        try:
+            if hero_task is None:  # visual_spec never fired mid-stream; render now
+                generation.PROGRESS[creature_id]["image_started"] = True
+                hero = await images.generate_hero(
+                    SimpleNamespace(id=creature_id, visual_spec=record.visual_spec, name=record.name)
+                )
             else:
-                creature.image_status = ImageStatus.failed
-            await db.commit()
-        log.info("generation task: image committed for %s", creature_id)
+                hero = await hero_task
+            thumb = (
+                await images.generate_thumb(SimpleNamespace(id=creature_id)) if hero else None
+            )
+            async with factory() as db:
+                creature = await db.get(Creature, creature_id)
+                if creature is None:
+                    return
+                if hero:
+                    creature.hero_image_path = hero
+                    creature.thumb_path = thumb
+                    creature.image_status = ImageStatus.complete
+                else:
+                    creature.image_status = ImageStatus.failed
+                await db.commit()
+            log.info("generation task: image committed for %s", creature_id)
+        except Exception as exc:  # noqa: BLE001 - "pending" with no task is a stuck reveal
+            # generate_hero swallows its own errors; this catches the thumb
+            # derivation and the commit itself. Without it the row stays
+            # image_status=pending forever and the retry button never appears.
+            log.warning("image stage failed for %s: %s", creature_id, str(exc)[:200])
+            await _mark_failed(creature_id, record_too=False)
+        finally:
+            generation.PROGRESS.pop(creature_id, None)
     finally:
-        generation.PROGRESS.pop(creature_id, None)
+        # Any exit while the early hero render is still in flight (record
+        # failure, deleted row, or the outer fence cancelling THIS task —
+        # cancellation does not propagate to child tasks) must not leave it
+        # burning image spend with nowhere to deliver.
+        if hero_task is not None and not hero_task.done():
+            hero_task.cancel()
 
 
 @router.post("/{creature_id}/retry-image", response_model=CreateCreatureResponse)
@@ -248,12 +266,16 @@ async def retry_image(creature_id: int, db: AsyncSession = Depends(get_db)) -> C
     creature = await db.get(Creature, creature_id)
     if creature is None:
         raise HTTPException(status_code=404, detail="No such creature")
+    if creature.record_status != RecordStatus.complete:
+        # A record-failed row has an EMPTY visual_spec — rendering it would
+        # spend up to three image calls painting from bare style boilerplate.
+        raise HTTPException(status_code=409, detail="That splice has no record to paint — fuse again")
     if creature.image_status == ImageStatus.pending:
         return CreateCreatureResponse(creature_id=creature.id, status="pending")
     if not ai.ai_enabled():
         raise HTTPException(status_code=409, detail="Image generation is offline")
     creature.image_status = ImageStatus.pending
-    await db.flush()
+    await db.commit()  # the task's fresh session must see "pending" (and the row)
     spawn(_retry_hero_task(creature.id), f"retry-hero:{creature.id}")
     return CreateCreatureResponse(creature_id=creature.id, status="pending")
 
@@ -289,6 +311,9 @@ async def _retry_hero_task(creature_id: int) -> None:
             else:
                 creature.image_status = ImageStatus.failed
             await db.commit()
+    except Exception as exc:  # noqa: BLE001 - same stuck-pending trap as the main task
+        log.warning("retry image stage failed for %s: %s", creature_id, str(exc)[:200])
+        await _mark_failed(creature_id, record_too=False)
     finally:
         generation.PROGRESS.pop(creature_id, None)
 

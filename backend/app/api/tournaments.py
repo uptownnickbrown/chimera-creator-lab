@@ -1,6 +1,7 @@
 """Bracket mode: predict -> simulate -> explain -> advance -> crown (spec §7, §15)."""
 from __future__ import annotations
 
+import asyncio
 import copy
 from datetime import UTC, datetime
 
@@ -96,6 +97,20 @@ def _mutable_bracket(t: Tournament) -> dict:
     return copy.deepcopy(t.bracket or {})
 
 
+# The bracket JSON is read-modify-written whole, and three writers can overlap:
+# predict, resolve (which holds its copy across a ~15s LLM await), and the
+# finals key-art task (~74s render deliberately overlapped with the final
+# match). Without serialization the last committer silently reverts the
+# others — a lost winner, a lost pick, or paid key art stuck at "pending".
+# Single-process app, so one asyncio.Lock per tournament is the whole story;
+# every locked section commits before releasing.
+_bracket_locks: dict[int, asyncio.Lock] = {}
+
+
+def _bracket_lock(tournament_id: int) -> asyncio.Lock:
+    return _bracket_locks.setdefault(tournament_id, asyncio.Lock())
+
+
 # -- endpoints ----------------------------------------------------------------
 
 @router.post("", response_model=TournamentView)
@@ -184,21 +199,23 @@ async def predict(
     db: AsyncSession = Depends(get_db),
 ) -> TournamentView:
     """"Who do you think will win?" — locked in before the match resolves (§7)."""
-    t = await _load(db, tournament_id)
-    bracket = _mutable_bracket(t)
-    found = bracket_svc.find_match(bracket, match_id)
-    if found is None:
-        raise HTTPException(status_code=404, detail=f"No match {match_id}")
-    _, _, match = found
+    async with _bracket_lock(tournament_id):
+        t = await _load(db, tournament_id)
+        bracket = _mutable_bracket(t)
+        found = bracket_svc.find_match(bracket, match_id)
+        if found is None:
+            raise HTTPException(status_code=404, detail=f"No match {match_id}")
+        _, _, match = found
 
-    if match["winner"] is not None:
-        raise HTTPException(status_code=400, detail="That battle is already over")
-    if body.pick_id not in (match["a"], match["b"]):
-        raise HTTPException(status_code=400, detail="Pick one of the two fighters")
+        if match["winner"] is not None:
+            raise HTTPException(status_code=400, detail="That battle is already over")
+        if body.pick_id not in (match["a"], match["b"]):
+            raise HTTPException(status_code=400, detail="Pick one of the two fighters")
 
-    match["predicted"] = body.pick_id
-    t.bracket = bracket
-    return await _view(db, t)
+        match["predicted"] = body.pick_id
+        t.bracket = bracket
+        await db.commit()  # inside the lock — the next writer must see this pick
+        return await _view(db, t)
 
 
 @router.post("/{tournament_id}/matches/{match_id}/resolve", response_model=ResolveResponse)
@@ -210,96 +227,101 @@ async def resolve(
     Battles are permanently cached by canonical key, so a matchup that has
     happened before in ANY tournament replays instantly with the same winner.
     """
-    t = await _load(db, tournament_id)
-    bracket = _mutable_bracket(t)
-    found = bracket_svc.find_match(bracket, match_id)
-    if found is None:
-        raise HTTPException(status_code=404, detail=f"No match {match_id}")
-    round_index, match_index, match = found
+    # The lock spans load -> LLM -> commit: a double-tap waits, re-reads the
+    # committed winner, and takes the free replay path instead of double-
+    # spending the LLM call or double-counting the win/loss records.
+    async with _bracket_lock(tournament_id):
+        t = await _load(db, tournament_id)
+        bracket = _mutable_bracket(t)
+        found = bracket_svc.find_match(bracket, match_id)
+        if found is None:
+            raise HTTPException(status_code=404, detail=f"No match {match_id}")
+        round_index, match_index, match = found
 
-    if match["a"] is None or match["b"] is None:
-        raise HTTPException(status_code=400, detail="That match is still waiting on a fighter")
+        if match["a"] is None or match["b"] is None:
+            raise HTTPException(status_code=400, detail="That match is still waiting on a fighter")
 
-    # Already fought: replay it. Idempotent, so a double-tap cannot double-count.
-    if match["winner"] is not None and match["battle_id"] is not None:
-        existing = await db.get(Battle, match["battle_id"])
+        # Already fought: replay it. Idempotent, so a double-tap cannot double-count.
+        if match["winner"] is not None and match["battle_id"] is not None:
+            existing = await db.get(Battle, match["battle_id"])
+            return ResolveResponse(
+                battle=_battle_view(existing, match, cached=True),
+                tournament=await _view(db, t),
+            )
+
+        a = await db.get(Creature, match["a"])
+        b = await db.get(Creature, match["b"])
+        if a is None or b is None:
+            raise HTTPException(status_code=400, detail="A fighter in this match no longer exists")
+
+        env = match["environment"]
+        key = battle_svc.canonical_key(a.id, b.id, env)
+        row = (await db.execute(
+            select(Battle).where(Battle.canonical_key == key)
+        )).scalar_one_or_none()
+        cached = row is not None
+
+        if row is None:
+            lo, hi = battle_svc.canonical_pair(a, b)
+            result = await battle_svc.resolve_battle(a, b, env)
+            row = Battle(
+                creature_a_id=lo.id,
+                creature_b_id=hi.id,
+                environment=env,
+                winner_id=int(result.winner_slug_or_id),
+                reasons=[r.model_dump() for r in result.reasons],
+                narrative=result.narrative,
+                beats=result.beats,
+                health_remaining=result.health_remaining.model_dump(),
+                confidence=result.confidence,
+                canonical_key=key,
+            )
+            db.add(row)
+            await db.flush()
+
+        winner_id = row.winner_id
+        loser = b if winner_id == a.id else a
+        winner = a if winner_id == a.id else b
+
+        winner.wins += 1
+        loser.losses += 1
+
+        match["winner"] = winner_id
+        match["battle_id"] = row.id
+        if match["predicted"] is not None:
+            match["prediction_correct"] = match["predicted"] == winner_id
+            if match["prediction_correct"]:
+                award_xp(await get_profile(db), XP_CORRECT_PREDICTION)
+
+        bracket_svc.advance(bracket, round_index, match_index, winner_id)
+
+        # Semifinals just completed -> both finalists known: pre-generate the
+        # championship key art now so the ~74s render hides inside the final
+        # prediction + battle and the ceremony never waits (AI_CONTRACTS §3).
+        final = bracket["rounds"][-1]["matches"][0]
+        if (final.get("a") and final.get("b") and final.get("winner") is None
+                and not bracket.get("final_art") and ai.ai_enabled()):
+            bracket["final_art"] = "pending"
+            creatures_api.spawn(_final_art_task(t.id, final["a"], final["b"]), f"final-art:{t.id}")
+
+        if bracket_svc.is_complete(bracket):
+            t.status = TournamentStatus.complete
+            t.champion_id = bracket_svc.champion_id(bracket)
+            t.completed_at = datetime.now(UTC)
+            champ = winner if winner.id == t.champion_id else await db.get(Creature, t.champion_id)
+            if champ is not None:
+                champ.championships += 1
+                records = dict(champ.records or {})
+                records["champion"] = f"{champ.championships}-Time Champion"
+                records.setdefault("first_championship", t.name)
+                champ.records = records
+
+        t.bracket = bracket
+        await db.commit()  # inside the lock — see _bracket_lock
         return ResolveResponse(
-            battle=_battle_view(existing, match, cached=True),
+            battle=_battle_view(row, match, cached=cached),
             tournament=await _view(db, t),
         )
-
-    a = await db.get(Creature, match["a"])
-    b = await db.get(Creature, match["b"])
-    if a is None or b is None:
-        raise HTTPException(status_code=400, detail="A fighter in this match no longer exists")
-
-    env = match["environment"]
-    key = battle_svc.canonical_key(a.id, b.id, env)
-    row = (await db.execute(
-        select(Battle).where(Battle.canonical_key == key)
-    )).scalar_one_or_none()
-    cached = row is not None
-
-    if row is None:
-        lo, hi = battle_svc.canonical_pair(a, b)
-        result = await battle_svc.resolve_battle(a, b, env)
-        row = Battle(
-            creature_a_id=lo.id,
-            creature_b_id=hi.id,
-            environment=env,
-            winner_id=int(result.winner_slug_or_id),
-            reasons=[r.model_dump() for r in result.reasons],
-            narrative=result.narrative,
-            beats=result.beats,
-            health_remaining=result.health_remaining.model_dump(),
-            confidence=result.confidence,
-            canonical_key=key,
-        )
-        db.add(row)
-        await db.flush()
-
-    winner_id = row.winner_id
-    loser = b if winner_id == a.id else a
-    winner = a if winner_id == a.id else b
-
-    winner.wins += 1
-    loser.losses += 1
-
-    match["winner"] = winner_id
-    match["battle_id"] = row.id
-    if match["predicted"] is not None:
-        match["prediction_correct"] = match["predicted"] == winner_id
-        if match["prediction_correct"]:
-            award_xp(await get_profile(db), XP_CORRECT_PREDICTION)
-
-    bracket_svc.advance(bracket, round_index, match_index, winner_id)
-
-    # Semifinals just completed -> both finalists known: pre-generate the
-    # championship key art now so the ~74s render hides inside the final
-    # prediction + battle and the ceremony never waits (AI_CONTRACTS §3).
-    final = bracket["rounds"][-1]["matches"][0]
-    if (final.get("a") and final.get("b") and final.get("winner") is None
-            and not bracket.get("final_art") and ai.ai_enabled()):
-        bracket["final_art"] = "pending"
-        creatures_api.spawn(_final_art_task(t.id, final["a"], final["b"]), f"final-art:{t.id}")
-
-    if bracket_svc.is_complete(bracket):
-        t.status = TournamentStatus.complete
-        t.champion_id = bracket_svc.champion_id(bracket)
-        t.completed_at = datetime.now(UTC)
-        champ = winner if winner.id == t.champion_id else await db.get(Creature, t.champion_id)
-        if champ is not None:
-            champ.championships += 1
-            records = dict(champ.records or {})
-            records["champion"] = f"{champ.championships}-Time Champion"
-            records.setdefault("first_championship", t.name)
-            champ.records = records
-
-    t.bracket = bracket
-    return ResolveResponse(
-        battle=_battle_view(row, match, cached=cached),
-        tournament=await _view(db, t),
-    )
 
 
 async def _final_art_task(tournament_id: int, a_id: int, b_id: int) -> None:
@@ -316,7 +338,10 @@ async def _final_art_task(tournament_id: int, a_id: int, b_id: int) -> None:
     if not (fa and fb and exists):
         return
     path = await images.generate_championship_art(fa, fb)
-    async with session_factory()() as db:
+    # Same lock as predict/resolve: this write races the final match's resolve
+    # by design (the render hides inside it), and an unserialized last-committer
+    # would either lose the final's winner or strand final_art at "pending".
+    async with _bracket_lock(tournament_id), session_factory()() as db:
         t = await db.get(Tournament, tournament_id)
         if t is None:
             return

@@ -83,29 +83,36 @@ def token_valid(token: str) -> bool:
 # whole database. {client_ip: [failure timestamps within the window]}.
 
 MAX_FAILURES = 10
+#: Backstop across ALL sources: X-Forwarded-For is ultimately attacker-influenced
+#: text, so a per-IP limit alone can be reset with a fresh spoofed value per
+#: request. 50 failures per window total still leaves Henry dozens of typos.
+GLOBAL_MAX_FAILURES = 50
+_GLOBAL = "*"
 WINDOW_SECONDS = 5 * 60
 _failures: dict[str, list[float]] = {}
 
 
 def _client_ip(request: Request) -> str:
-    # Railway terminates TLS at its proxy; the real client is the first hop
-    # of X-Forwarded-For. Direct connections (dev) fall back to the socket.
+    # Railway's edge proxy APPENDS the real client IP to X-Forwarded-For, so
+    # the trustworthy hop is the LAST entry. The first entry is whatever the
+    # client sent — keying the rate limit on it would hand out a fresh bucket
+    # per spoofed header and let the 4-digit PIN space be walked in minutes.
     fwd = request.headers.get("x-forwarded-for", "")
     if fwd:
-        return fwd.split(",")[0].strip()
+        return fwd.split(",")[-1].strip()
     return request.client.host if request.client else "unknown"
 
 
-def _too_many_failures(ip: str, now: float) -> bool:
-    recent = [t for t in _failures.get(ip, ()) if now - t < WINDOW_SECONDS]
+def _too_many_failures(key: str, now: float, limit: int = MAX_FAILURES) -> bool:
+    recent = [t for t in _failures.get(key, ()) if now - t < WINDOW_SECONDS]
     if recent:
-        _failures[ip] = recent
+        _failures[key] = recent
     else:
-        _failures.pop(ip, None)
+        _failures.pop(key, None)
     if len(_failures) > 1000:  # bounded memory even under a spray of IPs
         for stale in [k for k, v in _failures.items() if now - v[-1] >= WINDOW_SECONDS]:
             _failures.pop(stale, None)
-    return len(recent) >= MAX_FAILURES
+    return len(recent) >= limit
 
 
 # -- routes --------------------------------------------------------------------
@@ -125,7 +132,7 @@ async def login(body: LoginRequest, request: Request, response: Response) -> dic
 
     ip = _client_ip(request)
     now = time.time()
-    if _too_many_failures(ip, now):
+    if _too_many_failures(ip, now) or _too_many_failures(_GLOBAL, now, GLOBAL_MAX_FAILURES):
         raise HTTPException(
             status_code=429,
             detail="Whoa, too many tries! The lab door needs a 5 minute rest.",
@@ -133,6 +140,7 @@ async def login(body: LoginRequest, request: Request, response: Response) -> dic
 
     if not hmac.compare_digest(body.pin.encode(), pin.encode()):
         _failures.setdefault(ip, []).append(now)
+        _failures.setdefault(_GLOBAL, []).append(now)
         log.info("gate: wrong PIN from %s (%d recent failures)", ip, len(_failures[ip]))
         raise HTTPException(status_code=401, detail="wrong code")
 

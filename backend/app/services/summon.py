@@ -224,16 +224,24 @@ def _spawn(coro, label: str) -> asyncio.Task:
 
 async def _portrait_task(part_id: int) -> None:
     """Render the picker portrait, then update the row and the live library.
-    Own session — the request that conjured the part is long finished."""
+    Own session — the request that conjured the part is long finished.
+
+    Load, CLOSE the session, render sessionless, reopen to write: the same
+    discipline as every other render task. A session held across the ~26s
+    render pins a connection for its whole duration and is one write away
+    from the long-transaction stall that stranded creatures on 2026-08-09."""
     from ..db import session_factory
 
     async with session_factory()() as db:
         part = await db.get(CustomPart, part_id)
         if part is None:
             return
-        art = await images.generate_part_portrait(
-            _file_slug(part.slug), part.name, part.portrait_description
-        )
+        slug, name, description = part.slug, part.name, part.portrait_description
+    art = await images.generate_part_portrait(_file_slug(slug), name, description)
+    async with session_factory()() as db:
+        part = await db.get(CustomPart, part_id)
+        if part is None:
+            return
         part.art = art
         part.portrait_status = ImageStatus.complete if art else ImageStatus.failed
         await db.commit()
@@ -256,8 +264,13 @@ async def _conjure(db: AsyncSession, query: str, res: SummonResolution) -> Summo
     slug = f"custom/{_slugify(res.name)}"
 
     # The resolver invented something we already have (curated or summoned a
-    # different way) — that is a match, never a duplicate.
-    existing = library.source_by_slug(slug) or library.source_by_slug(_slugify(res.name))
+    # different way) — that is a match, never a duplicate. Curated slugs use
+    # underscores while _slugify hyphenates, so the safety net compares on
+    # normalized names/aliases, the same machinery local_candidates trusts.
+    wanted = normalize(res.name)
+    existing = library.source_by_slug(slug) or next(
+        (s for s in library.sources() if wanted in _keys(s)), None
+    )
     if existing:
         return SummonResponse(status="matched", source=existing)
     row = (await db.execute(select(CustomPart).where(CustomPart.slug == slug))).scalar_one_or_none()
@@ -280,6 +293,10 @@ async def _conjure(db: AsyncSession, query: str, res: SummonResolution) -> Summo
     source = register(part)
 
     if ai.ai_enabled():
+        # Commit first: the portrait task opens a fresh session at once, and
+        # losing the race with this request's teardown commit would strand the
+        # part at portrait_status=pending with no task attached.
+        await db.commit()
         _spawn(_portrait_task(part.id), f"summon-portrait:{part.slug}")
         portrait_status = "rendering"
     else:

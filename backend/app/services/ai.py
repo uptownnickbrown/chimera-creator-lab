@@ -46,15 +46,15 @@ def client():
     return _client
 
 
-async def structured(system: str, user: str, model_cls, *, name: str,
-                     temperature: float | None = None):
-    """One structured-output call -> validated pydantic instance."""
+async def structured(system: str, user: str, model_cls, *, name: str):
+    """One structured-output call -> validated pydantic instance.
+
+    No temperature knob: no caller ever used it, and battle determinism is
+    owned by the permanent cache (first resolution wins), not by sampling.
+    """
     import json
 
     schema = model_cls.model_json_schema()
-    kwargs = {}
-    if temperature is not None:
-        kwargs["temperature"] = temperature
     resp = await client().chat.completions.create(
         model=TEXT_MODEL,
         messages=[{"role": "system", "content": system},
@@ -62,6 +62,5 @@ async def structured(system: str, user: str, model_cls, *, name: str,
         response_format={"type": "json_schema",
                          "json_schema": {"name": name, "strict": True,
                                          "schema": schema}},
-        **kwargs,
     )
     return model_cls.model_validate(json.loads(resp.choices[0].message.content))

@@ -244,6 +244,13 @@ async def generate_championship_art(fa: Creature, fb: Creature) -> str | None:
 
     if not ai.ai_enabled():
         return None
+    # Deterministic battles make repeat finalist pairs common (same favorite
+    # eight, same bracket) — the art depends only on the pair, so a previous
+    # render is this render.
+    lo, hi = sorted((fa.id, fb.id))
+    existing = find_media(_media_dir(), f"final_{lo}_{hi}")
+    if existing is not None:
+        return f"/media/creatures/{existing.name}"
     a = find_media(_media_dir(), str(fa.id))
     b = find_media(_media_dir(), str(fb.id))
     if a is None or b is None:
@@ -269,7 +276,6 @@ async def generate_championship_art(fa: Creature, fb: Creature) -> str | None:
         )
         png = base64.b64decode(resp.data[0].b64_json)
         webp = await asyncio.to_thread(to_webp, png)
-        lo, hi = sorted((fa.id, fb.id))
         path = _media_dir() / f"final_{lo}_{hi}{MEDIA_EXT}"
         path.write_bytes(webp)
         return f"/media/creatures/final_{lo}_{hi}{MEDIA_EXT}"
