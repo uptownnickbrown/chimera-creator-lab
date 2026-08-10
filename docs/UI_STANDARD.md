@@ -88,10 +88,13 @@ see gaps, not hide them politely).
   (~160px) with category tabs and name plates; RANDOMIZE + NEXT STEP.
 - **Reveal** (`created.png`): already specced in the Fusion Wait build;
   restyle to this standard.
-- **Codex** (`codex.png`): left filter rail (ALL/FAVORITES/WINNERS/BIGGEST/
-  NEWEST with painted icons), center grid of creature cards (thumb, name
-  plate, rarity chip, trophy count), right selected-creature panel with
-  hero-on-platform, stats, records, GO TO ARENA.
+- **Codex** (`codex.png`, superseded 2026-08-09 — two panes, not three
+  zones): narrow left LIST of creature rows (art well, name, rarity chip,
+  trophy count) with sort pills above and a painted-progress footer; wide
+  right dossier — hero render beside the record/stats/plaques column, FUSED
+  FROM wells, all moves as always-visible cards (name + blurb), STRONG AT /
+  WATCH OUT as full-sentence columns, fun fact as an always-open gold
+  callout. Nothing in the dossier hides behind a tap.
 - **Battle/Bracket** (`battle.png`): two creatures on side platforms facing
   inward (loser's side dims after resolve), environment art as the arena
   backdrop panel, prediction = two GIANT tap targets, result = winner

@@ -230,8 +230,14 @@ docker run --rm -p 8099:8099 -e PORT=8099 -e CHIMERA_ENV=prod \
 ```
 
 Then `curl localhost:8099/healthz`, `/readyz`, `/api/library`, `/api/creatures`
-and open `http://localhost:8099/`. Use ports like 8099/55432 — **8010 and 5175
-are the kid's live playtest** and must not be touched.
+and open `http://localhost:8099/`.
+
+Prod is the canonical environment now (the pre-deploy local playtest on ports
+8010/5175 was retired 2026-08-09). QA runs against the deployed site; for
+frontend work with real data and no local backend, run the Vite dev server
+with `VITE_PROXY_TARGET=https://chimera-production-4a3c.up.railway.app` and
+stick to read-only browsing — every click that POSTs lands in Henry's real
+Codex.
 
 ## 8. Gotchas worth remembering
 
