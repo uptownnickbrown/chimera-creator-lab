@@ -103,26 +103,39 @@ Rather than open a public TCP proxy on the database for a one-time job, ship
 the SQLite file up to the volume and run the migration next to Postgres, over
 the private network:
 
+The image does **not** carry `scripts/` (it ships only the backend app), so the
+migration script rides up on the volume next to the database file. Its only
+`__file__`-relative behavior is a `sys.path` insert that resolves harmlessly
+from `/data`; the `app` package imports come from the `cd /app` working
+directory. Note `--volume` goes on `files`, before the subcommand — without it
+a non-interactive shell errors out instead of prompting.
+
 ```bash
 railway link                                    # select the project/service
-railway volume files upload ./chimera-bootstrap.db /data/ --overwrite
+railway volume files --volume chimera-volume \
+    upload ./chimera-bootstrap.db /data/chimera-bootstrap.db --overwrite
+railway volume files --volume chimera-volume \
+    upload ./scripts/migrate_to_railway.py /data/migrate_to_railway.py --overwrite
 
 # look first — prints per-table row counts and the sequence values it will set
 railway ssh --service chimera \
-    'cd /app && python scripts/migrate_to_railway.py \
+    'cd /app && python /data/migrate_to_railway.py \
         --sqlite /data/chimera-bootstrap.db --target "$DATABASE_URL" --dry-run'
 
 # the real run. --force is expected here: it deletes the auto-seeded starter
 # crew before inserting Henry's rows. Without it the script refuses to touch a
 # non-empty database.
 railway ssh --service chimera \
-    'cd /app && python scripts/migrate_to_railway.py \
+    'cd /app && python /data/migrate_to_railway.py \
         --sqlite /data/chimera-bootstrap.db --target "$DATABASE_URL" --force'
 ```
 
 `$DATABASE_URL` is already in the container's environment, so the connection
-string never lands in a laptop shell or its history. Delete the uploaded
-SQLite file afterwards: `railway volume files delete /data/chimera-bootstrap.db`.
+string never lands in a laptop shell or its history. Delete both uploaded
+files afterwards:
+`railway ssh --service chimera 'rm /data/chimera-bootstrap.db /data/migrate_to_railway.py'`
+(the CLI's `volume files delete` wants an interactive confirm; `ssh` + `rm`
+does not).
 
 Expected tail:
 
@@ -140,13 +153,18 @@ ids every time.
 
 ```bash
 railway link                                   # select the project/service
-railway volume files upload ./media /data/media --overwrite
-railway volume files list /data/media/creatures | head
+railway volume files --volume chimera-volume upload ./media /data --overwrite
+railway volume files --volume chimera-volume list /data/media/creatures | head
 ```
 
-Sanity-check the listing shows `1.webp`, `1_thumb.webp`, … directly under
-`/data/media/creatures`. If the CLI nested them (`/data/media/media/creatures`),
-delete and re-upload with `/data` as the destination instead.
+The destination is `/data`, not `/data/media`: the CLI nests the uploaded
+directory *under* the destination, so `./media -> /data` lands at
+`/data/media/...` while `./media -> /data/media` lands at the wrong
+`/data/media/media/...` (verified on the real volume, CLI 5.35). Sanity-check
+the listing shows `1.webp`, `1_thumb.webp`, … directly under
+`/data/media/creatures`; if they nested, fix in place with
+`railway volume files --volume chimera-volume rename /data/media/media/creatures /data/media/creatures`
+(same for `parts/`) rather than re-uploading 18 MB.
 
 **(5) Restart the service.** This is not optional: the app loads Henry's
 summoned custom parts into the in-memory source library **at boot**, so the 3
