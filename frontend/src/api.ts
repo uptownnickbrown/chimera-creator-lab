@@ -11,6 +11,13 @@ export class ApiError extends Error {
   }
 }
 
+/** The PIN gate (Gate.tsx): the shell registers a callback here and any API
+    response coming back 401 re-summons the gate. One callback is plenty. */
+let authExpired: (() => void) | null = null;
+export function onAuthExpired(cb: () => void): void {
+  authExpired = cb;
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE}/api${path}`, {
     method,
@@ -18,6 +25,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!res.ok) {
+    if (res.status === 401) authExpired?.();
     let detail = res.statusText;
     try {
       const data = await res.json();

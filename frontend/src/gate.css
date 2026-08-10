@@ -1,0 +1,252 @@
+/* PIN gate — neon-lab door. Leans entirely on theme.css :root tokens
+   (--ink, --cyan, --purple, --font-display, --clip-notch*) but owns every
+   class it uses under a gate- prefix so it can never collide with the shell.
+   Sized for iPad landscape 1080x810 first; flex-centred so portrait and
+   desktop fall out for free. */
+
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(168, 107, 255, 0.16), transparent 55%),
+    radial-gradient(110% 80% at 50% 100%, rgba(79, 216, 255, 0.14), transparent 60%),
+    var(--ink);
+  overflow-y: auto;
+}
+
+/* -- the door panel ------------------------------------------------------- */
+
+.gate-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(400px, 92vw);
+  padding: 26px 28px 30px;
+  clip-path: var(--clip-notch);
+  filter: drop-shadow(0 0 34px rgba(79, 216, 255, 0.16)) drop-shadow(0 14px 40px rgba(0, 0, 0, 0.55));
+}
+/* lit edge + fill, the theme.css panel recipe with the cyan->purple energy mix */
+.gate-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  clip-path: inherit;
+  background: linear-gradient(
+    152deg,
+    rgba(79, 216, 255, 0.95) 0%,
+    rgba(79, 216, 255, 0.3) 26%,
+    rgba(168, 107, 255, 0.24) 60%,
+    rgba(168, 107, 255, 0.75) 100%
+  );
+}
+.gate-card::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  clip-path: var(--clip-notch);
+  background: linear-gradient(165deg, rgba(24, 36, 84, 0.72), rgba(8, 12, 32, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(140, 220, 255, 0.22),
+    inset 0 -46px 70px -44px rgba(168, 107, 255, 0.3);
+}
+
+.gate-card--shake {
+  animation: gate-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes gate-shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(5px); }
+  30%, 50%, 70% { transform: translateX(-8px); }
+  40%, 60% { transform: translateX(8px); }
+}
+
+/* -- Henry --------------------------------------------------------------- */
+
+.gate-avatar {
+  width: 92px;
+  height: 92px;
+  clip-path: var(--clip-notch-sm);
+  background: linear-gradient(150deg, rgba(79, 216, 255, 0.9), rgba(168, 107, 255, 0.7));
+  padding: 2px; /* the lit frame the topbar avatar wears */
+  filter: drop-shadow(0 0 18px rgba(79, 216, 255, 0.4));
+}
+.gate-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  clip-path: var(--clip-notch-sm);
+}
+
+.gate-name {
+  margin-top: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 21px;
+  letter-spacing: 0.24em;
+  color: var(--text);
+  text-shadow: 0 0 14px rgba(79, 216, 255, 0.5);
+}
+
+.gate-title {
+  margin: 14px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 25px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--cyan);
+  text-shadow: 0 0 20px rgba(79, 216, 255, 0.6);
+}
+
+.gate-hint {
+  margin: 4px 0 0;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+/* -- progress dots -------------------------------------------------------- */
+
+.gate-dots {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+.gate-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(4, 8, 22, 0.8);
+  box-shadow:
+    inset 0 0 0 1px rgba(79, 216, 255, 0.45),
+    inset 0 2px 4px rgba(0, 0, 0, 0.6);
+  transition: background 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+.gate-dot.is-filled {
+  background: radial-gradient(circle at 35% 30%, var(--cyan-hot), var(--cyan) 70%);
+  box-shadow: 0 0 12px rgba(79, 216, 255, 0.85);
+  transform: scale(1.12);
+}
+
+/* reserved line so the card never jumps when a message appears */
+.gate-message {
+  min-height: 20px;
+  margin: 8px 0 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14.5px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--red);
+  text-shadow: 0 0 12px rgba(255, 107, 122, 0.45);
+}
+
+/* -- the pad -------------------------------------------------------------- */
+
+.gate-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 280px;
+  margin-top: 10px;
+}
+
+.gate-key {
+  position: relative;
+  isolation: isolate;
+  min-width: 56px;
+  min-height: 64px;
+  border: 0;
+  padding: 0;
+  background: none;
+  clip-path: var(--clip-notch-sm);
+  color: var(--cyan-hot);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 27px;
+  cursor: pointer;
+  touch-action: manipulation; /* no double-tap zoom while Henry hammers keys */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 90ms cubic-bezier(0.2, 0.8, 0.3, 1), filter 120ms ease;
+}
+.gate-key::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  clip-path: inherit;
+  background: linear-gradient(
+    150deg,
+    rgba(79, 216, 255, 0.85),
+    rgba(79, 216, 255, 0.28) 55%,
+    rgba(79, 216, 255, 0.6)
+  );
+}
+.gate-key::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  clip-path: var(--clip-notch-sm);
+  background: linear-gradient(180deg, rgba(79, 216, 255, 0.22) 0%, rgba(6, 10, 26, 0.85) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.gate-key:hover:not(:disabled) {
+  filter: brightness(1.18) drop-shadow(0 0 14px rgba(79, 216, 255, 0.5));
+}
+.gate-key:active:not(:disabled) {
+  transform: scale(0.94);
+  filter: brightness(1.3);
+}
+.gate-key:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.gate-key--erase {
+  color: var(--purple-hot);
+}
+.gate-key--erase::before {
+  background: linear-gradient(
+    150deg,
+    rgba(168, 107, 255, 0.85),
+    rgba(168, 107, 255, 0.28) 55%,
+    rgba(168, 107, 255, 0.6)
+  );
+}
+.gate-key--erase::after {
+  background: linear-gradient(180deg, rgba(168, 107, 255, 0.22) 0%, rgba(10, 6, 26, 0.85) 100%);
+}
+.gate-key--erase svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.gate-key-blank {
+  min-height: 64px;
+}
+
+/* -- small screens / portrait --------------------------------------------- */
+
+@media (max-height: 640px) {
+  .gate-card { padding: 18px 22px 20px; }
+  .gate-avatar { width: 72px; height: 72px; }
+  .gate-title { font-size: 21px; margin-top: 8px; }
+  .gate-key { min-height: 56px; font-size: 24px; }
+  .gate-key-blank { min-height: 56px; }
+  .gate-dots { margin-top: 10px; }
+}

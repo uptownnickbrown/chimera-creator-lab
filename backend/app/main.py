@@ -10,6 +10,7 @@ from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from . import auth
 from .api import creatures, library, profile, tournaments
 from .config import get_settings
 from .db import create_all
@@ -114,6 +115,11 @@ async def _seed_starter_crew() -> None:
 
 app = FastAPI(title="Chimera Creator API", version="0.1.0", lifespan=lifespan)
 
+# PIN gate on /api/* and /media/* (no-op when CHIMERA_PIN is unset — see auth.py).
+# Added BEFORE CORSMiddleware: Starlette treats the last add_middleware as the
+# outermost layer, so this ordering lets CORS headers decorate 401s too.
+app.add_middleware(auth.GateMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in get_settings().cors_origins.split(",") if o.strip()],
@@ -122,6 +128,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(creatures.router)
 app.include_router(tournaments.router)
 app.include_router(library.router)

@@ -43,6 +43,8 @@ Set these on the **app service**:
 | `CHIMERA_ENV` | `prod` | |
 | `CHIMERA_PLAYER` | `Henry` | |
 | `CHIMERA_MEDIA_DIR` | `/data/media` | The volume. Already the image default — set it explicitly anyway so it is visible in the dashboard. |
+| `CHIMERA_PIN` | *(4 digits)* | The lab door. Arms the PIN gate: every `/api/*` + `/media/*` request 401s without the session cookie (login + health exempt). **Unset = gate disabled** — the app is open to the internet and its OpenAI-backed endpoints are hammerable. Keep it 4 digits: the gate screen auto-submits at exactly 4. |
+| `CHIMERA_SESSION_SECRET` | `openssl rand -hex 32` | Signs the 180-day session cookie. Optional (falls back to a PIN-derived key) but recommended; rotating it logs every device out. |
 
 **Do not set** — the image already pins them, and overriding will break things:
 `CHIMERA_STATIC_DIR` (`/app/static`), `CHIMERA_DATA_DIR` (`/app/data`).
