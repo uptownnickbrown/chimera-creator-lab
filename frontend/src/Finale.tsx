@@ -29,6 +29,15 @@ export function keyArtPath(t: TournamentView | null | undefined): string | null 
 
 const POLL_MS = 5000;
 const BEAT_MS = 5200;
+/** The ceremony's rotating stage lines — theatre while the painters work. */
+const CEREMONY_LINES = [
+  "THE ARENA FALLS SILENT…",
+  "TWO TITANS — ONE CROWN…",
+  "GOLD IS MIXED FOR THE CHAMPION'S PORTRAIT…",
+  "THE PAINTERS CAPTURE THE FINAL CLASH…",
+  "A PLAQUE IN THE HALL IS BEING CARVED…",
+];
+const CEREMONY_LINE_MS = 8000;
 
 export function Finale({
   tournament,
@@ -45,6 +54,7 @@ export function Finale({
   const [t, setT] = useState<TournamentView>(tournament);
   const [decoded, setDecoded] = useState(false);
   const [beat, setBeat] = useState(0);
+  const [stageLine, setStageLine] = useState(0);
   const beatsRef = useRef(beats ?? []);
 
   const art = keyArtPath(t);
@@ -108,6 +118,13 @@ export function Finale({
   const arrived = Boolean(art) && decoded;
   const waiting = stillPainting || (Boolean(art) && !decoded);
 
+  /* The staged ceremony: rotating stage lines while the painters work. */
+  useEffect(() => {
+    if (!waiting) return;
+    const timer = setInterval(() => setStageLine((i) => i + 1), CEREMONY_LINE_MS);
+    return () => clearInterval(timer);
+  }, [waiting]);
+
   return (
     <div className="finale" role="dialog" aria-label="Champion crowned">
       {/* Confetti fires WITH the art (or immediately for the keepsake state),
@@ -147,12 +164,13 @@ export function Finale({
           </div>
         </>
       ) : waiting ? (
+        /* The staged wait (Nick, 2026-08-10): suspense, not a spoiler — the
+           champion's name lands WITH the painting, the way the fusion wait
+           holds its creature for the reveal. Theatre until then: the clash,
+           rotating ceremony lines, and the final replayed beat by beat. */
         <div className="finale__wait">
           <p className="eyebrow finale__eyebrow">THE BRACKET IS DECIDED</p>
-          <h2 className="display display--xl ceremony__title">CHAMPION!</h2>
-          <div className="finale__waitname">
-            <FitText>{(champion?.name ?? "CHAMPION").toUpperCase()}</FitText>
-          </div>
+          <h2 className="display display--xl ceremony__title">WHO TAKES THE CROWN?</h2>
 
           <div className="finale__clash" aria-hidden="true">
             <span className="finale__fighter">
@@ -164,17 +182,30 @@ export function Finale({
             </span>
           </div>
 
-          <p className="finale__painting">
-            THE PAINTERS ARE CAPTURING THE FINAL CLASH…
+          <p className="finale__painting" key={stageLine}>
+            {CEREMONY_LINES[stageLine % CEREMONY_LINES.length]}
           </p>
+
           {beatsRef.current.length > 0 && (
-            <p className="finale__beat" key={beat}>
-              {beatsRef.current[beat % beatsRef.current.length]}
-            </p>
+            <button
+              type="button"
+              className="finale__story"
+              onClick={() => setBeat((i) => i + 1)}
+            >
+              <span className="finale__story-key">THE FINAL, MOMENT BY MOMENT</span>
+              <span className="finale__beat" key={beat}>
+                {beatsRef.current[beat % beatsRef.current.length]}
+              </span>
+              <span className="finale__pips">
+                {beatsRef.current.map((_, i) => (
+                  <i key={i} className={i === beat % beatsRef.current.length ? "is-on" : ""} />
+                ))}
+              </span>
+            </button>
           )}
           <div className="finale__foot">
             <Btn accent="ghost" onClick={onClose}>
-              PEEK AT THE BRACKET — THE PAINTING WILL WAIT
+              PEEK AT THE BRACKET — THE CROWNING WILL WAIT
             </Btn>
           </div>
         </div>

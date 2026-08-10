@@ -87,13 +87,15 @@ async def read_hall(db: AsyncSession = Depends(get_db)) -> HallView:
     if calls_right > 0:
         streak = int(settings.get("best_call_streak", 0))
         perfect = int(settings.get("perfect_brackets", 0))
-        value = f"{calls_right} right"
+        # Value stays a plain number like every other record card — the detail
+        # rides the ellipsis-guarded holder line instead of stretching the box.
+        holder = profile.name
         if perfect:
-            value += f" · {perfect} perfect bracket{'s' if perfect != 1 else ''}"
+            holder += f" · {perfect} perfect bracket{'s' if perfect != 1 else ''}"
         elif streak >= 3:
-            value += f" · best streak {streak}"
+            holder += f" · best streak {streak}"
         records.append(HallRecord(
-            key="oracle", label="Master Predictor", value=value, holder=profile.name,
+            key="oracle", label="Right Calls", value=str(calls_right), holder=holder,
         ))
 
     return HallView(

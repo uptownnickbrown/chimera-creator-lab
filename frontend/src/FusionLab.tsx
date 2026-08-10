@@ -196,18 +196,13 @@ export function FusionLab({ go }: { go: Go }) {
   useEffect(() => {
     if (!awaitingArt) return;
     let polls = 0;
-    const tick = window.setInterval(async () => {
+    let timer: number | undefined;
+    let dead = false;
+    const tick = async () => {
       polls += 1;
-      if (polls > 48) {
-        clearInterval(tick);
-        // One last look before giving up — a very late portrait still lands.
-        refreshLibrary()
-          .then((lib) => lib.sources.length && setSources(lib.sources))
-          .catch(() => {});
-        return;
-      }
       try {
         const lib = await refreshLibrary();
+        if (dead) return;
         if (lib.sources.length) {
           setSources(lib.sources);
           setPicks((prev) =>
@@ -217,8 +212,19 @@ export function FusionLab({ go }: { go: Go }) {
       } catch {
         /* transient — keep polling */
       }
-    }, 5000);
-    return () => clearInterval(tick);
+      if (dead) return;
+      /* A portrait is normally ~26s, but the image API's retry ladder can
+         legally stretch one to many minutes (300s client timeout per attempt,
+         two attempts — observed live 2026-08-10: the render landed AFTER the
+         old 4-minute give-up, so the card said PAINTING… forever). Never stop
+         watching while the lab is open — just watch more slowly. */
+      timer = window.setTimeout(tick, polls < 48 ? 5000 : 30000);
+    };
+    timer = window.setTimeout(tick, 5000);
+    return () => {
+      dead = true;
+      clearTimeout(timer);
+    };
   }, [awaitingArt]);
 
   /** Random, but guided: each slot draws from the category it nudges toward. */

@@ -672,6 +672,12 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   z-index: 1;
   display: grid;
   place-items: end center;
+  /* One DEFINITE row. Without it the render's height:100% resolves against
+     an auto track (circular -> auto), so every stage img was really sized by
+     width/aspect-ratio and merely happened to fit; a landscape 1536x1024
+     hero in a wide column escaped the stage and overlapped the content
+     below (observed in the codex dossier, 2026-08-10). */
+  grid-template-rows: 100%;
 }
 .stage__subject .asset,
 .stage__subject > img {
@@ -999,7 +1005,12 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .screen > * { flex: 1; min-height: 0; }
 
 /* Every screen transition: 200ms fade + 4px rise (UI_STANDARD §Motion). */
-.screen-in { animation: screen-in 220ms cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+/* NO fill mode: `both` kept the transform effect applied after the animation
+   ended, and a (even identity-)transformed ancestor becomes the containing
+   block for position:fixed — silently anchoring every fixed overlay (finale,
+   scout, summon) to the screen div instead of the viewport. There is no
+   delay, so fill-mode was doing nothing else. */
+.screen-in { animation: screen-in 220ms cubic-bezier(0.2, 0.8, 0.3, 1); }
 @keyframes screen-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
 /* Panel content cascade, 60ms per step. */
@@ -4511,6 +4522,37 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   color: var(--text-dim);
   animation: fw-line-in 420ms ease both;
 }
+/* The staged wait: the final replayed as a tappable story card. */
+.finale__story {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  margin-top: 2px;
+  padding: 12px 20px 11px;
+  border: 0;
+  cursor: pointer;
+  clip-path: var(--clip-notch-sm);
+  background: linear-gradient(180deg, rgba(64, 47, 16, 0.42), rgba(8, 10, 24, 0.66));
+  box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.35);
+  text-align: center;
+}
+.finale__story .finale__beat { margin: 0; min-height: 44px; color: #eef4ff; }
+.finale__story-key {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  color: #ffeec0;
+  opacity: 0.8;
+}
+.finale__pips { display: flex; gap: 6px; }
+.finale__pips i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(247, 201, 75, 0.28);
+}
+.finale__pips i.is-on { background: var(--gold); box-shadow: 0 0 8px rgba(247, 201, 75, 0.8); }
 
 /* hall keepsakes: the famous finales */
 .finales { display: grid; gap: 9px; }
