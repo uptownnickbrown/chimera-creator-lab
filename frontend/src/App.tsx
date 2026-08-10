@@ -111,9 +111,15 @@ export default function App() {
     refreshProfile();
   }, [refreshProfile, route.name]);
 
-  const key = `${route.name}:${"id" in route ? route.id : ""}${"tid" in route ? route.tid : ""}${
-    "matchId" in route ? route.matchId : ""
-  }`;
+  /* Codex keeps one mount across row taps: the id lives in the hash so refresh
+     and deep links work, but remounting on every selection would wipe the
+     search text and sort choice and refetch the whole list. */
+  const key =
+    route.name === "codex"
+      ? "codex"
+      : `${route.name}:${"id" in route ? route.id : ""}${"tid" in route ? route.tid : ""}${
+          "matchId" in route ? route.matchId : ""
+        }`;
 
   return (
     <>

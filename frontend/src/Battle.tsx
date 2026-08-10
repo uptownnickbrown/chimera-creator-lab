@@ -22,6 +22,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Go } from "./App";
 import {
   api,
+  getLibraryCached,
   type BattleView,
   type BracketMatch,
   type CreatureDetail,
@@ -78,12 +79,32 @@ export function Battle({
   const [battle, setBattle] = useState<BattleView | null>(null);
   const [fighting, setFighting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** A failed FIGHT keeps the predict UI on screen — never the dead-end error. */
+  const [fightError, setFightError] = useState<string | null>(null);
   const [beat, setBeat] = useState(0);
   const [health, setHealth] = useState(false);
   const [ceremony, setCeremony] = useState(false);
   /** Scout modal: which creature id is open (null = closed). */
   const [scoutId, setScoutId] = useState<number | null>(null);
   const beatTimer = useRef<number | null>(null);
+  /* A kid alternating taps between the two pick plates fires overlapping
+     POSTs; only the newest response may set state or the pick shown can be
+     one he did not tap last. */
+  const predictSeq = useRef(0);
+
+  /* The arena's one-line intel card (spec §9): the environment's kid-readable
+     properties are the reasoning fuel for the prediction. Already client-side
+     via the cached library — this just surfaces it. */
+  const [envBlurbs, setEnvBlurbs] = useState<Map<string, string> | null>(null);
+  useEffect(() => {
+    let dead = false;
+    getLibraryCached()
+      .then((lib) => !dead && setEnvBlurbs(new Map(lib.environments.map((e) => [e.slug, e.blurb]))))
+      .catch(() => {}); // no intel card, no harm
+    return () => {
+      dead = true;
+    };
+  }, []);
 
   const resolve = useCallback(async () => {
     const out = await api.resolve(tournamentId, matchId);
@@ -144,13 +165,24 @@ export function Battle({
     if (battle && t?.status === "complete" && isFinal) setCeremony(true);
   }, [battle, t?.status, isFinal]);
 
-  if (error) return <div className="error">{error}</div>;
+  /* Error dead-ends get a door: a 7-year-old should never be stranded with
+     one sentence and no button. */
+  const errorScreen = (msg: string) => (
+    <div className="battle__error">
+      <div className="error">{msg}</div>
+      <Btn accent="cyan" onClick={() => go({ name: "arena", tid: tournamentId })}>
+        BACK TO THE BRACKET
+      </Btn>
+    </div>
+  );
+
+  if (error) return errorScreen(error);
   if (!t) return <Loading label="OPENING THE ARENA" />;
 
   const match: BracketMatch | undefined = t.rounds
     .flatMap((r) => r.matches)
     .find((m) => m.id === matchId);
-  if (!match) return <div className="error">That match is not on this bracket.</div>;
+  if (!match) return errorScreen("That match is not on this bracket.");
 
   const byId = new Map(t.entrants.map((c) => [c.id, c]));
   const a = match.a ? byId.get(match.a) : undefined;
@@ -159,21 +191,30 @@ export function Battle({
   const predicted = battle?.predicted ?? match.predicted;
   const winnerId = battle?.winner_id ?? null;
   const champion = t.champion_id ? byId.get(t.champion_id) : null;
+  // Never point NEXT BATTLE at the match already on screen — a dead button.
   const nextMatch = t.rounds
     .flatMap((r) => r.matches)
-    .find((m) => m.winner === null && m.a !== null && m.b !== null);
+    .find((m) => m.id !== matchId && m.winner === null && m.a !== null && m.b !== null);
   const winsToGo = t.rounds.flatMap((r) => r.matches).filter((m) => m.winner === null).length;
 
   async function predict(id: number) {
-    setT(await api.predict(tournamentId, matchId, id));
+    if (fighting) return; // the pick is locked once FIGHT is in flight
+    const seq = ++predictSeq.current;
+    try {
+      const out = await api.predict(tournamentId, matchId, id);
+      if (seq === predictSeq.current) setT(out);
+    } catch {
+      /* the previous pick stands — tapping again retries */
+    }
   }
 
   async function fight() {
     setFighting(true);
+    setFightError(null);
     try {
       await resolve();
     } catch {
-      setError("That battle could not run.");
+      setFightError("The battle fizzled — tap FIGHT to try again!");
     }
     setFighting(false);
   }
@@ -232,11 +273,21 @@ export function Battle({
                 </div>
                 <div className="winner__confidence">
                   <span className="winner__word">{verdictWord(battle.confidence)}</span>
-                  {predicted !== null && (
-                    <Badge tone={battle.prediction_correct ? "green" : "red"}>
-                      {battle.prediction_correct ? "YOU CALLED IT!" : "NOT YOUR PICK"}
-                    </Badge>
-                  )}
+                  {/* A right call celebrates the earned XP (fresh fights only —
+                      replays already paid out); a wrong one gets drama, not a
+                      cold red stamp. */}
+                  {predicted !== null &&
+                    (battle.prediction_correct ? (
+                      <Badge tone="green">
+                        {battle.cached ? "YOU CALLED IT!" : "YOU CALLED IT! +25 XP"}
+                      </Badge>
+                    ) : (
+                      <Badge tone="red">
+                        {battle.confidence < 0.65
+                          ? "SO CLOSE — NEARLY A TIE!"
+                          : "THE LAB SAW IT DIFFERENTLY"}
+                      </Badge>
+                    ))}
                   {battle.cached && <Badge tone="muted">REPLAY</Badge>}
                 </div>
               </div>
@@ -266,6 +317,14 @@ export function Battle({
           ) : (
             <div className="predict">
               <p className="predict__ask">WHO DO YOU THINK WINS?</p>
+              {envBlurbs?.get(environment) && (
+                <p className="predict__intel">
+                  <Asset slot={envIcon(environment)} label="" className="predict__intel-icon" />
+                  <span>
+                    <b>{envLabel(environment)}</b> — {envBlurbs.get(environment)}
+                  </span>
+                </p>
+              )}
               <div className="predict__pair">
                 {[a, b].map((c, i) =>
                   c ? (
@@ -296,10 +355,11 @@ export function Battle({
                 icon="icons/nav_arena"
                 onClick={fight}
                 disabled={!a || !b || fighting}
-                sub={predicted ? "PICK LOCKED IN" : "PICKING IS OPTIONAL"}
+                sub={predicted ? "PICK LOCKED IN" : "WHO'S YOUR PICK?"}
               >
                 {fighting ? "FIGHTING…" : "FIGHT!"}
               </Btn>
+              {fightError && <div className="error">{fightError}</div>}
             </div>
           )}
         </div>

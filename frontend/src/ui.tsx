@@ -276,7 +276,13 @@ export function FitText({
     }
   }, [min]);
 
-  useLayoutEffect(fit); // after every render — the text may have changed
+  /* Refit only when the text itself changes — the shrink loop forces layout
+     up to ~30 times, so running it on every parent render janks animating
+     screens. The ResizeObserver below owns "the box changed". */
+  const textKey = React.Children.toArray(children)
+    .map((c) => (typeof c === "string" || typeof c === "number" ? String(c) : ""))
+    .join(" ");
+  useLayoutEffect(fit, [fit, textKey]);
 
   useEffect(() => {
     const el = ref.current;
@@ -284,6 +290,15 @@ export function FitText({
     const ro = new ResizeObserver(fit); // the box may have changed
     ro.observe(el.parentElement ?? el);
     return () => ro.disconnect();
+  }, [fit]);
+
+  // Web-font swap changes metrics without a resize or a text change.
+  useEffect(() => {
+    let dead = false;
+    document.fonts?.ready.then(() => !dead && fit());
+    return () => {
+      dead = true;
+    };
   }, [fit]);
 
   return (

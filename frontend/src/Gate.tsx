@@ -3,6 +3,7 @@
    on an iPad. Standalone on purpose: no ui.tsx imports, gate-* classes only,
    design tokens borrowed from theme.css :root. */
 import { useCallback, useEffect, useState } from "react";
+import { BASE } from "./api";
 import "./gate.css";
 
 const PIN_LENGTH = 4;
@@ -12,7 +13,7 @@ const PIN_LENGTH = 4;
     inside the gate (the API calls themselves will surface the real error). */
 export async function checkUnlocked(): Promise<boolean> {
   try {
-    const res = await fetch("/api/auth/me", { credentials: "include" });
+    const res = await fetch(`${BASE}/api/auth/me`, { credentials: "include" });
     // Only an explicit 401 locks the door. A 404 (backend without the auth
     // routes yet) or 5xx fails open — a hiccup must never brick the game.
     return res.status !== 401;
@@ -31,7 +32,7 @@ export default function Gate({ onUnlocked }: { onUnlocked: () => void }) {
     async (pin: string) => {
       setBusy(true);
       try {
-        const res = await fetch("/api/auth/login", {
+        const res = await fetch(`${BASE}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include", // same-origin sends cookies anyway; explicit for clarity

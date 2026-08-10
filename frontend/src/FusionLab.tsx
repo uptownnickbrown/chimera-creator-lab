@@ -198,7 +198,14 @@ export function FusionLab({ go }: { go: Go }) {
     let polls = 0;
     const tick = window.setInterval(async () => {
       polls += 1;
-      if (polls > 48) return clearInterval(tick);
+      if (polls > 48) {
+        clearInterval(tick);
+        // One last look before giving up — a very late portrait still lands.
+        refreshLibrary()
+          .then((lib) => lib.sources.length && setSources(lib.sources))
+          .catch(() => {});
+        return;
+      }
       try {
         const lib = await refreshLibrary();
         if (lib.sources.length) {

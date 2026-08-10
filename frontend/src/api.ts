@@ -1,7 +1,7 @@
 /* Typed client for the Chimera Creator API. No state library, no auth yet —
    single player, one origin. Types mirror backend/app/schemas.py. */
 
-const BASE = import.meta.env.VITE_API_URL || "";
+export const BASE = import.meta.env.VITE_API_URL || "";
 
 export class ApiError extends Error {
   status: number;
@@ -22,6 +22,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const res = await fetch(`${BASE}/api${path}`, {
     method,
     headers: { "Content-Type": "application/json" },
+    credentials: "include", // the PIN-gate session cookie must ride every call
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!res.ok) {

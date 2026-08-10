@@ -47,7 +47,12 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
   /** RELEASE (delete) failsafe: two-tap confirm, quiet. */
   const [confirmRelease, setConfirmRelease] = useState(false);
   const [releaseError, setReleaseError] = useState<string | null>(null);
+  /** One dossier action at a time — a mashed REROLL is one LLM call, not five. */
+  const [busyAction, setBusyAction] = useState(false);
   const selectedRowRef = useRef<HTMLButtonElement>(null);
+  /* Kid-speed sort/pill taps can land responses out of order; only the newest
+     list request may fill the rows. */
+  const loadSeq = useRef(0);
 
   useEffect(() => {
     getLibraryCached()
@@ -63,7 +68,9 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
   );
 
   const load = useCallback(async (which: CodexSort) => {
-    setRows(await api.listCreatures(which).catch(() => []));
+    const seq = ++loadSeq.current;
+    const data = await api.listCreatures(which).catch(() => []);
+    if (seq === loadSeq.current) setRows(data);
   }, []);
 
   useEffect(() => {
@@ -110,10 +117,16 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
   }, [selected?.id]);
 
   async function toggleFavorite() {
-    if (!selected) return;
-    await api.toggleFavorite(selected.id);
-    setSelected(await api.getCreature(selected.id));
-    load(sort);
+    if (!selected || busyAction) return;
+    setBusyAction(true);
+    try {
+      await api.toggleFavorite(selected.id);
+      setSelected(await api.getCreature(selected.id));
+      load(sort);
+    } catch {
+      /* the star stays as it was — tapping again retries */
+    }
+    setBusyAction(false);
   }
 
   async function release() {
@@ -130,10 +143,16 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
   }
 
   async function reroll() {
-    if (!selected) return;
-    await api.rerollName(selected.id);
-    setSelected(await api.getCreature(selected.id));
-    load(sort);
+    if (!selected || busyAction) return;
+    setBusyAction(true);
+    try {
+      await api.rerollName(selected.id);
+      setSelected(await api.getCreature(selected.id));
+      load(sort);
+    } catch {
+      /* the old name stands — tapping again retries */
+    }
+    setBusyAction(false);
   }
 
   if (!rows) return <Loading label="OPENING THE CODEX" />;
@@ -244,6 +263,7 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
                 type="button"
                 className={`starbtn${selected.favorite ? " is-on" : ""}`}
                 onClick={toggleFavorite}
+                disabled={busyAction}
                 aria-label={selected.favorite ? "Remove favourite" : "Make favourite"}
                 title={selected.favorite ? "Remove favourite" : "Make favourite"}
               >
@@ -348,8 +368,8 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
               </div>
             ) : (
               <div className="detail__actions">
-                <Btn accent="ghost" size="sm" onClick={reroll}>
-                  REROLL NAME
+                <Btn accent="ghost" size="sm" onClick={reroll} disabled={busyAction}>
+                  {busyAction ? "REROLLING…" : "REROLL NAME"}
                 </Btn>
                 <Btn accent="gold" size="sm" icon="icons/nav_arena" onClick={() => go({ name: "arena" })}>
                   GO TO ARENA

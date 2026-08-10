@@ -6,7 +6,7 @@
    The creature is the star — panels frame it, they never crowd it. */
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Go } from "./App";
-import { api, getLibraryCached, type CreatureDetail, type SourceCreature } from "./api";
+import { ApiError, api, getLibraryCached, type CreatureDetail, type SourceCreature } from "./api";
 import { FusionWait } from "./FusionWait";
 import {
   ABILITY_ICONS,
@@ -38,7 +38,12 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
   const [revealed, setRevealed] = useState(false);
   const [flashing, setFlashing] = useState(false);
   const [retrying, setRetrying] = useState(false);
+  const [renaming, setRenaming] = useState(false);
   const timer = useRef<number | null>(null);
+  /* Consecutive poll failures. A WiFi blip must not kill the wait — the
+     creature keeps cooking server-side — so only a long unbroken run of
+     failures (or a true 404) surfaces the error screen. */
+  const failures = useRef(0);
   /* Did we ever show the wait? A codex revisit lands already-complete and must
      not fire a white-out at a child who did not ask for one. */
   const waited = useRef(false);
@@ -53,11 +58,13 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
 
   useEffect(() => {
     let cancelled = false;
+    failures.current = 0;
 
     async function poll() {
       try {
         const row = await api.getCreature(creatureId);
         if (cancelled) return;
+        failures.current = 0;
         setCreature(row);
         const settled =
           row.record_status !== "generating" &&
@@ -68,8 +75,21 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
           const wait = row.record_status === "generating" && !row.name ? POLL_FAST_MS : POLL_MS;
           timer.current = setTimeout(poll, wait) as unknown as number;
         }
-      } catch {
-        if (!cancelled) setError("That chimera could not be found.");
+      } catch (err) {
+        if (cancelled) return;
+        if (err instanceof ApiError && err.status === 404) {
+          setError("That chimera could not be found.");
+          return;
+        }
+        /* Transient (blip, hiccup, 401 while the gate re-opens): keep polling.
+           ~8 straight misses at 3s spacing ≈ 24s of real outage before we
+           interrupt the show. */
+        failures.current += 1;
+        if (failures.current >= 8) {
+          setError("The lab lost its connection. Your chimera is safe — try again.");
+          return;
+        }
+        timer.current = setTimeout(poll, POLL_MS * 2) as unknown as number;
       }
     }
 
@@ -120,7 +140,42 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
     }
   }, [creature]);
 
-  if (error) return <div className="error">{error}</div>;
+  /* Spec §11: the name is half the reveal — offer a do-over right here, not
+     behind a buried Codex button. Guarded: each tap is one rename call. */
+  const rerollName = useCallback(async () => {
+    if (!creature || renaming) return;
+    setRenaming(true);
+    try {
+      const out = await api.rerollName(creature.id);
+      setCreature((c) => (c ? { ...c, name: out.name, title: out.title } : c));
+    } catch {
+      /* the old name stands — tapping again retries */
+    }
+    setRenaming(false);
+  }, [creature, renaming]);
+
+  if (error) {
+    return (
+      <div className="rv__recharge">
+        <p className="eyebrow">SIGNAL LOST</p>
+        <h1 className="display">THE LAB LOST CONTACT</h1>
+        <p className="lede">{error}</p>
+        <Btn
+          accent="cyan"
+          size="lg"
+          onClick={() => {
+            setError(null);
+            setRetrying((n) => !n); // re-arm the poll loop
+          }}
+        >
+          TRY AGAIN
+        </Btn>
+        <Btn accent="ghost" onClick={() => go({ name: "codex" })}>
+          OPEN THE CODEX
+        </Btn>
+      </div>
+    );
+  }
 
   const recordFailed = creature?.record_status === "failed";
   const imageFailed = creature?.image_status === "failed";
@@ -182,6 +237,15 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
               {title}
             </p>
           )}
+          <button
+            type="button"
+            className="rv__rename rv-in"
+            style={anim(900)}
+            onClick={rerollName}
+            disabled={renaming}
+          >
+            {renaming ? "SUMMONING A NEW NAME…" : "TRY ANOTHER NAME"}
+          </button>
 
           {creature.fun_fact && (
             <div className="rv__topfact rv-in" style={anim(1500)}>
@@ -258,8 +322,10 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
         </Panel>
 
         <footer className="rv__foot rv-in" style={anim(1700)}>
+          {/* Already saved at creation — the button says so instead of implying
+              that skipping it would lose the creature. */}
           <Btn accent="purple" size="lg" icon="icons/tile_codex" onClick={() => go({ name: "codex", id: creature.id })}>
-            ADD TO CODEX
+            SEE IT IN THE CODEX
           </Btn>
           <Btn accent="cyan" size="lg" icon="icons/nav_fusion" onClick={() => go({ name: "lab" })}>
             MAKE ANOTHER
