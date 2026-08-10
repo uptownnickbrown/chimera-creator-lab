@@ -146,7 +146,10 @@ export function Battle({
         return n + 1;
       });
     };
-    beatTimer.current = setTimeout(step, 1400) as unknown as number;
+    // The opening sentence gets its full read too: settle-in time for the
+    // winner banner PLUS a whole beat — the 1400 alone was the bug that
+    // flashed beat 0 for 1.4s while eyes were still on the banner.
+    beatTimer.current = setTimeout(step, 1400 + BEAT_MS) as unknown as number;
     return () => {
       clearTimeout(h);
       if (beatTimer.current) clearTimeout(beatTimer.current);

@@ -322,7 +322,10 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
                       <span className="plaque" key="victim">
                         <Asset slot="trophy/badge_champion" label="" className="plaque__icon" tint="gold" />
                         <span className="plaque__text">
-                          <b>ALWAYS BEATS</b>
+                          {/* "Always" only when it is literally true. */}
+                          <b>
+                            {selected.favorite_victim.losses === 0 ? "ALWAYS BEATS" : "USUALLY BEATS"}
+                          </b>
                           {selected.favorite_victim.name} · {selected.favorite_victim.wins}W{" "}
                           {selected.favorite_victim.losses}L
                         </span>
