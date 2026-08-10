@@ -3,8 +3,9 @@
 Nick's verdict on the scaffold UI (2026-08-08): atrocious, ~20%. The creature
 art is AAA; the HTML/CSS around it is flat cardboard. This document is the
 binding standard for the presentation rebuild. Every screen ships only when a
-1180×820 screenshot holds up NEXT TO its art-direction mock (side-by-side),
-judged by the integration lead, not the implementing agent.
+WebKit iPad screenshot (1080×810 — the real 9th-gen landscape viewport) holds
+up NEXT TO its art-direction mock (side-by-side), judged by the integration
+lead, not the implementing agent.
 
 ## The core principle
 
@@ -111,7 +112,18 @@ Nothing bounces except the rarity stamp. prefers-reduced-motion: fades only.
 
 ## Acceptance loop (non-negotiable)
 
-For each screen: Playwright screenshot at 1180×820 AND 1440×900 →
+For each screen: Playwright screenshot on WEBKIT with the iPad (gen 7/9)
+landscape descriptor (1080×810, DPR 2, touch) AND Chromium at 1440×900 →
 compose side-by-side with the mock → the lead reviews and either signs off
 or returns specific defects. Repeat until signed. Console must be
 error-free; every Asset slot must resolve (zero magenta outlines).
+
+Mobile-Safari lesson (2026-08-09): Chromium at 1180×820 predicted neither the
+real 1080px width nor WebKit layout — Henry's iPad showed truncated labels,
+compressed grid rows and panels painting over footers that the sweep never
+saw. scripts/qa_screens.py now runs the WebKit iPad profile and audits every
+screen for clipped text, boxes escaping their parents, overlapping
+interactive/panel boxes, and horizontal overflow. All four counts must be
+ZERO on every screen before sign-off; the fitted desktop grids flow-and-
+scroll below 1100px instead of squeezing (see the ≤1100 structural pass in
+theme.css).

@@ -20,6 +20,7 @@ stat modal). DELETE endpoints are never called by the sweep.
 """
 import argparse
 import json
+import os
 import urllib.request
 from pathlib import Path
 
@@ -34,7 +35,28 @@ MOCKS = {
     "codex": "codex.png",
     "battle": "battle.png",
 }
-VIEWPORTS = {"ipad": (1180, 820), "desktop": (1440, 900)}
+# Profiles, not viewports: the iPad profile runs WEBKIT with Playwright's
+# device descriptor for the 10.2" panel (gen 7 == gen 9 screen: 1080x810
+# landscape CSS px, DPR 2, touch). Chromium at 1180x820 predicted neither
+# mobile-Safari rendering nor the real width — that's how the 2026-08-09
+# qa/mobile-safari batch got past the sweep.
+PROFILES = {
+    "ipad": {"engine": "webkit", "device": "iPad (gen 7) landscape"},
+    "desktop": {"engine": "chromium", "viewport": (1440, 900)},
+}
+# Fallback if the installed Playwright lacks the descriptor.
+IPAD_FALLBACK = {
+    "viewport": {"width": 1080, "height": 810},
+    "device_scale_factor": 2,
+    "is_mobile": True,
+    "has_touch": True,
+    "user_agent": (
+        "Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 "
+        "(KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1"
+    ),
+}
+# Portrait smoke shots (the rotate overlay is screen-agnostic; two suffice).
+PORTRAIT_SCREENS = ("home", "lab")
 
 # route -> (hash path, settle ms). Bracket/battle/finale routes are derived
 # from the live tournament list at runtime (see build_screens); the reveal
@@ -104,12 +126,22 @@ FW_ABILITIES = [
 # state -> (fake id, settle ms)
 FW_STATES = {"a": (99991, 2600), "b": (99992, 5200), "c": (99993, 4200)}
 
-# The DOM-walk that finds the smallest rendered font on a screen and every
-# visible text element below the 13px floor.
-FONT_AUDIT_JS = """
+# The per-screen layout audit. Beyond the font floor it now PREDICTS the
+# mobile-Safari failure modes photographed on 2026-08-09:
+#   clipped  — text visibly cut by overflow/line-clamp ("RESILIEN…", chips)
+#   escapes  — boxes poking out of an overflow-visible parent (crew names,
+#              the COMPLETE badge) — FitText can't shrink an unconstrained box
+#   overlaps — interactive/panel boxes painting over each other (foot buttons
+#              over the bracket, RUN A TOURNAMENT over the finales)
+AUDIT_JS = """
 () => {
+  const vw = innerWidth, vh = innerHeight;
+  const res = { min: null, below: [], hOverflow: 0,
+                clipped: [], escapes: [], overlaps: [] };
+  res.hOverflow = Math.max(0, document.documentElement.scrollWidth - vw);
+
+  // ── font floor ──
   let min = Infinity;
-  const below = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const seen = new Set();
   while (walker.nextNode()) {
@@ -123,20 +155,125 @@ FONT_AUDIT_JS = """
     if (parseFloat(cs.opacity) === 0) continue;
     const r = el.getBoundingClientRect();
     if (r.width < 1 || r.height < 1) continue;
-    if (r.bottom < 0 || r.top > innerHeight) continue;
+    if (r.bottom < 0 || r.top > vh) continue;
     const fs = parseFloat(cs.fontSize);
     if (!fs) continue;
     if (fs < min) min = fs;
-    if (fs < 13) {
-      below.push({
-        px: Math.round(fs * 10) / 10,
-        text: node.textContent.trim().slice(0, 48),
-        cls: String(el.className).slice(0, 60),
-      });
+    if (fs < 13)
+      below_push(res.below, fs, node.textContent, el);
+  }
+  function below_push(arr, fs, text, el) {
+    arr.push({ px: Math.round(fs * 10) / 10,
+               text: text.trim().slice(0, 48),
+               cls: String(el.className).slice(0, 60) });
+  }
+  res.min = isFinite(min) ? Math.round(min * 10) / 10 : null;
+
+  // ── visible element sweep (near-viewport only) ──
+  const label = (el) => {
+    const raw = el.className;
+    const cls = String(raw && raw.baseVal !== undefined ? raw.baseVal : raw || "")
+      .trim().split(/\\s+/).slice(0, 2).join(".");
+    const txt = (el.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 36);
+    return (cls ? "." + cls : el.tagName.toLowerCase()) + (txt ? ` \\"${txt}\\"` : "");
+  };
+  const vis = [];
+  for (const el of document.querySelectorAll("body *")) {
+    if (vis.length > 5000) break;
+    const cs = getComputedStyle(el);
+    if (cs.display === "none" || cs.visibility === "hidden") continue;
+    if (parseFloat(cs.opacity) < 0.05) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) continue;
+    if (r.bottom < -50 || r.top > vh + 400) continue;
+    vis.push([el, cs, r]);
+  }
+
+  // clipped text (only elements that directly own text)
+  for (const [el, cs, r] of vis) {
+    const ownText = Array.from(el.childNodes)
+      .some((n) => n.nodeType === 3 && n.textContent.trim());
+    if (!ownText) continue;
+    const clamp = cs.webkitLineClamp && cs.webkitLineClamp !== "none";
+    const hidX = cs.overflowX === "hidden" || cs.overflowX === "clip";
+    const hidY = cs.overflowY === "hidden" || cs.overflowY === "clip";
+    if (hidX && el.scrollWidth > el.clientWidth + 1)
+      res.clipped.push({ how: "x", what: label(el) });
+    else if (clamp && el.scrollHeight > el.clientHeight + 3)
+      res.clipped.push({ how: "clamp", what: label(el) });
+    else if (hidY && el.scrollHeight > el.clientHeight + 3)
+      res.clipped.push({ how: "y", what: label(el) });
+  }
+
+  // escapes from an overflow-visible parent (transformed elements are
+  // mid-animation — breathing/pulse effects — not layout bugs)
+  for (const [el, cs, r] of vis) {
+    const p = el.parentElement;
+    if (!p || p === document.body) continue;
+    if (cs.position === "absolute" || cs.position === "fixed") continue;
+    if (cs.transform !== "none") continue;
+    const pcs = getComputedStyle(p);
+    if (pcs.overflowX !== "visible" || pcs.display === "contents" ||
+        pcs.display === "inline") continue;
+    // a clip-path parent visually clips its overflow (the notched cards)
+    if (pcs.clipPath && pcs.clipPath !== "none") continue;
+    const pr = p.getBoundingClientRect();
+    if (pr.width < 8) continue; // boxless/collapsed parent — nothing to escape
+    const out = Math.max(pr.left - r.left, r.right - pr.right);
+    if (out > 3)
+      res.escapes.push({ what: label(el), by: Math.round(out) });
+  }
+
+  // overlaps among interactive / panel boxes. Rects are clipped by every
+  // scrolling/clipping ancestor first — content scrolled out of an
+  // overflow pane isn't painted, so it can't "overlap" anything.
+  const clipBy = (el, r) => {
+    let left = r.left, top = r.top, right = r.right, bottom = r.bottom;
+    for (let a = el.parentElement; a && a !== document.documentElement;
+         a = a.parentElement) {
+      const acs = getComputedStyle(a);
+      if (/(auto|scroll|hidden|clip)/.test(acs.overflowX + acs.overflowY)) {
+        const ar = a.getBoundingClientRect();
+        left = Math.max(left, ar.left); top = Math.max(top, ar.top);
+        right = Math.min(right, ar.right); bottom = Math.min(bottom, ar.bottom);
+      }
+    }
+    return { left, top, right, bottom,
+             width: Math.max(0, right - left), height: Math.max(0, bottom - top) };
+  };
+  // Intentional overlays: the picker rail arrows ride the strip edges and the
+  // battle nameplates sit on the arena corners by design.
+  const INTENTIONAL = ".rail__arrow, .corner__stage, .corner__id";
+  const SEL = "button, a, [role=button], .btn, .panel, footer, .fw__spot, " +
+              ".predict__ask, .nextmatch, .tile, .pickplate";
+  const inFixedOverlay = (el) => {
+    for (let a = el; a && a !== document.documentElement; a = a.parentElement)
+      if (getComputedStyle(a).position === "fixed") return true;
+    return false;
+  };
+  const cand = vis.filter(([el, cs]) =>
+    el.matches(SEL) && !el.matches(INTENTIONAL) &&
+    !el.closest("[aria-hidden=true]") && !inFixedOverlay(el))
+    .map(([el, cs, r]) => [el, clipBy(el, r)])
+    .filter(([, r]) => r.width > 4 && r.height > 4);
+  for (let i = 0; i < cand.length && res.overlaps.length < 20; i++) {
+    for (let j = i + 1; j < cand.length; j++) {
+      const [a, ra] = cand[i], [b, rb] = cand[j];
+      if (a.contains(b) || b.contains(a)) continue;
+      const w = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
+      const h = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+      if (w <= 4 || h <= 4) continue;
+      const inter = w * h;
+      const small = Math.min(ra.width * ra.height, rb.width * rb.height);
+      if (inter > 0.12 * small)
+        res.overlaps.push({ a: label(a), b: label(b),
+                            pct: Math.round((100 * inter) / small) });
     }
   }
-  return { min: isFinite(min) ? Math.round(min * 10) / 10 : null,
-           below: below.slice(0, 24) };
+  res.below = res.below.slice(0, 24);
+  res.clipped = res.clipped.slice(0, 24);
+  res.escapes = res.escapes.slice(0, 24);
+  return res;
 }
 """
 
@@ -218,17 +355,58 @@ def current_payload(base: str) -> str | None:
 
 def main(base: str, out: Path) -> None:
     out.mkdir(parents=True, exist_ok=True)
+    SCREENS = build_screens(base)
     errors: dict[str, list[str]] = {}
     fonts: dict[str, dict] = {}
     stubbed = ["tournaments/current (arena, arena_setup)", "fw_a", "fw_b", "fw_c"]
 
     current_body = current_payload(base)
 
+    # A complete tournament re-served with one championship match unresolved —
+    # the raw material for the battle_predict shot.
+    predict_stub = None
+    tours = fetch_json(base, "/api/tournaments") or []
+    for t in tours:
+        import copy
+        t2 = copy.deepcopy(t)
+        tgt = next((m for rnd in t2.get("rounds", []) for m in rnd.get("matches", [])
+                    if m.get("winner") is not None and m.get("a") and m.get("b")), None)
+        if tgt:
+            tgt["winner"] = None
+            tgt["battle_id"] = None
+            tgt["predicted"] = None
+            t2["status"] = "active"
+            predict_stub = (t2, tgt["id"])
+            break
+
     with sync_playwright() as pw:
-        browser = pw.chromium.launch()
-        for vp_name, (w, h) in VIEWPORTS.items():
-            ctx = browser.new_context(viewport={"width": w, "height": h},
-                                      device_scale_factor=2)
+        browsers: dict[str, object] = {}
+
+        def engine(name: str):
+            if name not in browsers:
+                browsers[name] = getattr(pw, name).launch()
+            return browsers[name]
+
+        def make_ctx(prof: dict):
+            if "device" in prof:
+                desc = dict(pw.devices.get(prof["device"]) or IPAD_FALLBACK)
+                desc.pop("default_browser_type", None)
+                ctx = engine(prof["engine"]).new_context(**desc)
+            else:
+                w, h = prof["viewport"]
+                ctx = engine(prof["engine"]).new_context(
+                    viewport={"width": w, "height": h}, device_scale_factor=2)
+            # Once the PIN gate ships, the sweep authenticates like Henry does.
+            pin = os.environ.get("CHIMERA_PIN")
+            if pin:
+                try:
+                    ctx.request.post(f"{base}/api/auth/login", data={"pin": pin})
+                except Exception:
+                    pass
+            return ctx
+
+        for vp_name, prof in PROFILES.items():
+            ctx = make_ctx(prof)
             page = ctx.new_page()
             key = [""]
             page.on("console", lambda m: errors.setdefault(key[0], []).append(m.text)
@@ -241,8 +419,16 @@ def main(base: str, out: Path) -> None:
                 if actions:
                     actions()
                 page.screenshot(path=str(out / f"{name}_{vp_name}.png"))
-                fonts[key[0]] = page.evaluate(FONT_AUDIT_JS)
-                print(f"  shot {name}_{vp_name}  (min font {fonts[key[0]]['min']}px)")
+                a = page.evaluate(AUDIT_JS)
+                fonts[key[0]] = a
+                flags = []
+                if a["hOverflow"]:
+                    flags.append(f"hoverflow {a['hOverflow']}px")
+                for k in ("clipped", "escapes", "overlaps"):
+                    if a[k]:
+                        flags.append(f"{k} {len(a[k])}")
+                print(f"  shot {name}_{vp_name}  (min font {a['min']}px"
+                      + (";  " + ", ".join(flags) if flags else "") + ")")
 
             def stub_current(body: str | None):
                 def handler(route, _request=None, body=body):
@@ -290,26 +476,78 @@ def main(base: str, out: Path) -> None:
                 page.route(pattern, stub)
                 shot(f"fw_{state}", f"#/reveal/{cid}", settle)
                 page.unroute(pattern)
+
+            # The predict state — "WHO DO YOU THINK WINS?" only renders on an
+            # unresolved match, so a resolved one is served back with its
+            # winner nulled. Every write verb is blocked: the sweep must never
+            # fire a real AI battle.
+            if predict_stub:
+                t2, mid = predict_stub
+                def block_writes(route):
+                    if route.request.method in ("POST", "PUT", "PATCH", "DELETE"):
+                        route.abort()
+                    else:
+                        route.fallback()
+                body2 = json.dumps(t2)
+
+                def stub_t(route, _request=None, body=body2):
+                    route.fulfill(status=200, content_type="application/json",
+                                  body=body)
+
+                page.route("**/api/tournaments/**", block_writes)
+                page.route(f"**/api/tournaments/{t2['id']}", stub_t)
+                shot("battle_predict", f"#/arena/{t2['id']}/{mid}", 3200)
+                page.unroute(f"**/api/tournaments/{t2['id']}")
+                page.unroute("**/api/tournaments/**")
             ctx.close()
-        browser.close()
+
+        # Portrait smoke shots — verifies the rotate-to-landscape overlay
+        # (and that nothing renders catastrophically underneath it).
+        desc = dict(pw.devices.get("iPad (gen 7)") or
+                    {**IPAD_FALLBACK,
+                     "viewport": {"width": 810, "height": 1080}})
+        desc.pop("default_browser_type", None)
+        ctx = engine("webkit").new_context(**desc)
+        page = ctx.new_page()
+        key = [""]
+        for name in PORTRAIT_SCREENS:
+            route, settle = SCREENS[name]
+            key[0] = f"{name}:ipad_portrait"
+            page.goto(f"{base}/{route}")
+            page.wait_for_timeout(settle)
+            page.screenshot(path=str(out / f"{name}_ipad_portrait.png"))
+            fonts[key[0]] = page.evaluate(AUDIT_JS)
+            print(f"  shot {name}_ipad_portrait")
+        ctx.close()
+
+        for b in browsers.values():
+            b.close()
 
     (out / "console.json").write_text(json.dumps(errors, indent=2))
-    (out / "fonts.json").write_text(json.dumps(fonts, indent=2))
+    (out / "audit.json").write_text(json.dumps(fonts, indent=2))
     (out / "stubbed.json").write_text(json.dumps(stubbed, indent=2))
 
     bad = {k: v for k, v in errors.items() if v}
     print(f"\nconsole errors on {len(bad)} screen(s)" + (f": {list(bad)}" if bad else ""))
 
-    print("\nmin font per screen (floor is 13px):")
-    worst = []
+    print("\nper-screen audit (font floor 13px; clip/escape/overlap should be 0):")
     for k in sorted(fonts):
         f = fonts[k]
         flag = "  <-- BELOW FLOOR" if (f["min"] or 99) < 13 else ""
-        print(f"  {k:28s} {f['min']}px{flag}")
-        if f["below"]:
-            worst.append((k, f["below"][:3]))
-    for k, items in worst:
-        print(f"  offenders on {k}: {items}")
+        counts = "  ".join(
+            f"{n}:{len(f.get(n) or [])}" for n in ("clipped", "escapes", "overlaps"))
+        hov = f.get("hOverflow") or 0
+        print(f"  {k:28s} min {f['min']}px  {counts}  hoverflow:{hov}{flag}")
+    print("\nflagged details:")
+    any_flag = False
+    for k in sorted(fonts):
+        f = fonts[k]
+        for n in ("clipped", "escapes", "overlaps"):
+            for item in (f.get(n) or [])[:6]:
+                any_flag = True
+                print(f"  {k:26s} {n:8s} {json.dumps(item, ensure_ascii=False)}")
+    if not any_flag:
+        print("  (none — clean sweep)")
 
     for name, mock_file in MOCKS.items():
         shot_p = out / f"{name}_ipad.png"
