@@ -9,6 +9,7 @@ import type { Go } from "./App";
 import { api, getLibraryCached, type CreatureDetail, type SourceCreature } from "./api";
 import { FusionWait } from "./FusionWait";
 import {
+  ABILITY_ICONS,
   Asset,
   Badge,
   Btn,
@@ -18,17 +19,8 @@ import {
   PartImg,
   RarityBadge,
   StatRow,
-  TraitChips,
+  TraitList,
 } from "./ui";
-
-/* Four abilities all wearing the same glyph reads as a placeholder; the stat
-   icons give each one its own painted mark. */
-const ABILITY_ICONS = [
-  "icons/ability_generic",
-  "icons/stat_special",
-  "icons/stat_power",
-  "icons/stat_speed",
-];
 
 /* Gradual disclosure is the product: until the FIRST streamed field lands
    (the name — server-side it parses ~1-2s into the stream), poll fast so the
@@ -241,7 +233,7 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
 
           {(creature.strengths.length > 0 || creature.weaknesses.length > 0) && (
             <Panel title="KNOW YOUR CHIMERA" accent="cyan" className="rv-in">
-              <TraitChips strengths={creature.strengths} weaknesses={creature.weaknesses} />
+              <TraitList strengths={creature.strengths} weaknesses={creature.weaknesses} />
             </Panel>
           )}
           </div>

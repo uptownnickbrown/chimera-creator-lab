@@ -448,50 +448,44 @@ export function cleanList(rows: string[], max = 4): string[] {
     .slice(0, max);
 }
 
-/** A chip label carved from the front of a kid-readable sentence. The full
-    sentence is one tap away in the reader line — the chip is a handle, the
-    copy itself is never truncated. */
-function chipLabel(text: string, words = 3): string {
-  return text
-    .split(/\s+/)
-    .slice(0, words)
-    .join(" ")
-    .replace(/[.,;:!?'"]+$/, "")
-    .toUpperCase();
-}
+/* Four moves all wearing the same glyph reads as a placeholder; the stat
+   icons give each one its own painted mark. Shared with the Reveal cascade. */
+export const ABILITY_ICONS = [
+  "icons/ability_generic",
+  "icons/stat_special",
+  "icons/stat_power",
+  "icons/stat_speed",
+];
 
-/** MOVES as big tappable name-chips that open one blurb at a time in a
-    reader line — visible-without-scroll beats all-text-expanded. Shared by
-    the Codex detail panel and the Battle stat modal. */
-export function MoveChips({ abilities }: { abilities: Ability[] }) {
-  const [open, setOpen] = useState(0);
+/** MOVES as always-visible cards — every name AND blurb on screen at once,
+    nothing hidden behind a tap. The first move is the signature and keeps
+    the hot highlight. Shared by the Codex detail and the Battle stat modal. */
+export function MoveCards({ abilities }: { abilities: Ability[] }) {
   if (!abilities.length) return null;
-  const current = abilities[Math.min(open, abilities.length - 1)];
   return (
-    <div className="chips">
-      <div className="chips__row">
-        {abilities.map((a, i) => (
-          <button
-            key={a.name}
-            type="button"
-            className={`chip chip--purple${i === open ? " is-open" : ""}`}
-            onClick={() => setOpen(i)}
-          >
+    <div className="movecards">
+      {abilities.map((a, i) => (
+        <article className={`movecard${i === 0 ? " movecard--sig" : ""}`} key={a.name}>
+          <h4 className="movecard__name">
+            <Asset
+              slot={ABILITY_ICONS[i % ABILITY_ICONS.length]}
+              label=""
+              className="movecard__icon"
+              tint="purple"
+            />
             {String(a.name ?? "").toUpperCase()}
-          </button>
-        ))}
-      </div>
-      <p className="chips__reader chips__reader--purple" key={current.name}>
-        <b>{String(current.name ?? "").toUpperCase()}</b> {current.blurb}
-      </p>
+          </h4>
+          <p className="movecard__blurb">{a.blurb}</p>
+        </article>
+      ))}
     </div>
   );
 }
 
-/** STRONG AT / WATCH OUT (and optionally FUN FACT) as compact chip rows.
-    Tapping a chip reads the full line in the shared reader — one at a time,
-    never a wall of text. */
-export function TraitChips({
+/** STRONG AT / WATCH OUT as two columns of full sentences — every word
+    visible, no truncation, no tap-to-read — plus the fun fact as an
+    always-open gold callout. Shared by the Codex detail and the Reveal. */
+export function TraitList({
   strengths,
   weaknesses,
   funFact,
@@ -502,43 +496,34 @@ export function TraitChips({
 }) {
   const s = cleanList(strengths);
   const w = cleanList(weaknesses);
-  type Item = { key: string; kind: "strength" | "weakness" | "fact"; text: string };
-  const items: Item[] = [
-    ...s.map((text, i) => ({ key: `s${i}`, kind: "strength" as const, text })),
-    ...w.map((text, i) => ({ key: `w${i}`, kind: "weakness" as const, text })),
-    ...(funFact ? [{ key: "f", kind: "fact" as const, text: funFact }] : []),
-  ];
-  const [openKey, setOpenKey] = useState<string | null>(items[0]?.key ?? null);
-  if (!items.length) return null;
-  const open = items.find((x) => x.key === openKey) ?? items[0];
-  const tone = { strength: "green", weakness: "red", fact: "gold" } as const;
-  const row = (kind: Item["kind"], label: string) => {
-    const mine = items.filter((x) => x.kind === kind);
-    if (!mine.length) return null;
-    return (
-      <div className="traits__row" key={kind}>
-        <span className={`traits__key traits__key--${tone[kind]}`}>{label}</span>
-        {mine.map((x) => (
-          <button
-            key={x.key}
-            type="button"
-            className={`chip chip--${tone[x.kind]}${x.key === open.key ? " is-open" : ""}`}
-            onClick={() => setOpenKey(x.key)}
-          >
-            {x.kind === "fact" ? "TAP TO READ" : chipLabel(x.text)}
-          </button>
-        ))}
+  if (!s.length && !w.length && !funFact) return null;
+  const col = (tone: "green" | "red", label: string, rows: string[]) =>
+    rows.length > 0 && (
+      <div className={`traitcol traitcol--${tone}`}>
+        <h4 className="traitcol__head">{label}</h4>
+        <ul className="traitcol__list">
+          {rows.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
       </div>
     );
-  };
   return (
-    <div className="chips traits">
-      {row("strength", "STRONG AT")}
-      {row("weakness", "WATCH OUT")}
-      {row("fact", "FUN FACT")}
-      <p className={`chips__reader chips__reader--${tone[open.kind]}`} key={open.key}>
-        {open.text}
-      </p>
+    <div className="traitlist">
+      {(s.length > 0 || w.length > 0) && (
+        <div className="traitlist__cols">
+          {col("green", "STRONG AT", s)}
+          {col("red", "WATCH OUT", w)}
+        </div>
+      )}
+      {funFact && (
+        <p className="funfact">
+          <Asset slot="icons/fact_fun" label="" className="funfact__icon" tint="gold" />
+          <span>
+            <b>FUN FACT</b> {funFact}
+          </span>
+        </p>
+      )}
     </div>
   );
 }

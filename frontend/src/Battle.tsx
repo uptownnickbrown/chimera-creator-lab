@@ -36,7 +36,7 @@ import {
   CreatureImg,
   FitText,
   Loading,
-  MoveChips,
+  MoveCards,
   Panel,
   RarityBadge,
   Stage,
@@ -562,7 +562,7 @@ function ScoutModal({ creatureId, onClose }: { creatureId: number; onClose: () =
               <Stage plain creature={detail} caption="RENDER PENDING" />
             </div>
             <StatRow compact stats={detail.core_stats} />
-            {detail.abilities.length > 0 && <MoveChips abilities={detail.abilities} />}
+            {detail.abilities.length > 0 && <MoveCards abilities={detail.abilities} />}
             <span className="scout__hint">TAP ANYWHERE TO CLOSE</span>
           </div>
         ) : (

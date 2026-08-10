@@ -1,8 +1,8 @@
-/* Screen 4 — Codex (spec §14, art-direction/codex.png). Sorting reads as
-   questions, never as a spreadsheet config: a filter rail on the left, the
-   archive grid in the middle, and the selected chimera standing on its own
-   platform on the right. */
-import { useCallback, useEffect, useMemo, useState } from "react";
+/* Screen 4 — Codex (spec §14, redesigned 2026-08-09 with Nick). Two panes:
+   a narrow archive LIST on the left (every creature is a row — art, name,
+   rarity, trophies), and a wide detail dossier on the right where nothing
+   about the selected chimera hides behind a tap. */
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Go } from "./App";
 import {
   api,
@@ -16,17 +16,17 @@ import {
   Asset,
   Badge,
   Btn,
-  CreatureCard,
+  CreatureImg,
   Empty,
   FitText,
   Loading,
-  MoveChips,
+  MoveCards,
   Panel,
   PartImg,
   RarityBadge,
   Stage,
   StatRow,
-  TraitChips,
+  TraitList,
 } from "./ui";
 
 const SORTS: { key: CodexSort; label: string }[] = [
@@ -47,6 +47,7 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
   /** RELEASE (delete) failsafe: two-tap confirm, quiet. */
   const [confirmRelease, setConfirmRelease] = useState(false);
   const [releaseError, setReleaseError] = useState<string | null>(null);
+  const selectedRowRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     getLibraryCached()
@@ -102,6 +103,12 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
     setReleaseError(null);
   }, [selected?.id]);
 
+  /* Landing from elsewhere (Hall, Arena) with a deep-linked id: bring its row
+     into view. "nearest" so browsing by tap never yanks the list around. */
+  useEffect(() => {
+    selectedRowRef.current?.scrollIntoView({ block: "nearest" });
+  }, [selected?.id]);
+
   async function toggleFavorite() {
     if (!selected) return;
     await api.toggleFavorite(selected.id);
@@ -136,25 +143,35 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
 
   return (
     <div className="codex screen-in">
-      <aside className="codex__rail">
-        <header className="codex__title">
-          <h1 className="display display--xl">MY CODEX</h1>
-          <p className="codex__sub">CREATURE ARCHIVE</p>
-          <p className="lede">Every chimera you have ever built, kept forever.</p>
-        </header>
-
-        <div className="codex__filters">
+      <Panel
+        accent="cyan"
+        className="codex__list"
+        title={`MY CODEX — ${visible.length}`}
+        action={
+          <label className="search">
+            <Asset slot="icons/search" label="" className="search__icon" />
+            <input
+              type="search"
+              value={query}
+              placeholder="Find…"
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Search your chimeras"
+            />
+          </label>
+        }
+      >
+        <div className="codex__sorts" role="group" aria-label="Sort the codex">
           {SORTS.map((s) => (
             <button
               key={s.key}
               type="button"
-              className={`filter${sort === s.key ? " is-active" : ""}`}
+              className={`sortpill${sort === s.key ? " is-active" : ""}`}
               onClick={() => setSort(s.key)}
             >
               <Asset
                 slot={`icons/sort_${s.key}`}
                 label=""
-                className="filter__icon"
+                className="sortpill__icon"
                 tint={s.key === "favorites" || s.key === "winners" ? "gold" : undefined}
               />
               {s.label}
@@ -162,55 +179,36 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
           ))}
         </div>
 
-        <Panel title="CODEX PROGRESS" accent="purple" className="codex__progress">
-          <div className="progress">
-            <div className="progress__row">
-              <Asset slot="icons/tile_codex" label="" className="progress__icon" tint="purple" />
-              <div>
-                <div className="progress__value num">{rows.length}</div>
-                <div className="progress__label">CHIMERAS DISCOVERED</div>
-              </div>
-            </div>
-            <div className="progress__bar">
-              <span style={{ width: `${rows.length ? (painted / rows.length) * 100 : 0}%` }} />
-            </div>
-            <div className="progress__foot num">
-              {painted} PAINTED · {favourites} FAVOURITE{favourites === 1 ? "" : "S"}
-            </div>
-          </div>
-        </Panel>
-      </aside>
-
-      <Panel
-        accent="cyan"
-        className="codex__grid"
-        title={`${SORTS.find((s) => s.key === sort)?.label ?? "ALL"} — ${visible.length}`}
-        action={
-          <label className="search">
-            <Asset slot="icons/search" label="" className="search__icon" />
-            <input
-              type="search"
-              value={query}
-              placeholder="Search chimeras…"
-              onChange={(e) => setQuery(e.target.value)}
-              aria-label="Search your chimeras"
-            />
-          </label>
-        }
-      >
         {visible.length ? (
-          <div className="codex__scroll">
-            <div className="grid">
-              {visible.map((c) => (
-                <CreatureCard
-                  key={c.id}
-                  creature={c}
-                  selected={c.id === selected?.id}
-                  onClick={() => go({ name: "codex", id: c.id })}
-                  corner={c.championships > 0 ? <Badge tone="gold">CHAMP</Badge> : undefined}
-                />
-              ))}
-            </div>
+          <div className="codex__rows">
+            {visible.map((c) => (
+              <button
+                key={c.id}
+                ref={c.id === selected?.id ? selectedRowRef : undefined}
+                type="button"
+                className={`crow${c.id === selected?.id ? " is-sel" : ""}`}
+                aria-current={c.id === selected?.id || undefined}
+                onClick={() => go({ name: "codex", id: c.id })}
+              >
+                <span className="crow__art">
+                  <CreatureImg creature={c} note="" />
+                  {c.favorite && <span className="crow__fav" aria-label="favorite" />}
+                </span>
+                <span className="crow__id">
+                  <FitText className="crow__name">
+                    {(c.name || "UNNAMED SPLICE").toUpperCase()}
+                  </FitText>
+                  <span className="crow__meta">
+                    <RarityBadge rarity={c.rarity} />
+                    {c.championships > 0 && <Badge tone="gold">CHAMP</Badge>}
+                  </span>
+                </span>
+                <span className="crow__wins num" title={`${c.wins} wins`}>
+                  <Asset slot="trophy/badge_champion" label="" />
+                  {c.wins}
+                </span>
+              </button>
+            ))}
           </div>
         ) : (
           <Empty
@@ -218,6 +216,15 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
             hint={query ? "Try another name." : "Build one in the Fusion Lab and it lands here forever."}
           />
         )}
+
+        <footer className="codex__foot">
+          <div className="progress__bar">
+            <span style={{ width: `${rows.length ? (painted / rows.length) * 100 : 0}%` }} />
+          </div>
+          <span className="codex__foot-line num">
+            {rows.length} DISCOVERED · {painted} PAINTED · {favourites} FAVOURITE{favourites === 1 ? "" : "S"}
+          </span>
+        </footer>
       </Panel>
 
       <aside className="codex__detail">
@@ -244,27 +251,42 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
               </button>
             </header>
 
-            {/* No pedestal in the codex detail: plain render, grounded on a
-                soft shadow (pedestal policy, UI_STANDARD). */}
-            <div className="detail__stage">
-              <Stage plain creature={selected} gold={selected.championships > 0} caption="RENDER PENDING" />
-            </div>
-
-            <div className="detail__record">
-              {[
-                ["WINS", String(selected.wins)],
-                ["LOSSES", String(selected.losses)],
-                ["WIN RATE", `${selected.win_rate}%`],
-                ["TITLES", String(selected.championships)],
-              ].map(([k, v]) => (
-                <div key={k}>
-                  <span className="detail__v num">{v}</span>
-                  <span className="detail__k">{k}</span>
+            <div className="detail__hero">
+              {/* No pedestal in the codex detail: plain render, grounded on a
+                  soft shadow (pedestal policy, UI_STANDARD). */}
+              <div className="detail__stage">
+                <Stage plain creature={selected} gold={selected.championships > 0} caption="RENDER PENDING" />
+              </div>
+              <div className="detail__side">
+                <div className="detail__record">
+                  {[
+                    ["WINS", String(selected.wins)],
+                    ["LOSSES", String(selected.losses)],
+                    ["WIN RATE", `${selected.win_rate}%`],
+                    ["TITLES", String(selected.championships)],
+                  ].map(([k, v]) => (
+                    <div key={k}>
+                      <span className="detail__v num">{v}</span>
+                      <span className="detail__k">{k}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+                <StatRow compact stats={selected.core_stats} />
+                {Object.keys(selected.records).length > 0 && (
+                  <div className="detail__records">
+                    {Object.entries(selected.records).map(([k, v]) => (
+                      <span className="plaque" key={k}>
+                        <Asset slot={`icons/record_${k}`} label="" className="plaque__icon" tint="gold" />
+                        <span className="plaque__text">
+                          <b>{k.replace(/_/g, " ").toUpperCase()}</b>
+                          {String(v)}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-
-            <StatRow compact stats={selected.core_stats} />
 
             {selected.sources.length > 0 && (
               <section className="detail__section">
@@ -292,7 +314,7 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
             {selected.abilities.length > 0 && (
               <section className="detail__section">
                 <h3 className="detail__subhead">MOVES</h3>
-                <MoveChips abilities={selected.abilities} />
+                <MoveCards abilities={selected.abilities} />
               </section>
             )}
 
@@ -300,26 +322,12 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
               selected.weaknesses.length > 0 ||
               selected.fun_fact) && (
               <section className="detail__section">
-                <TraitChips
+                <TraitList
                   strengths={selected.strengths}
                   weaknesses={selected.weaknesses}
                   funFact={selected.fun_fact || undefined}
                 />
               </section>
-            )}
-
-            {Object.keys(selected.records).length > 0 && (
-              <div className="detail__records">
-                {Object.entries(selected.records).map(([k, v]) => (
-                  <span className="plaque" key={k}>
-                    <Asset slot={`icons/record_${k}`} label="" className="plaque__icon" tint="gold" />
-                    <span className="plaque__text">
-                      <b>{k.replace(/_/g, " ").toUpperCase()}</b>
-                      {String(v)}
-                    </span>
-                  </span>
-                ))}
-              </div>
             )}
 
             {confirmRelease ? (
@@ -359,7 +367,7 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
           </Panel>
         ) : (
           <Panel accent="cyan" className="detail">
-            <Empty title="Nothing selected" hint="Tap a card to see its full record." />
+            <Empty title="Nothing selected" hint="Tap a row to see its full record." />
           </Panel>
         )}
       </aside>
