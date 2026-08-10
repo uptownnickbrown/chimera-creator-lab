@@ -6,7 +6,8 @@
    The lab plate is the app ground for every screen (UI_STANDARD §Layer stack);
    arena routes swap it for the arena plate, the hall warms it to gold. */
 import { useCallback, useEffect, useState } from "react";
-import { api, type ProfileView } from "./api";
+import { api, onAuthExpired, type ProfileView } from "./api";
+import Gate, { checkUnlocked } from "./Gate";
 import { Asset } from "./ui";
 import { Home } from "./Home";
 import { FusionLab } from "./FusionLab";
@@ -78,6 +79,13 @@ function sceneFor(route: Route): string {
 export default function App() {
   const [route, setRoute] = useState<Route>(() => parseHash(location.hash));
   const [profile, setProfile] = useState<ProfileView | null>(null);
+  // null = probing on boot; the gate only appears on a confirmed 401.
+  const [unlocked, setUnlocked] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkUnlocked().then(setUnlocked);
+    onAuthExpired(() => setUnlocked(false)); // any API 401 re-summons the gate
+  }, []);
 
   useEffect(() => {
     const onHash = () => setRoute(parseHash(location.hash));
@@ -109,6 +117,15 @@ export default function App() {
 
   return (
     <>
+      {/* Landscape-first on touch: portrait shows a friendly rotate prompt
+          (CSS-gated to coarse pointers, so narrow desktop windows are fine). */}
+      <div className="rotate-gate" role="status">
+        <img className="rotate-gate__mascot" src="/assets/lab/mascot.webp" alt="" />
+        <div className="rotate-gate__device" aria-hidden="true" />
+        <p className="rotate-gate__title">TURN YOUR IPAD SIDEWAYS!</p>
+        <p className="rotate-gate__sub">The lab needs the wide view to fire up.</p>
+      </div>
+
       <div className="ground" data-scene={sceneFor(route)} aria-hidden="true">
         <div className="ground__plate" />
         <div className="ground__veil" />
@@ -181,6 +198,15 @@ export default function App() {
           {route.name === "hall" && <Hall go={go} />}
         </main>
       </div>
+
+      {unlocked === false && (
+        <Gate
+          onUnlocked={() => {
+            setUnlocked(true);
+            refreshProfile();
+          }}
+        />
+      )}
     </>
   );
 }

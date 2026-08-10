@@ -90,6 +90,15 @@
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
 
+html {
+  /* Mobile Safari: a fast second tap on any button is otherwise a double-tap
+     zoom — the page "snaps to half width". manipulation keeps taps instant
+     and kills that gesture app-wide (effective touch-action intersects down
+     the tree, so the root restriction covers every descendant). */
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background: var(--ink);
   color: var(--text);
@@ -99,6 +108,16 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none; /* no rubber-band peek behind the painted lab */
+}
+
+/* Game chrome shouldn't select or callout like a document on long-press. */
+button, .btn, .nav__tab, .tile, .crew, .pcard, .ccard, .chip {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 button { font: inherit; color: inherit; }
@@ -762,6 +781,9 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   height: 100%;
   display: flex;
   flex-direction: column;
+  /* Standalone (home-screen) mode paints under the iPad status bar with
+     viewport-fit=cover; keep the topbar's tap targets out from under it. */
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .topbar {
@@ -928,7 +950,52 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   padding: 14px 22px 18px;
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
+
+/* ── rotate gate: the game is landscape-first on touch devices ───────────── */
+
+.rotate-gate { display: none; }
+@media (orientation: portrait) and (pointer: coarse) {
+  .rotate-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 14px;
+    padding: 32px;
+    text-align: center;
+    background:
+      radial-gradient(90% 60% at 50% 30%, rgba(24, 36, 84, 0.65), transparent),
+      var(--ink);
+  }
+}
+.rotate-gate__mascot { width: min(34vw, 220px); filter: drop-shadow(0 10px 30px rgba(79, 216, 255, 0.25)); }
+.rotate-gate__device {
+  width: 74px;
+  height: 52px;
+  margin-top: 6px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 3px var(--cyan), 0 0 26px -6px var(--cyan);
+  animation: rotate-hint 2.2s ease-in-out infinite;
+}
+@keyframes rotate-hint {
+  0%, 15% { transform: rotate(-90deg); }
+  45%, 80% { transform: rotate(0deg); }
+  100% { transform: rotate(-90deg); }
+}
+.rotate-gate__title {
+  margin: 8px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.08em;
+  color: var(--cyan-hot);
+  text-shadow: 0 0 24px rgba(79, 216, 255, 0.6);
+}
+.rotate-gate__sub { margin: 0; font-size: 16px; color: var(--text-dim); }
 .screen > * { flex: 1; min-height: 0; }
 
 /* Every screen transition: 200ms fade + 4px rise (UI_STANDARD §Motion). */
@@ -1159,6 +1226,9 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+  /* Constrain the box or FitText can't detect overflow — an unconstrained
+     centered grid item grows to max-content and pokes past the card edges. */
+  width: 100%;
 }
 .crew__meta { font-size: 13px; color: var(--muted); }
 
@@ -1859,7 +1929,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   color: #fff;
 }
 .crow__meta { display: flex; align-items: center; gap: 5px; }
-.crow__meta .badge { font-size: 11px; padding: 1px 7px; }
+.crow__meta .badge { font-size: 13px; padding: 1px 7px; }
 .crow__wins {
   display: inline-flex;
   align-items: center;
@@ -1889,7 +1959,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .codex__foot-line {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.09em;
   color: var(--muted);
 }
@@ -2065,7 +2135,10 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .arena__roster .panel__body { flex: 1; min-height: 0; padding-right: 8px; }
 .arena__rosterscroll { flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; }
 .arena__rosterscroll .grid { grid-template-columns: repeat(auto-fill, minmax(152px, 1fr)); grid-auto-rows: 206px; }
-.arena__aside { display: grid; gap: 11px; align-content: start; min-height: 0; }
+/* minmax(0,1fr), not auto: the PAST CHALLENGES scroll strip's max-content
+   would otherwise size the column to ~1000px and stretch every button with
+   it, right off the screen edge. */
+.arena__aside { display: grid; grid-template-columns: minmax(0, 1fr); gap: 11px; align-content: start; min-height: 0; }
 
 .board {
   display: grid;
@@ -2655,7 +2728,10 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 
 /* ── Hall of Champions ───────────────────────────────────────────────────── */
 
-.hall { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 14px; min-height: 100%; }
+/* flex:none — the hall's three side panels never fit a 900px-tall desktop
+   window either; flowing + page scroll beats compressed panels overpainting
+   the foot (the .screen>* stretch is the compressor). */
+.hall { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 14px; min-height: 100%; flex: none; height: auto; }
 .hall__head { display: grid; justify-items: center; gap: 2px; text-align: center; }
 .hall__head .eyebrow { color: var(--gold); letter-spacing: 0.3em; font-size: 14px; }
 .hall__title {
@@ -2865,7 +2941,8 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .fw__stats { gap: 10px; }
 .fw__stat {
   display: grid;
-  grid-template-columns: 24px minmax(56px, 78px) minmax(0, 1fr) 32px;
+  /* 88px label track: RESILIENCE / ELECTRICITY class names fit unclipped */
+  grid-template-columns: 24px minmax(56px, 88px) minmax(0, 1fr) 32px;
   align-items: center;
   gap: 10px;
   opacity: 0.3;
@@ -2875,8 +2952,8 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .fw__stat-name {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 13.5px;
-  letter-spacing: 0.1em;
+  font-size: 13px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-dim);
   white-space: nowrap;
@@ -3245,8 +3322,12 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .ability__name { color: var(--purple-hot); }
 .fact__blurb, .ability__blurb { font-size: 16px; line-height: 1.42; color: #cfdcf2; }
 
-.fused { display: flex; align-items: stretch; gap: 6px; }
-.fused__item { position: relative; display: grid; grid-template-rows: 1fr auto; gap: 4px; justify-items: center; flex: 1; min-width: 0; }
+/* 2×2, not 4-across: single-word creature names (STEGOSAURUS) can't wrap,
+   so a four-up flex row holds its inner grid track at name min-content and
+   the art + name spill past the shrunken items. Two columns give every
+   part real room at every width the panel actually gets. */
+.fused { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.fused__item { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto; gap: 4px; justify-items: center; min-width: 0; }
 .fused__plus { position: absolute; left: -8px; top: 30%; color: var(--cyan); font-weight: 700; font-size: 14px; }
 .fused__art {
   width: 100%; aspect-ratio: 1; overflow: hidden;
@@ -3254,6 +3335,13 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   object-fit: cover;
   object-position: 50% 100%;
   box-shadow: inset 0 0 0 1px rgba(79, 216, 255, 0.4);
+  /* Never let the 1fr row stretch a replaced element taller than the column:
+     with aspect-ratio 1 the width follows and the art escapes the card.
+     max-width is the hard clamp — WebKit resolves the % width against a
+     pre-flex-shrink containing block in this flex→grid chain. */
+  align-self: center;
+  height: auto;
+  max-width: 100%;
 }
 .fused__name { font-family: var(--font-display); font-weight: 600; font-size: 13px; line-height: 1.15; letter-spacing: 0.02em; text-align: center; color: var(--text-dim); align-self: end; }
 
@@ -3348,6 +3436,9 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .qstat__icon { width: 22px; height: 22px; }
   .qstat__value { font-size: 20px; }
   .crew__name { font-size: 13px; }
+  /* four-across crew cards leave ~70px per name at 1080 — two-across gives
+     Henry big readable art and whole names instead of clipped fragments */
+  .crewrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* The lab keeps its stage at the 1024 floor — the proto-fusion cluster is
      the point of the screen; the two side panels give up the width instead. */
   .lab__main { grid-template-columns: minmax(196px, 232px) minmax(0, 1fr) minmax(196px, 236px); }
@@ -3358,7 +3449,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .adds__blurb { font-size: 13px; }
   .codex { grid-template-columns: minmax(228px, 258px) minmax(0, 1fr); gap: 12px; }
   .codex__list .search input { width: 56px; }
-  .sortpill { font-size: 12px; padding: 3px 8px; gap: 5px; }
+  .sortpill { font-size: 13px; padding: 3px 8px; gap: 5px; }
   .crow { grid-template-columns: 46px minmax(0, 1fr) auto; min-height: 56px; gap: 8px; }
   .crow__art { width: 46px; height: 46px; }
   .crow__name { font-size: 13.5px; }
@@ -3372,7 +3463,8 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .stat__icon { width: 21px; height: 21px; }
   .stat__value { font-size: 21px; }
   .detail__actions .btn { min-width: 108px; }
-  .adds__blurb { -webkit-line-clamp: 1; }
+  /* two readable lines beat one ellipsized one — the blurbs are short */
+  .adds__blurb { -webkit-line-clamp: 2; font-size: 13px; line-height: 1.25; }
   .arena__setup { grid-template-columns: 1fr; }
   .battle {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr);
@@ -3386,6 +3478,40 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .battle__rail { grid-template-rows: auto; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .hall__body { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .hall__dais { grid-column: 1 / -1; grid-row: 1; min-height: 320px; }
+
+  /* ── iPad-landscape structural pass (mobile-Safari QA, 2026-08-09) ──
+     A real 9th-gen iPad is 1080×810 CSS px. Below 1100px every screen
+     flows and SCROLLS naturally instead of squeezing into the viewport:
+     the old fit-the-height grids (min-height:100% + minmax(0,1fr) rows +
+     min-height:0 items) compressed rows until panels painted over the
+     footers and each other. Desktop (>1100) keeps the fitted composition. */
+  /* Narrow panels: the head badge wraps under the title instead of escaping
+     the panel edge (CODEX PREVIEW · COMPLETE). */
+  .panel__head { flex-wrap: wrap; row-gap: 4px; }
+  .badge { font-size: 13px; }
+  /* These screens leave the app-frame stretch (.screen > * { flex: 1 })
+     entirely: a definite flex height turns the grids' auto rows into
+     min-contribution sizing, which crushes min-height:0 rails to ~0 and
+     lets their panels paint over the footers. Codex/lab/home keep the
+     fitted frame — their internal scroll panes are the design. */
+  .battle, .hall, .rv, .fw, .arena, .home { flex: none; height: auto; }
+  /* long chimera names wrap to two lines instead of ellipsizing */
+  .fighter__name {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .battle { min-height: 0; grid-template-rows: auto; }
+  .battle__arena { min-height: 340px; }
+  .hall { min-height: 0; grid-template-rows: auto; }
+  .arena__setup { min-height: 0; }
+  .fw { grid-template-rows: auto; min-height: 0; }
+  .rv { grid-template-rows: minmax(340px, auto) auto auto; min-height: 0; }
+  /* The reveal side rail joins the page flow — nested scroll areas read as
+     "clipped" on touch; the page itself is the scroll surface now. */
+  .rv__side { min-height: 0; }
+  .rv__side-scroll { position: static; overflow: visible; padding-right: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
