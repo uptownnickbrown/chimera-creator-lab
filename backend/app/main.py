@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import mimetypes
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -11,12 +12,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from . import auth
+from .static_cache import StaticCacheMiddleware
 from .api import creatures, library, profile, tournaments
 from .config import get_settings
 from .db import create_all
 from .services import library as library_svc
 
 logging.basicConfig(level=logging.INFO)
+
+# WebP is the app's only image format and the container's Python does not know
+# it: Starlette answered every portrait and hero as application/octet-stream
+# (seen on prod 2026-09-20). Registered before any StaticFiles mount.
+mimetypes.add_type("image/webp", ".webp")
 
 
 @asynccontextmanager
@@ -128,6 +135,9 @@ app = FastAPI(title="Chimera Creator API", version="0.1.0", lifespan=lifespan)
 # Added BEFORE CORSMiddleware: Starlette treats the last add_middleware as the
 # outermost layer, so this ordering lets CORS headers decorate 401s too.
 app.add_middleware(auth.GateMiddleware)
+# Long-lived Cache-Control on /assets and /media (see static_cache.py). Added
+# after the gate so it wraps the gate: the gate's 401 never carries the header.
+app.add_middleware(StaticCacheMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

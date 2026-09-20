@@ -133,7 +133,8 @@ FW_STATES = {"a": (99991, 2600), "b": (99992, 5200), "c": (99993, 4200)}
 #              the COMPLETE badge) — FitText can't shrink an unconstrained box
 #   overlaps — interactive/panel boxes painting over each other (foot buttons
 #              over the bracket, RUN A TOURNAMENT over the finales)
-#   imgrisk  — in-flow images that would outgrow their parent if their
+#   imgrisk  — (a) stretch: absolutely positioned images in a well sized only
+#              by a stretched track (blank on iPadOS 16.6); (b) in-flow images that would outgrow their parent if their
 #              percentage height resolved as auto, which is exactly what
 #              iPadOS 16.6 WebKit does inside auto grid rows (the slot-card
 #              portraits over their name plates, 2026-09-20)
@@ -312,6 +313,32 @@ AUDIT_JS = """
     if (out > 3)
       res.imgrisk.push({ what: label(p), src: (img.getAttribute("src") || "").split("/").pop(),
                          by: Math.round(out) });
+  }
+  // ── stretch risk (iPadOS 16.6, photographed 2026-09-20) ──
+  // A well holding an absolutely positioned image whose own height comes
+  // ONLY from a stretched grid/flex track: old WebKit lays the image out
+  // before the stretch and never revisits it, so the well paints empty
+  // (bracket-setup cards, lab slot cards). Probe: pin the well to the start
+  // of its track for a moment; if it shrinks, its height was stretch-derived
+  // and it needs an explicit height / aspect-ratio (theme.css .ccard__art).
+  for (const img of document.querySelectorAll("img.asset, .pending, .summonwait")) {
+    if (res.imgrisk.length >= 24) break;
+    const cs = getComputedStyle(img);
+    if (cs.position !== "absolute") continue;
+    const p = img.parentElement;
+    if (!p || !p.parentElement) continue;
+    const pr0 = p.getBoundingClientRect();
+    if (pr0.height < 4 || pr0.bottom < -50 || pr0.top > vh + 400) continue;
+    const gp = getComputedStyle(p.parentElement).display;
+    if (!/grid|flex/.test(gp)) continue;
+    const saved = [p.style.alignSelf, p.style.flexGrow, p.style.flexShrink];
+    p.style.alignSelf = "start"; p.style.flexGrow = "0"; p.style.flexShrink = "0";
+    const pr1 = p.getBoundingClientRect();
+    [p.style.alignSelf, p.style.flexGrow, p.style.flexShrink] = saved;
+    const lost = pr0.height - pr1.height;
+    if (lost > 3)
+      res.imgrisk.push({ what: label(p), kind: "stretch",
+                         src: (img.getAttribute("src") || "").split("/").pop(), by: Math.round(lost) });
   }
   res.below = res.below.slice(0, 24);
   res.clipped = res.clipped.slice(0, 24);

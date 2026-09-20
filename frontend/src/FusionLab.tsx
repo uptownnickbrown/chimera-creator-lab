@@ -5,10 +5,10 @@
    platform in the middle, what-each-part-adds on the right, and one big
    portrait rail underneath. Browsing is visual first: the search box is there
    for the child who already knows the animal's name (and its misspellings). */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Go } from "./App";
 import { api, ApiError, getLibraryCached, refreshLibrary, type SourceCreature } from "./api";
-import { Asset, Btn, Empty, FitText, Loading, Panel, PartImg } from "./ui";
+import { Asset, Btn, Empty, FitText, Loading, Panel, PartImg, useMashGuard } from "./ui";
 import { stashPicks } from "./FusionWait";
 import { SummonModal, SummonRailCard } from "./Summon";
 
@@ -66,6 +66,110 @@ function contributesOf(s: SourceCreature): string {
   return "Adds its own wild traits.";
 }
 
+/** One picker-rail card. Memoised: the rail holds up to 160 of these and a
+    pick re-renders the whole lab, so only the tapped card (and the one it
+    replaced) should reconcile — every callback it receives is stable. On the
+    iPad that is the difference between a tap that answers this frame and one
+    Henry taps again. */
+const RailCard = memo(function RailCard({
+  s,
+  taken,
+  flash,
+  removing,
+  swap,
+  onPlace,
+  onRepaint,
+  onAskRemove,
+  onKeep,
+  onRelease,
+}: {
+  s: SourceCreature;
+  taken: boolean;
+  flash: boolean;
+  removing: boolean;
+  /** Board full: a tap swaps the part into slot 4. */
+  swap: boolean;
+  onPlace: (s: SourceCreature) => void;
+  onRepaint?: (slug: string) => void;
+  onAskRemove: (slug: string) => void;
+  onKeep: () => void;
+  onRelease: (s: SourceCreature) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`pcard${taken ? " is-taken" : ""}${flash ? " is-flash" : ""}`}
+      onClick={() => onPlace(s)}
+      title={swap && !taken ? `Swap ${s.name} into part 4` : s.name}
+    >
+      <span className="pcard__art">
+        <PartImg source={s} onRepaint={onRepaint} lazy />
+        {s.custom && <span className="pcard__summoned">SUMMONED</span>}
+        {taken && <span className="pcard__check">✓</span>}
+        {s.custom && !removing && (
+          <span
+            role="button"
+            tabIndex={0}
+            className="pcard__remove"
+            aria-label={`Release ${s.name}`}
+            title={`Release ${s.name}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAskRemove(s.slug);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+                onAskRemove(s.slug);
+              }
+            }}
+          >
+            ✕
+          </span>
+        )}
+        {removing && (
+          <span className="pcard__confirm" onClick={(e) => e.stopPropagation()}>
+            <span className="pcard__confirm-ask">RELEASE IT FOREVER?</span>
+            <span className="pcard__confirm-row">
+              <span
+                role="button"
+                tabIndex={0}
+                className="pcard__confirm-no"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onKeep();
+                }}
+              >
+                KEEP
+              </span>
+              <span
+                role="button"
+                tabIndex={0}
+                className="pcard__confirm-yes"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRelease(s);
+                }}
+              >
+                RELEASE
+              </span>
+            </span>
+          </span>
+        )}
+      </span>
+      <span className="pcard__plate">
+        <Asset
+          slot={`icons/cat_${s.category}`}
+          label=""
+          className="pcard__cat"
+          tint={s.category === "mythic" ? "purple" : s.category === "extinct" ? "gold" : "teal"}
+        />
+        <FitText className="pcard__name">{s.name.toUpperCase()}</FitText>
+      </span>
+    </button>
+  );
+});
+
 export function FusionLab({ go }: { go: Go }) {
   const [sources, setSources] = useState<SourceCreature[] | null>(null);
   const [usingPlaceholders, setUsingPlaceholders] = useState(false);
@@ -122,24 +226,39 @@ export function FusionLab({ go }: { go: Go }) {
     rail.current?.scrollTo({ left: 0 });
   }, [activeCategory, query]);
 
-  function place(source: SourceCreature) {
-    setError(null);
-    setPicks((prev) => {
-      const already = prev.findIndex((p) => p?.slug === source.slug);
-      const next = [...prev];
-      if (already >= 0) {
-        next[already] = null; // tapping a chosen card takes it back out
-        return next;
-      }
-      const slot = next.findIndex((p) => p === null);
-      next[slot === -1 ? 3 : slot] = source; // full board: a tap swaps part 4
-      return next;
-    });
-  }
+  /* Both toggles below go through the mash guard: a burst of taps on the
+     same card is one tap, never pick-unpick-pick (ui.tsx useMashGuard). */
+  const guard = useMashGuard();
 
-  function clearSlot(index: number) {
-    setPicks((prev) => prev.map((p, i) => (i === index ? null : p)));
-  }
+  const place = useCallback(
+    (source: SourceCreature) => {
+      if (!guard(source.slug)) return;
+      setError(null);
+      setPicks((prev) => {
+        const already = prev.findIndex((p) => p?.slug === source.slug);
+        const next = [...prev];
+        if (already >= 0) {
+          next[already] = null; // tapping a chosen card takes it back out
+          return next;
+        }
+        const slot = next.findIndex((p) => p === null);
+        next[slot === -1 ? 3 : slot] = source; // full board: a tap swaps part 4
+        return next;
+      });
+    },
+    [guard],
+  );
+
+  const clearSlot = useCallback(
+    (index: number) => {
+      if (!guard(`slot:${index}`)) return;
+      setPicks((prev) => prev.map((p, i) => (i === index ? null : p)));
+    },
+    [guard],
+  );
+
+  const askRemove = useCallback((slug: string) => setRemoving(slug), []);
+  const keepCustom = useCallback(() => setRemoving(null), []);
 
   /* -- Summon New Creature -------------------------------------------------- */
 
@@ -457,78 +576,19 @@ export function FusionLab({ go }: { go: Go }) {
             <div className="rail" ref={rail}>
               <SummonRailCard onOpen={() => setSummonQuery("")} />
               {visible.map((s) => (
-                <button
+                <RailCard
                   key={s.slug}
-                  type="button"
-                  className={`pcard${takenSlugs.has(s.slug) ? " is-taken" : ""}${flash === s.slug ? " is-flash" : ""}`}
-                  onClick={() => place(s)}
-                  title={ready && !takenSlugs.has(s.slug) ? `Swap ${s.name} into part 4` : s.name}
-                >
-                  <span className="pcard__art">
-                    <PartImg source={s} onRepaint={s.custom ? repaintPortrait : undefined} />
-                    {s.custom && <span className="pcard__summoned">SUMMONED</span>}
-                    {takenSlugs.has(s.slug) && <span className="pcard__check">✓</span>}
-                    {s.custom && removing !== s.slug && (
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        className="pcard__remove"
-                        aria-label={`Release ${s.name}`}
-                        title={`Release ${s.name}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRemoving(s.slug);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.stopPropagation();
-                            setRemoving(s.slug);
-                          }
-                        }}
-                      >
-                        ✕
-                      </span>
-                    )}
-                    {removing === s.slug && (
-                      <span className="pcard__confirm" onClick={(e) => e.stopPropagation()}>
-                        <span className="pcard__confirm-ask">RELEASE IT FOREVER?</span>
-                        <span className="pcard__confirm-row">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            className="pcard__confirm-no"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setRemoving(null);
-                            }}
-                          >
-                            KEEP
-                          </span>
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            className="pcard__confirm-yes"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeCustom(s);
-                            }}
-                          >
-                            RELEASE
-                          </span>
-                        </span>
-                      </span>
-                    )}
-                  </span>
-                  <span className="pcard__plate">
-                    <Asset
-                      slot={`icons/cat_${s.category}`}
-                      label=""
-                      className="pcard__cat"
-                      tint={s.category === "mythic" ? "purple" : s.category === "extinct" ? "gold" : "teal"}
-                    />
-                    <FitText className="pcard__name">{s.name.toUpperCase()}</FitText>
-                  </span>
-                </button>
+                  s={s}
+                  taken={takenSlugs.has(s.slug)}
+                  flash={flash === s.slug}
+                  removing={removing === s.slug}
+                  swap={ready}
+                  onPlace={place}
+                  onRepaint={s.custom ? repaintPortrait : undefined}
+                  onAskRemove={askRemove}
+                  onKeep={keepCustom}
+                  onRelease={removeCustom}
+                />
               ))}
             </div>
             <button type="button" className="rail__arrow rail__arrow--r" onClick={() => nudge(1)} aria-label="Scroll right">

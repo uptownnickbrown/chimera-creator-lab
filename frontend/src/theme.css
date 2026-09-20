@@ -129,7 +129,7 @@ input { font: inherit; color: inherit; }
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(79, 216, 255, 0.42), rgba(168, 107, 255, 0.32));
 }
-::-webkit-scrollbar-thumb:hover { background: rgba(79, 216, 255, 0.6); }
+@media (hover: hover) { ::-webkit-scrollbar-thumb:hover { background: rgba(79, 216, 255, 0.6); } }
 * { scrollbar-width: thin; scrollbar-color: rgba(79, 216, 255, 0.38) rgba(6, 10, 24, 0.4); }
 
 ::selection { background: rgba(79, 216, 255, 0.3); }
@@ -319,6 +319,13 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   filter: var(--tint) drop-shadow(0 0 12px rgba(79, 216, 255, 0.5));
   animation: pending-pulse 3.4s ease-in-out infinite;
 }
+/* Tiny wells (bracket tree rows, fighter rows, ranks, the next-match chips,
+   the corner badges): a TBD placeholder shows its mark only — mark + label
+   were taller than the 30px well and spilled under the clip. */
+.tree__art .pending, .fighter__art .pending, .rank__art .pending { padding: 2px; }
+.tree__art .pending__mark, .fighter__art .pending__mark, .rank__art .pending__mark { width: 62%; max-width: 20px; }
+.tree__art .pending__label, .fighter__art .pending__label, .rank__art .pending__label,
+.nextmatch__art .pending__label, .corner__badge .pending__label { display: none; }
 .pending__label {
   position: relative;
   margin-top: 6px;
@@ -471,7 +478,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   color: rgba(220, 236, 255, 0.72);
   text-transform: uppercase;
 }
-.btn:hover:not(:disabled) { filter: brightness(1.16) drop-shadow(0 0 18px rgba(var(--accent-rgb), 0.5)); transform: scale(1.02); }
+@media (hover: hover) { .btn:hover:not(:disabled) { filter: brightness(1.16) drop-shadow(0 0 18px rgba(var(--accent-rgb), 0.5)); transform: scale(1.02); } }
 .btn:active:not(:disabled) { transform: translateY(1px) scale(0.995); filter: brightness(0.94); }
 .btn:disabled { opacity: 0.38; cursor: not-allowed; }
 
@@ -486,7 +493,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .btn--ghost { --accent-rgb: 132, 160, 205; color: var(--text-dim); font-weight: 600; }
 .btn--ghost::before { background: linear-gradient(150deg, rgba(150, 178, 220, 0.5), rgba(120, 150, 195, 0.16) 60%, rgba(150, 178, 220, 0.35)); }
 .btn--ghost::after { background: linear-gradient(180deg, rgba(24, 34, 66, 0.72), rgba(7, 11, 26, 0.82)); }
-.btn--ghost:hover:not(:disabled) { color: var(--text); }
+@media (hover: hover) { .btn--ghost:hover:not(:disabled) { color: var(--text); } }
 .btn--ghost .btn__label { text-shadow: none; }
 .btn.is-active { filter: brightness(1.12) drop-shadow(0 0 16px rgba(var(--accent-rgb), 0.5)); }
 
@@ -727,12 +734,20 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   box-shadow: inset 0 1px 0 rgba(150, 210, 255, 0.16);
 }
 .ccard:disabled { cursor: default; }
-.ccard:hover:not(:disabled) { transform: translateY(-3px); filter: drop-shadow(0 8px 22px rgba(var(--accent-rgb), 0.28)); }
+@media (hover: hover) { .ccard:hover:not(:disabled) { transform: translateY(-3px); filter: drop-shadow(0 8px 22px rgba(var(--accent-rgb), 0.28)); } }
 .ccard.is-selected { --accent-rgb: 168, 107, 255; filter: drop-shadow(0 0 22px rgba(168, 107, 255, 0.55)); }
 .ccard__art {
   position: relative;
   display: grid;
   place-items: center;
+  /* `height: 100%`, not auto: on iPadOS 16.6 a well whose height comes only
+     from a stretched fr track lays its absolutely positioned image out
+     BEFORE the stretch and never revisits it — every bracket-setup card was
+     blank on Henry's iPad (photographed 2026-09-20) while wells with an
+     explicit height (.pcard__art), an aspect ratio (.crew__art) or
+     height:100% (.stage) all painted. The percentage resolves against the
+     grid area, which is definite once the row is. Same fix on .slot__art. */
+  height: 100%;
   min-height: 0;
   overflow: hidden;
   padding: 8px 8px 0;
@@ -772,6 +787,10 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+  /* constrain the box (see .crew__name): a centred grid item grows to
+     max-content and SOLARFLARE DRAKON poked past the card edge unwrapped */
+  width: 100%;
+  overflow-wrap: anywhere;
 }
 .ccard__meta { display: flex; align-items: center; justify-content: center; gap: 9px; font-size: 13.5px; }
 .ccard__trophy { display: inline-flex; align-items: center; gap: 4px; color: var(--gold); font-weight: 700; }
@@ -891,7 +910,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   white-space: nowrap;
   transition: color 160ms ease;
 }
-.nav__tab:hover { color: #fff; }
+@media (hover: hover) { .nav__tab:hover { color: #fff; } }
 .nav__tab.is-active { color: var(--cyan); }
 .nav__tab.is-active::before {
   content: "";
@@ -1222,7 +1241,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   clip-path: inherit;
   background: linear-gradient(180deg, rgba(18, 28, 62, 0.9), rgba(5, 9, 24, 0.95));
 }
-.crew:hover { transform: translateY(-2px); }
+@media (hover: hover) { .crew:hover { transform: translateY(-2px); } }
 .crew__art { position: relative; display: block; width: 100%; aspect-ratio: 1; }
 .crew__art .asset, .crew__art .pending { width: 100%; height: 100%; object-fit: cover; }
 .crew__name {
@@ -1298,7 +1317,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   filter: blur(12px);
   pointer-events: none;
 }
-.tile:hover { transform: translateY(-4px); filter: drop-shadow(0 10px 26px rgba(var(--accent-rgb), 0.4)); }
+@media (hover: hover) { .tile:hover { transform: translateY(-4px); filter: drop-shadow(0 10px 26px rgba(var(--accent-rgb), 0.4)); } }
 .tile:active { transform: translateY(-1px); }
 .tile__icon { position: relative; width: 74px; height: 74px; filter: var(--tint) drop-shadow(0 0 18px rgba(var(--accent-rgb), 0.75)); }
 .tile__label {
@@ -1367,6 +1386,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 10px;
   flex: 1;
+  height: 100%; /* explicit down the chain for old WebKit — see .ccard__art */
   min-height: 0;
 }
 
@@ -1376,6 +1396,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 0;
+  height: 100%; /* see .ccard__art */
   min-height: 0;
   padding: 1.5px;
   border: 0;
@@ -1404,7 +1425,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .slot.is-filled { --accent-rgb: 79, 216, 255; }
 .slot.is-active { --accent-rgb: 168, 107, 255; filter: drop-shadow(0 0 18px rgba(168, 107, 255, 0.55)); }
 .slot.is-active::after { background: linear-gradient(175deg, rgba(40, 22, 78, 0.85), rgba(9, 6, 26, 0.95)); }
-.slot:hover { transform: translateY(-2px); }
+@media (hover: hover) { .slot:hover { transform: translateY(-2px); } }
 .slot__index {
   position: absolute;
   top: 0;
@@ -1500,6 +1521,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   grid-template-rows: 100%;
   place-items: center;
   width: 100%;
+  height: 100%; /* see .ccard__art: blank on iPadOS 16.6 without it */
   min-height: 0;
   overflow: hidden;
   clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
@@ -1541,6 +1563,10 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   line-height: 1.1;
   letter-spacing: 0.05em;
   text-align: center;
+  /* At the 13px floor PACHYCEPHALOSAURUS is still wider than a 94px card
+     and a centred overflow clips BOTH ends ("HYCEPHALOSAU" on the iPad).
+     Past the floor a single word may break rather than vanish. */
+  overflow-wrap: anywhere;
 }
 .slot__state {
   display: inline-flex;
@@ -1596,6 +1622,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   top: var(--y);
   width: 34%;
   display: grid;
+  grid-template-columns: minmax(0, 1fr); /* a long name may not widen the node */
   justify-items: center;
   gap: 3px;
   transform: translate(-50%, -50%);
@@ -1670,6 +1697,8 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   text-shadow: 0 0 12px rgba(79, 216, 255, 0.9), 0 1px 3px rgba(0, 0, 0, 0.9);
   text-align: center;
   line-height: 1.1;
+  max-width: 100%;
+  overflow-wrap: anywhere; /* PACHYCEPHALOSAURUS wraps at the 13px floor instead of widening the orb */
 }
 
 /* Four rows, always exactly four: the panel never scrolls and never clips a
@@ -1777,7 +1806,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   transition: color 150ms ease;
 }
 .cat__icon { width: 20px; height: 20px; flex: none; opacity: 0.75; }
-.cat:hover { color: #fff; }
+@media (hover: hover) { .cat:hover { color: #fff; } }
 .cat.is-active {
   color: #d6fff6;
   background: linear-gradient(180deg, rgba(47, 227, 196, 0.28), rgba(47, 227, 196, 0.07));
@@ -1834,7 +1863,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   cursor: pointer;
   transition: box-shadow 160ms ease;
 }
-.rail__arrow:hover { box-shadow: inset 0 0 0 1px rgba(79, 216, 255, 0.9), 0 0 18px -6px rgba(79, 216, 255, 0.9); }
+@media (hover: hover) { .rail__arrow:hover { box-shadow: inset 0 0 0 1px rgba(79, 216, 255, 0.9), 0 0 18px -6px rgba(79, 216, 255, 0.9); } }
 
 .pcard {
   position: relative;
@@ -1868,7 +1897,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   clip-path: inherit;
   background: linear-gradient(180deg, rgba(14, 22, 52, 0.9), rgba(4, 7, 20, 0.96));
 }
-.pcard:hover:not(:disabled) { transform: translateY(-4px); filter: drop-shadow(0 8px 22px rgba(var(--accent-rgb), 0.4)); }
+@media (hover: hover) { .pcard:hover:not(:disabled) { transform: translateY(-4px); filter: drop-shadow(0 8px 22px rgba(var(--accent-rgb), 0.4)); } }
 .pcard:disabled { opacity: 0.32; cursor: not-allowed; }
 .pcard.is-taken { --accent-rgb: 168, 107, 255; filter: drop-shadow(0 0 20px rgba(168, 107, 255, 0.55)); }
 /* Portraits are TIGHT alpha crops (backend normalize_portrait — no baked-in
@@ -1951,6 +1980,13 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   letter-spacing: 0.05em;
   line-height: 1.1;
   text-align: center;
+  /* two lines before a word breaks: PACHYCEPHALOSAURUS / PARACERATHERIUM
+     were clipped to "PACHYCEPHALO" on the 134px iPad card */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .lab__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
@@ -1986,6 +2022,56 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   /* three lines is the floor: ALLIGATOR SNAPPING TURTLE needs them at 13px in a 98px card */
   .slot__name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
   .slot__art .asset { padding: 7px 7px 4px; }
+  /* The orbit shrinks with the stage: at 340px the top orb's head was cut
+     by the stage edge and the bottom orb's wings covered the top label. */
+  .cluster { width: min(70%, 300px); height: 74%; top: 9%; }
+  .cluster__art { width: 82%; } /* the orb shrinks; the name keeps the node's width */
+  .cluster__node--0 { --y: 16%; }
+  .cluster__node--3 { --y: 80%; }
+  /* WHAT EACH PART ADDS: four rows must fit ~230px. Name on one line,
+     sentence on two (the 300px column below makes every library sentence
+     two lines; a summoned 66-char one clamps rather than pushing row four
+     off the bottom, as BLASTOISE did on the iPad). */
+  .lab__adds .panel__head { padding: 8px 14px 6px; }
+  .adds__list { gap: 4px; }
+  .adds { padding: 4px 2px; }
+  .adds__name { line-height: 1.1; -webkit-line-clamp: 1; }
+  .adds__blurb {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.22;
+  }
+  /* Home in one screen: the four action tiles were 340px panels with an
+     icon at the top, a sentence at the bottom and nothing between, and
+     TODAY'S CREW fell below the fold. Compact horizontal tiles, two by two,
+     the same tap size as a big button; the platform row takes the rest. */
+  .home { grid-template-rows: minmax(0, 1fr) auto; }
+  .home__actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .tile {
+    grid-template-columns: 52px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    grid-template-areas: "icon label" "icon sub";
+    column-gap: 12px;
+    row-gap: 1px;
+    align-content: center;
+    align-items: center;
+    justify-items: start;
+    text-align: left;
+    min-height: 72px;
+    padding: 9px 14px 9px 12px;
+  }
+  .tile__icon { grid-area: icon; width: 46px; height: 46px; }
+  .tile__label { grid-area: label; font-size: 18px; line-height: 1.05; }
+  .tile__label br { display: none; }
+  .tile__sub { grid-area: sub; font-size: 13px; line-height: 1.25; max-width: none; }
+  .tile__glow { left: 34px; top: 50%; width: 84px; height: 84px; transform: translate(-50%, -50%); }
+  .home__crew .panel__body { padding: 9px 10px 10px; }
+  .crew { padding: 5px 3px 6px; gap: 3px; }
+  /* Bracket setup: the title row is the only chrome above the sticky bar. */
+  .arena__head .lede { display: none; }
+  .arena__head .display--xl { font-size: 34px; }
 
   /* De-crowding the fitted frame (Nick, 2026-09-20: "it still feels crowded").
      The same message was on screen three times — the STEP counter in the
@@ -2018,8 +2104,8 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 }
 .codex__list { display: flex; flex-direction: column; min-height: 0; }
 .codex__list .panel__body { flex: 1; min-height: 0; gap: 10px; padding: 11px 12px 12px; }
-.codex__list .search { min-height: 36px; padding: 0 10px; margin-right: 10px; }
-.codex__list .search input { width: 86px; font-size: 13.5px; }
+.codex__list .search { flex: 1 1 120px; min-width: 0; min-height: 36px; padding: 0 10px; margin-right: 10px; }
+.codex__list .search input { width: 100%; min-width: 0; font-size: 13.5px; }
 
 /* sort control: six compact pills that wrap — a question bar, not a rail */
 .codex__sorts { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -2043,7 +2129,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   cursor: pointer;
   transition: color 150ms ease, filter 150ms ease;
 }
-.sortpill:hover { color: #fff; filter: brightness(1.15); }
+@media (hover: hover) { .sortpill:hover { color: #fff; filter: brightness(1.15); } }
 .sortpill__icon { width: 16px; height: 16px; flex: none; opacity: 0.85; }
 .sortpill.is-active {
   --accent-rgb: 168, 107, 255;
@@ -2079,7 +2165,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   cursor: pointer;
   transition: box-shadow 150ms ease, filter 150ms ease;
 }
-.crow:hover { filter: brightness(1.16); }
+@media (hover: hover) { .crow:hover { filter: brightness(1.16); } }
 .crow.is-sel {
   background: linear-gradient(180deg, rgba(20, 40, 78, 0.85), rgba(8, 16, 40, 0.9));
   box-shadow: inset 0 0 0 2px rgba(79, 216, 255, 0.75), 0 0 18px -6px var(--cyan);
@@ -2192,7 +2278,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 }
 .starbtn .asset { width: 28px; height: 28px; }
 .starbtn { opacity: 0.5; }
-.starbtn:hover { opacity: 0.8; }
+@media (hover: hover) { .starbtn:hover { opacity: 0.8; } }
 .starbtn.is-on { opacity: 1; transform: scale(1.05); filter: drop-shadow(0 0 12px rgba(247, 201, 75, 0.85)); }
 
 /* The wide panel earns a proper hero composition: the render stands tall on
@@ -2332,9 +2418,25 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   text-shadow: 0 0 12px rgba(247, 201, 75, 0.55);
 }
 
-.arena__setup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(268px, 320px); align-items: start; gap: 16px; min-height: 0; }
-.arena__roster { max-height: 100%; }
+/* Markup order is aside (the actions), roster, past shelf — the order the
+   iPad stacks them (below). Desktop composes the same three into two columns:
+   the roster fills the left, the actions sit top-right with the shelf under. */
+.arena__setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(268px, 320px);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "roster aside" "roster shelf";
+  align-items: start;
+  gap: 16px;
+  min-height: 0;
+}
+.arena__roster { grid-area: roster; align-self: stretch; max-height: 100%; }
+.arena__aside { grid-area: aside; }
+.arena__setup > .shelf { grid-area: shelf; min-width: 0; align-self: start; }
 .arena__roster { display: flex; flex-direction: column; min-height: 0; }
+.roster__tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.roster__tools .search { min-height: 36px; padding: 0 10px; }
+.roster__tools .search input { width: 120px; font-size: 13.5px; }
 .arena__roster .panel__body { flex: 1; min-height: 0; padding-right: 8px; }
 .arena__rosterscroll { flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; }
 .arena__rosterscroll .grid { grid-template-columns: repeat(auto-fill, minmax(152px, 1fr)); grid-auto-rows: 206px; }
@@ -2419,7 +2521,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 }
 .match.is-open { --accent-rgb: 47, 227, 196; }
 .match.is-done { --accent-rgb: 247, 201, 75; }
-.match:hover:not(:disabled) { transform: translateY(-3px); filter: drop-shadow(0 8px 20px rgba(var(--accent-rgb), 0.35)); }
+@media (hover: hover) { .match:hover:not(:disabled) { transform: translateY(-3px); filter: drop-shadow(0 8px 20px rgba(var(--accent-rgb), 0.35)); } }
 .match:disabled { cursor: default; opacity: 0.62; }
 .match__env {
   display: flex;
@@ -2536,6 +2638,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   color: #b9f6e8;
 }
 .battle__envicon { width: 22px; height: 22px; }
+.battle__next { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
 
 /* the arena itself: the environment plate is the backdrop the fight happens on */
 .battle__arena {
@@ -2628,7 +2731,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .corner--right .corner__id { direction: rtl; }
 .corner--right .corner__text { direction: ltr; text-align: right; }
 .corner__id:disabled { cursor: default; }
-.corner__id:not(:disabled):hover { filter: brightness(1.12); }
+@media (hover: hover) { .corner__id:not(:disabled):hover { filter: brightness(1.12); } }
 .corner__meta { display: flex; }
 .corner__badge { display: block; width: 46px; height: 46px; overflow: hidden; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(79, 216, 255, 0.5); }
 .corner__badge .asset, .corner__badge .pending { width: 100%; height: 100%; object-fit: cover; }
@@ -2657,7 +2760,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 }
 .corner__stage:disabled { cursor: default; }
 .corner__stage .stage { --foot: 8%; }
-.corner__stage:not(:disabled):hover .stage { filter: drop-shadow(0 0 26px rgba(168, 107, 255, 0.55)); }
+@media (hover: hover) { .corner__stage:not(:disabled):hover .stage { filter: drop-shadow(0 0 26px rgba(168, 107, 255, 0.55)); } }
 
 .corner__health {
   position: absolute;
@@ -2747,7 +2850,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   clip-path: inherit;
   background: linear-gradient(180deg, rgba(16, 24, 58, 0.9), rgba(4, 7, 20, 0.95));
 }
-.pickplate:hover { transform: translateY(-3px); }
+@media (hover: hover) { .pickplate:hover { transform: translateY(-3px); } }
 .pickplate.is-picked { --accent-rgb: 168, 107, 255; filter: drop-shadow(0 0 22px rgba(168, 107, 255, 0.6)); }
 .pickplate.is-empty { cursor: default; opacity: 0.5; align-content: center; }
 .pickplate__art { display: block; width: 68px; height: 68px; overflow: hidden; border-radius: 50%; box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.7); }
@@ -3002,7 +3105,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   text-align: left;
   transition: box-shadow 180ms ease, transform 160ms ease;
 }
-.record:hover:not(:disabled) { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.85), 0 6px 18px -6px rgba(247, 201, 75, 0.5); }
+@media (hover: hover) { .record:hover:not(:disabled) { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.85), 0 6px 18px -6px rgba(247, 201, 75, 0.5); } }
 .record:disabled { cursor: default; opacity: 0.6; }
 .record__icon { width: 40px; height: 40px; }
 .record__text { display: grid; gap: 1px; min-width: 0; }
@@ -3011,7 +3114,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .record__value { font-family: var(--font-display); font-weight: 700; font-size: 21px; color: var(--gold); }
 
 .hall__dais { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 10px; min-height: 0; }
-.dais { position: relative; min-height: 0; }
+.dais { position: relative; height: 100%; min-height: 0; } /* height:100%, not a bare stretch — see .ccard__art */
 .dais__pedestal {
   position: absolute;
   left: 50%;
@@ -3082,7 +3185,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   text-align: left;
   transition: box-shadow 180ms ease, transform 160ms ease;
 }
-.rank button:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(79, 216, 255, 0.7); }
+@media (hover: hover) { .rank button:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(79, 216, 255, 0.7); } }
 .rank__n {
   display: grid;
   place-items: center;
@@ -3117,7 +3220,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.3);
   cursor: pointer;
 }
-.past:hover { box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.85); }
+@media (hover: hover) { .past:hover { box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.85); } }
 .past__art { display: block; width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 4px; }
 .past__art .asset, .past__art .pending { width: 100%; height: 100%; object-fit: cover; }
 .past__name { font-family: var(--font-display); font-weight: 700; font-size: 13px; line-height: 1.1; text-align: center; }
@@ -3249,7 +3352,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   color: #ecdfff;
   transition: box-shadow 200ms ease, transform 200ms ease;
 }
-.fw__chip--live:hover { transform: scale(1.02); }
+@media (hover: hover) { .fw__chip--live:hover { transform: scale(1.02); } }
 .fw__chip--live:active { transform: translateY(1px); }
 .fw__chip--live.is-spot {
   box-shadow: inset 0 0 0 2px rgba(214, 178, 255, 0.95), 0 0 24px -4px var(--purple);
@@ -3559,7 +3662,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   opacity: 0.85;
   transition: color 160ms ease, opacity 160ms ease;
 }
-.rv__rename:hover { color: var(--cyan); opacity: 1; }
+@media (hover: hover) { .rv__rename:hover { color: var(--cyan); opacity: 1; } }
 .rv__rename:disabled { cursor: default; opacity: 0.55; }
 .rv__topfact {
   display: flex; gap: 11px; align-items: flex-start;
@@ -3700,7 +3803,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   /* WHAT EACH PART ADDS keeps a 270px column: the longest library name
      (ALLIGATOR SNAPPING TURTLE) then fits one line and a sentence fits two,
      which is the only way four content-sized rows fit the 810px frame. */
-  .lab__main { grid-template-columns: minmax(196px, 232px) minmax(0, 1fr) minmax(250px, 270px); }
+  .lab__main { grid-template-columns: minmax(196px, 232px) minmax(0, 1fr) minmax(276px, 300px); }
   .lab__main .panel__head h2 { font-size: 13px; letter-spacing: 0.12em; }
   .lab__adds .panel__body { padding: 10px 11px 11px; }
   .adds__list { gap: 5px; }
@@ -3714,7 +3817,8 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .codex__sorts { gap: 5px; }
   .sortpill { min-height: 30px; padding: 2px 8px; gap: 0; letter-spacing: 0.06em; }
   .sortpill__icon { display: none; }
-  .codex__list .search input { width: 56px; }
+  /* the search takes its own full-width line under the title */
+  .codex__list .search { flex: 1 1 100%; margin-right: 0; }
   .sortpill { font-size: 13px; padding: 3px 8px; gap: 5px; }
   .crow { grid-template-columns: 46px minmax(0, 1fr) auto; min-height: 56px; gap: 8px; }
   .crow__art { width: 46px; height: 46px; }
@@ -3729,9 +3833,30 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .stat__icon { width: 21px; height: 21px; }
   .stat__value { font-size: 21px; }
   .detail__actions .btn { min-width: 108px; }
-  /* adds blurbs are never clamped: rows are content-sized and the panel
-     scrolls before a sentence is sliced (see .adds__list). */
-  .arena__setup { grid-template-columns: 1fr; }
+  /* Bracket setup stacks: the action bar first and STICKY — START and
+     RANDOM EIGHT stay in view while the roster scrolls under them (Henry had
+     to scroll past 130 cards to find START). Smaller cards, seven across. */
+  .arena__setup { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; grid-template-areas: "aside" "roster" "shelf"; gap: 12px; }
+  .arena__aside {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0 10px;
+    background: linear-gradient(180deg, rgba(4, 7, 18, 0.97) 78%, rgba(4, 7, 18, 0));
+  }
+  .arena__aside .btn--lg { min-height: 58px; }
+  .arena__aside .error { grid-column: 1 / -1; }
+  .arena__rosterscroll { overflow: visible; padding-right: 0; }
+  .arena__rosterscroll .grid { grid-template-columns: repeat(auto-fill, minmax(142px, 1fr)); grid-auto-rows: 184px; gap: 10px; }
+  .ccard__plate { gap: 4px; padding: 6px 5px 8px; }
+  .ccard__meta { gap: 6px; }
+  .ccard .badge { padding: 3px 7px; }
+  .roster__tools { flex: 1 1 100%; justify-content: flex-start; }
+  .roster__tools .search { flex: 1 1 140px; }
+  .roster__tools .search input { width: 100%; min-width: 0; }
   .battle {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr);
     grid-template-areas:
@@ -3780,6 +3905,26 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .rv__side-scroll { position: static; overflow: visible; padding-right: 0; }
 }
 
+/* The iPad frame proper (narrow AND short): Home is fitted to the screen
+   again — one screen, no scroll — which the compact tiles make safe (the
+   ≤1100 flow rule above exists for the old 340px tiles; this block sits
+   after it on purpose — same specificity, later wins). TODAY'S CREW shows
+   three creatures in a row: four-across was 52px art, two-by-two fell
+   below the fold. */
+@media (max-width: 1100px) and (max-height: 860px) {
+  .home { flex: 1; height: auto; min-height: 0; grid-template-rows: minmax(0, 1fr) auto; }
+  .home__stage { min-height: 300px; }
+  .crewrow { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+  .crew:nth-child(n + 4) { display: none; }
+  .crew__name { font-size: 13px; }
+  /* restated here: the ≤1100 block above sets the old tall tile sizes */
+  .home__actions { gap: 10px; }
+  .tile { min-height: 72px; padding: 9px 14px 9px 12px; gap: 1px 12px; }
+  .tile__icon { width: 46px; height: 46px; }
+  .tile__label { font-size: 18px; }
+  .tile__sub { font-size: 13px; line-height: 1.25; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 
@@ -3819,7 +3964,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
     radial-gradient(90% 70% at 50% 30%, rgba(168, 107, 255, 0.28), transparent 70%),
     linear-gradient(180deg, rgba(22, 14, 52, 0.94), rgba(6, 4, 20, 0.97));
 }
-.pcard--summon:hover { filter: drop-shadow(0 8px 26px rgba(168, 107, 255, 0.55)); }
+@media (hover: hover) { .pcard--summon:hover { filter: drop-shadow(0 8px 26px rgba(168, 107, 255, 0.55)); } }
 .pcard--summon .pcard__plate {
   background: linear-gradient(180deg, rgba(26, 14, 52, 0.55), rgba(10, 6, 28, 0.95));
 }
@@ -3936,12 +4081,17 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .summonwait__glyph { width: 40%; height: 40%; max-width: 64px; object-fit: contain; opacity: 0.55; }
 .summonwait--failed .summonwait__label { color: var(--text-dim); text-shadow: none; }
 .summonwait--failed.is-tappable { cursor: pointer; }
-.summonwait--failed.is-tappable:hover .summonwait__glyph,
 .summonwait--failed.is-tappable:focus-visible .summonwait__glyph { opacity: 1; }
-.summonwait--failed.is-tappable:hover .summonwait__label,
 .summonwait--failed.is-tappable:focus-visible .summonwait__label {
   color: var(--purple-hot);
   text-shadow: 0 0 10px rgba(168, 107, 255, 0.8);
+}
+@media (hover: hover) {
+  .summonwait--failed.is-tappable:hover .summonwait__glyph { opacity: 1; }
+  .summonwait--failed.is-tappable:hover .summonwait__label {
+    color: var(--purple-hot);
+    text-shadow: 0 0 10px rgba(168, 107, 255, 0.8);
+  }
 }
 /* Tight spots (slot cards, adds rows, orbiters): the label would collide. */
 .slot__art .summonwait__label, .adds__art .summonwait__label,
@@ -3991,7 +4141,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   font-size: 15px;
   cursor: pointer;
 }
-.summon-close:hover { box-shadow: inset 0 0 0 1px rgba(168, 107, 255, 0.95), 0 0 14px -4px rgba(168, 107, 255, 0.9); }
+@media (hover: hover) { .summon-close:hover { box-shadow: inset 0 0 0 1px rgba(168, 107, 255, 0.95), 0 0 14px -4px rgba(168, 107, 255, 0.9); } }
 
 .summon-body { align-items: center; text-align: center; }
 .summon-form { display: grid; justify-items: center; gap: 14px; width: 100%; padding: 6px 4px 4px; }
@@ -4111,7 +4261,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   clip-path: inherit;
   background: linear-gradient(180deg, rgba(14, 22, 52, 0.92), rgba(4, 7, 20, 0.97));
 }
-.summon-cand:hover { transform: translateY(-4px) scale(1.02); filter: drop-shadow(0 10px 26px rgba(168, 107, 255, 0.5)); }
+@media (hover: hover) { .summon-cand:hover { transform: translateY(-4px) scale(1.02); filter: drop-shadow(0 10px 26px rgba(168, 107, 255, 0.5)); } }
 .summon-cand__art {
   display: grid;
   place-items: end center;
@@ -4358,7 +4508,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   text-align: left;
   transition: box-shadow 160ms ease, transform 160ms ease, filter 160ms ease;
 }
-button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
+@media (hover: hover) { button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); } }
 .chip--purple { --accent-rgb: 168, 107, 255; color: #ecdfff; }
 .chip--green { --accent-rgb: 74, 222, 128; color: #d9f8e4; }
 .chip--red { --accent-rgb: 255, 107, 122; color: #ffdde1; }
@@ -4397,7 +4547,7 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   opacity: 0.75;
   transition: color 160ms ease, opacity 160ms ease;
 }
-.release__quiet:hover { color: var(--red); opacity: 1; }
+@media (hover: hover) { .release__quiet:hover { color: var(--red); opacity: 1; } }
 .release {
   display: grid;
   gap: 9px;
@@ -4424,7 +4574,7 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   letter-spacing: 0.1em;
   cursor: pointer;
 }
-.release__go:hover { filter: brightness(1.15); }
+@media (hover: hover) { .release__go:hover { filter: brightness(1.15); } }
 
 /* SUMMONED rail card: small remove affordance + in-card confirm */
 .pcard__remove {
@@ -4445,7 +4595,7 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   cursor: pointer;
   opacity: 0.8;
 }
-.pcard__remove:hover { opacity: 1; box-shadow: inset 0 0 0 1px rgba(255, 107, 122, 0.9); }
+@media (hover: hover) { .pcard__remove:hover { opacity: 1; box-shadow: inset 0 0 0 1px rgba(255, 107, 122, 0.9); } }
 .pcard__confirm {
   position: absolute;
   inset: 0;
@@ -4519,7 +4669,7 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   background: linear-gradient(170deg, rgba(34, 20, 66, 0.94), rgba(6, 8, 24, 0.96));
   box-shadow: inset 0 1px 0 rgba(210, 180, 255, 0.22);
 }
-.story:hover { filter: brightness(1.07); }
+@media (hover: hover) { .story:hover { filter: brightness(1.07); } }
 .story__key {
   font-family: var(--font-display);
   font-weight: 700;
@@ -4811,7 +4961,7 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   cursor: pointer;
   transition: transform 160ms ease, box-shadow 180ms ease;
 }
-.finales__item:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.9), 0 8px 22px -8px rgba(247, 201, 75, 0.6); }
+@media (hover: hover) { .finales__item:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.9), 0 8px 22px -8px rgba(247, 201, 75, 0.6); } }
 .finales__art { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
 .finales__plate {
   position: absolute;
@@ -4864,7 +5014,7 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
     linear-gradient(170deg, rgba(10, 30, 40, 0.94), rgba(4, 8, 22, 0.96));
   box-shadow: inset 0 1px 0 rgba(180, 255, 240, 0.24);
 }
-.nextmatch:hover { transform: translateY(-2px); filter: drop-shadow(0 10px 26px rgba(47, 227, 196, 0.35)); }
+@media (hover: hover) { .nextmatch:hover { transform: translateY(-2px); filter: drop-shadow(0 10px 26px rgba(47, 227, 196, 0.35)); } }
 .nextmatch__key {
   font-family: var(--font-display);
   font-weight: 700;
@@ -4945,7 +5095,7 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   cursor: pointer;
   transition: transform 150ms ease, box-shadow 180ms ease;
 }
-.shelf__item:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.85); }
+@media (hover: hover) { .shelf__item:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(247, 201, 75, 0.85); } }
 .shelf__art {
   display: block;
   width: 100%;
@@ -5178,4 +5328,39 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
 }
 @media (prefers-reduced-motion: reduce) {
   .levelup__card { animation: none; }
+}
+
+/* ── touch feel (Henry's iPad, 2026-09-20) ──────────────────────────────────
+   Nick watched Henry mash buttons "ten times until they go". Three causes,
+   three fixes. (1) No press feedback: the native tap highlight is off and
+   iOS applies :active only while a touchstart listener exists (main.tsx), so
+   every button and card now presses in visibly the instant a finger lands —
+   before React, an image or the network has answered. (2) Hover lifts stuck
+   to the last tapped card on touch and their 160ms transitions delayed the
+   real state change: every :hover rule above is desktop-only now
+   (@media (hover: hover)). (3) The toggles undid themselves on the second
+   tap: ui.tsx useMashGuard. Plus two frame-rate thieves: the drifting motes
+   made every backdrop-filter panel re-blur each frame on a tablet GPU, and
+   the rail's scroll-snap settle ate the tap that followed a swipe. */
+@media (hover: none) {
+  .btn:active:not(:disabled), .nav__tab:active, .cat:active, .sortpill:active, .rail__arrow:active,
+  .pcard:active, .ccard:active:not(:disabled), .slot:active, .tile:active, .crew:active, .crow:active,
+  .match:active:not(:disabled), .nextmatch:active, .pickplate:active, .corner__id:active:not(:disabled),
+  .story:active, .shelf__item:active, .summon-cand:active, .record:active:not(:disabled),
+  .rank button:active, .past:active, .finales__item:active, .tree__match:active:not(:disabled),
+  button.chip:active, .fw__chip--live:active, .starbtn:active, .release__go:active,
+  .release__quiet:active, .summon-close:active, .pcard__remove:active,
+  .pcard__confirm-no:active, .pcard__confirm-yes:active, .summonwait--failed.is-tappable:active {
+    transform: scale(0.95);
+    filter: brightness(1.2);
+    transition: none;
+  }
+  .corner__stage:active:not(:disabled) .stage {
+    filter: brightness(1.2) drop-shadow(0 0 26px rgba(168, 107, 255, 0.55));
+    transition: none;
+  }
+}
+@media (pointer: coarse) {
+  .motes { animation: none; }
+  .rail { scroll-snap-type: none; }
 }

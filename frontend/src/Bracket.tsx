@@ -9,9 +9,9 @@
 
    GET /tournaments/current answers with the live TournamentView (or JSON
    null); the tournament-list walk stays as a fallback for an older server. */
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Go } from "./App";
-import { ApiError, api, type CreatureSummary, type TournamentView } from "./api";
+import { ApiError, api, type CodexSort, type CreatureSummary, type TournamentView } from "./api";
 import { Finale, keyArtPath } from "./Finale";
 import {
   Asset,
@@ -25,9 +25,20 @@ import {
   Panel,
   envIcon,
   envLabel,
+  useMashGuard,
 } from "./ui";
 
 const ENTRANTS = 8;
+
+/** The roster's quick filters: the Codex sorts, in the Codex's words. */
+const ROSTER_SORTS: { key: CodexSort; label: string }[] = [
+  { key: "newest", label: "ALL" },
+  { key: "favorites", label: "FAVORITES" },
+  { key: "winners", label: "WINNERS" },
+  { key: "biggest", label: "BIGGEST" },
+  { key: "fastest", label: "FASTEST" },
+  { key: "strongest", label: "STRONGEST" },
+];
 
 export function Bracket({ go, tournamentId }: { go: Go; tournamentId?: number }) {
   if (tournamentId) return <BracketBoard go={go} tournamentId={tournamentId} />;
@@ -120,6 +131,27 @@ function PastShelf({ go, exceptId }: { go: Go; exceptId?: number }) {
 
 // -- setup --------------------------------------------------------------------
 
+/** One roster card. Memoised so a pick re-renders two cards, not 130. */
+const SetupCard = memo(function SetupCard({
+  c,
+  index,
+  onToggle,
+}: {
+  c: CreatureSummary;
+  /** Position in the picked list, -1 when not picked. */
+  index: number;
+  onToggle: (id: number) => void;
+}) {
+  return (
+    <CreatureCard
+      creature={c}
+      selected={index >= 0}
+      onClick={() => onToggle(c.id)}
+      corner={index >= 0 ? <Badge tone="cyan">{index + 1}</Badge> : undefined}
+    />
+  );
+});
+
 function Setup({ go }: { go: Go }) {
   const [roster, setRoster] = useState<CreatureSummary[] | null>(null);
   const [picked, setPicked] = useState<number[]>([]);
@@ -127,25 +159,48 @@ function Setup({ go }: { go: Go }) {
   const [busy, setBusy] = useState(false);
   /** POST answered 409 — one bracket is already live. */
   const [conflict, setConflict] = useState(false);
+  /* 130 chimeras in one grid was a scroll past every card to reach START.
+     The same sorts and search as the Codex cut it to the ones Henry means
+     ("my favorites", "the winners", "the big ones"); picks survive a filter
+     change — they live on the ids, not the visible list. */
+  const [sort, setSort] = useState<CodexSort>("newest");
+  const [query, setQuery] = useState("");
+  const loadSeq = useRef(0);
 
   useEffect(() => {
-    api.listCreatures("newest").then(setRoster).catch(() => setRoster([]));
-  }, []);
+    const seq = ++loadSeq.current;
+    api
+      .listCreatures(sort)
+      .then((rows) => seq === loadSeq.current && setRoster(rows))
+      .catch(() => seq === loadSeq.current && setRoster((r) => r ?? []));
+  }, [sort]);
 
-  function toggle(id: number) {
-    setError(null);
-    setPicked((prev) =>
-      prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : prev.length >= ENTRANTS
-          ? prev
-          : [...prev, id],
-    );
-  }
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return q ? (roster ?? []).filter((c) => (c.name || "").toLowerCase().includes(q)) : roster ?? [];
+  }, [roster, query]);
 
+  /* A burst of taps on one card is one pick, never pick-unpick-pick. */
+  const guard = useMashGuard();
+  const toggle = useCallback(
+    (id: number) => {
+      if (!guard(`c:${id}`)) return;
+      setError(null);
+      setPicked((prev) =>
+        prev.includes(id)
+          ? prev.filter((x) => x !== id)
+          : prev.length >= ENTRANTS
+            ? prev
+            : [...prev, id],
+      );
+    },
+    [guard],
+  );
+
+  /** Eight at random from whatever is on screen — "random eight winners". */
   function randomEight() {
     if (!roster) return;
-    const pool = [...roster];
+    const pool = [...(visible.length >= ENTRANTS ? visible : roster)];
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -202,38 +257,17 @@ function Setup({ go }: { go: Go }) {
       </header>
 
       <div className="arena__setup">
-        <Panel
-          title={`ENTRANTS — ${picked.length} OF ${ENTRANTS}`}
-          accent="teal"
-          className="arena__roster"
-        >
-          {roster.length >= ENTRANTS ? (
-            <div className="arena__rosterscroll">
-              <div className="grid">
-                {roster.map((c) => {
-                  const index = picked.indexOf(c.id);
-                  return (
-                    <CreatureCard
-                      key={c.id}
-                      creature={c}
-                      selected={index >= 0}
-                      onClick={() => toggle(c.id)}
-                      corner={index >= 0 ? <Badge tone="cyan">{index + 1}</Badge> : undefined}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <Empty
-              title={`You need ${ENTRANTS} chimeras to run a bracket`}
-              hint={`You have ${roster.length}. Build a few more in the Fusion Lab.`}
-            />
-          )}
-        </Panel>
-
+        {/* The actions come FIRST in the flow: on the iPad this bar sticks to
+            the top of the page while the roster scrolls under it, so START is
+            one tap away from anywhere. Desktop keeps it in the right column. */}
         <aside className="arena__aside">
-          <Btn accent="ghost" onClick={randomEight} disabled={roster.length < ENTRANTS}>
+          <Btn
+            accent="purple"
+            size="lg"
+            icon="icons/dice"
+            onClick={randomEight}
+            disabled={roster.length < ENTRANTS}
+          >
             RANDOM EIGHT
           </Btn>
           <Btn
@@ -250,8 +284,61 @@ function Setup({ go }: { go: Go }) {
             HALL OF CHAMPIONS
           </Btn>
           {error && <div className="error">{error}</div>}
-          <PastShelf go={go} />
         </aside>
+
+        <Panel
+          title={`ENTRANTS — ${picked.length} OF ${ENTRANTS}`}
+          accent="teal"
+          className="arena__roster"
+          action={
+            <div className="roster__tools">
+              <div className="codex__sorts" role="group" aria-label="Filter the roster">
+                {ROSTER_SORTS.map((o) => (
+                  <button
+                    key={o.key}
+                    type="button"
+                    className={`sortpill${sort === o.key ? " is-active" : ""}`}
+                    onClick={() => setSort(o.key)}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+              <label className="search">
+                <Asset slot="icons/search" label="" className="search__icon" />
+                <input
+                  type="search"
+                  value={query}
+                  placeholder="Find…"
+                  onChange={(e) => setQuery(e.target.value)}
+                  aria-label="Search your chimeras"
+                />
+              </label>
+            </div>
+          }
+        >
+          {sort === "newest" && !query.trim() && roster.length < ENTRANTS ? (
+            <Empty
+              title={`You need ${ENTRANTS} chimeras to run a bracket`}
+              hint={`You have ${roster.length}. Build a few more in the Fusion Lab.`}
+            />
+          ) : visible.length ? (
+            <div className="arena__rosterscroll">
+              <div className="grid">
+                {visible.map((c) => (
+                  <SetupCard key={c.id} c={c} index={picked.indexOf(c.id)} onToggle={toggle} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <Empty
+              title={query.trim() ? `Nothing matches “${query.trim()}”` : "Nothing here yet"}
+              hint={query.trim() ? "Try another name." : "Try ALL, or build more in the Fusion Lab."}
+            />
+          )}
+        </Panel>
+
+        <PastShelf go={go} />
       </div>
 
       {conflict && (

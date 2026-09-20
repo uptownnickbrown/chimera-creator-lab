@@ -108,21 +108,76 @@ function resolveSlot(slot: string): string {
   return SLOT_ALIASES[slot] ?? slot;
 }
 
+/** Holds an image's src until it comes within a screen of the viewport.
+    `loading="lazy"` is advisory and WebKit fetched all 129 Codex thumbs before
+    the dossier's hero (measured 2026-09-20); an IntersectionObserver gate is
+    exact, works back to iPadOS 12, and covers the horizontal picker rail too
+    (a card scrolled out of the rail is not intersecting the viewport). */
+function useNear(lazy: boolean): [React.RefObject<HTMLImageElement>, boolean] {
+  // Callers keep `alt` empty until the src is set: an <img> with no src and a
+  // non-empty alt renders the alt TEXT (HTML spec), not nothing.
+  const ref = useRef<HTMLImageElement>(null);
+  const [near, setNear] = useState(!lazy);
+  useEffect(() => {
+    if (!lazy || near) return;
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setNear(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setNear(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "100% 100%" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [lazy, near]);
+  return [ref, near];
+}
+
+/** Kid-proof toggles. Henry taps a card, sees nothing for a beat (a render,
+    an image swap, a slow frame) and taps again — and again — until something
+    visibly happens. On a toggle every even tap undid the odd one, so the card
+    "went" on the fifth tap or not at all. A burst of taps on the same key is
+    ONE tap: any repeat inside `ms` of the previous one (mash-refreshed) is
+    swallowed. A deliberate un-pick is a second tap a beat later. */
+export function useMashGuard(ms = 500): (key: string) => boolean {
+  const last = useRef({ key: "", at: 0 });
+  return useCallback(
+    (key: string) => {
+      const now = performance.now();
+      const repeat = last.current.key === key && now - last.current.at < ms;
+      last.current = { key, at: now };
+      return !repeat;
+    },
+    [ms],
+  );
+}
+
 /** Loads /assets/<slot>.webp; a miss renders the magenta gap marker. */
 export function Asset({
   slot,
   label,
   className = "",
   tint,
+  lazy = false,
 }: {
   slot: string;
   label?: string;
   className?: string;
   /** Painted icons ship cyan; tint recolours them to a screen's accent. */
   tint?: "purple" | "gold" | "teal" | "green" | "red";
+  /** Long rails/grids: fetch only when within a screen of the viewport. */
+  lazy?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [slot]);
+  const [ref, near] = useNear(lazy);
 
   const file = resolveSlot(slot);
   const cls = `asset${tint ? ` tint-${tint}` : ""} ${className}`;
@@ -140,9 +195,11 @@ export function Asset({
   }
   return (
     <img
+      ref={ref}
       className={cls}
-      src={`/assets/${file}.webp`}
-      alt={label || slot}
+      src={near ? `/assets/${file}.webp` : undefined}
+      alt={near ? label || slot : ""}
+      decoding="async"
       onError={() => setFailed(true)}
     />
   );
@@ -161,6 +218,7 @@ export function PartImg({
   label,
   className = "",
   onRepaint,
+  lazy = false,
 }: {
   source?: Pick<SourceCreature, "slug" | "name" | "art" | "custom" | "portrait_status"> | null;
   slug?: string;
@@ -168,23 +226,28 @@ export function PartImg({
   className?: string;
   /** Lab rail only: makes the failed plate a REPAINT button. */
   onRepaint?: (slug: string) => void;
+  /** The picker rail: 160 portraits, fetch the ones near the viewport. */
+  lazy?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   const art = source?.art ?? null;
   useEffect(() => setFailed(false), [art]);
+  const [ref, near] = useNear(lazy);
 
   const finalSlug = source?.slug ?? slug ?? "";
   const name = label ?? source?.name ?? finalSlug;
   const isCustom = source?.custom || finalSlug.startsWith("custom/");
   if (!isCustom) {
-    return <Asset slot={`parts/${finalSlug}`} label={name} className={className} />;
+    return <Asset slot={`parts/${finalSlug}`} label={name} className={className} lazy={lazy} />;
   }
   if (art && !failed) {
     return (
       <img
+        ref={ref}
         className={`asset ${className}`}
-        src={art}
-        alt={name}
+        src={near ? art : undefined}
+        alt={near ? name : ""}
+        decoding="async"
         onError={() => setFailed(true)}
       />
     );
@@ -245,32 +308,7 @@ export function MediaImg({
 }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
-  // `loading="lazy"` is advisory and WebKit fetched all 129 Codex thumbs
-  // before the dossier's hero (measured 2026-09-20: hero landed at ~3s,
-  // after the last thumb). So lazy images hold their src until they come
-  // within a screen of the viewport — IntersectionObserver works back to
-  // iPadOS 12, which covers Henry's iPad.
-  const ref = useRef<HTMLImageElement>(null);
-  const [near, setNear] = useState(!lazy);
-  useEffect(() => {
-    if (!lazy || near) return;
-    const el = ref.current;
-    if (!el || typeof IntersectionObserver === "undefined") {
-      setNear(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setNear(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin: "100% 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [lazy, near]);
+  const [ref, near] = useNear(lazy);
   if (!src || failed) {
     return (
       <div className={`pending ${className}`} aria-label={alt}>
@@ -284,8 +322,9 @@ export function MediaImg({
       ref={ref}
       className={`asset ${className}`}
       src={near ? src : undefined}
-      alt={alt}
+      alt={near ? alt : ""}
       loading={lazy ? "lazy" : undefined}
+      decoding="async"
       onError={() => setFailed(true)}
     />
   );
@@ -710,7 +749,9 @@ export function RarityBadge({ rarity }: { rarity: string }) {
   return <Badge tone={tone as "gold"}>{rarity}</Badge>;
 }
 
-export function CreatureCard({
+/** Memoised: the bracket setup renders ~130 of these and re-renders the
+    grid on every pick; only the card whose state changed should do work. */
+export const CreatureCard = React.memo(function CreatureCard({
   creature,
   selected,
   onClick,
@@ -731,7 +772,7 @@ export function CreatureCard({
       disabled={!onClick}
     >
       <div className="ccard__art">
-        <CreatureImg creature={creature} />
+        <CreatureImg creature={creature} lazy />
         {creature.favorite && <span className="ccard__fav" aria-label="favorite" />}
         {corner && <span className="ccard__corner">{corner}</span>}
       </div>
@@ -749,7 +790,7 @@ export function CreatureCard({
       </div>
     </button>
   );
-}
+});
 
 export function Empty({ title, hint }: { title: string; hint?: string }) {
   return (

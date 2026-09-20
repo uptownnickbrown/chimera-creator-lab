@@ -288,8 +288,9 @@ async def retry_portrait(db: AsyncSession, slug: str) -> CustomPart | None:
 # -- boot resweep ---------------------------------------------------------------
 
 #: Written into <media>/parts once every portrait there has been through
-#: images.normalize_portrait. Bump the suffix to force another pass.
-TIGHT_MARKER = ".tight-v1"
+#: images.normalize_portrait. Bump the suffix to force another pass
+#: (v2 = the 512px cap, images.PORTRAIT_MAX_PX).
+TIGHT_MARKER = ".tight-v2"
 #: Portrait re-renders in flight at once during the boot resweep. Two keeps
 #: the image API's rate limit and the boot-time CPU comfortable.
 RESWEEP_CONCURRENCY = 2

@@ -171,3 +171,59 @@ too. Vendor prefixes for that Safari (`-webkit-backdrop-filter` and friends)
 come from autoprefixer with the `browserslist` in frontend/package.json;
 without them none of the holo-panel blurs rendered on the device. A photo
 from the iPad outranks the sweep.
+
+Second real-device lesson (2026-09-20, Nick's screenshot folder): the
+absolute-image rule above is not enough on its own. A well whose height comes
+ONLY from a stretched `1fr` track (the bracket-setup card art, the lab slot
+art) lays its absolutely positioned image out before the stretch and never
+revisits it on iPadOS 16.6, so the well paints EMPTY — while wells with an
+explicit height (`.pcard__art`), an aspect ratio (`.crew__art`) or
+`height: 100%` (`.stage`) all painted. Rule (3): every media well gets an
+explicit height — px, `aspect-ratio`, or `height: 100%` of a definite track —
+never a bare stretch. The sweep's `imgrisk` audit now probes for it
+("stretch" entries: a well that shrinks when pinned to the start of its
+track had no height of its own).
+
+## Touch feel (Henry's iPad, 2026-09-20)
+
+Nick watched Henry mash buttons "ten times until they go". What a tap must
+do on the tablet, in order:
+
+1. **Press in the same frame.** The native tap highlight is off, so every
+   button and card defines a pressed state (`:active`: scale 0.95, brighten,
+   no transition on the way down — theme.css §touch feel). iOS applies
+   `:active` only while a `touchstart` listener exists; main.tsx installs an
+   empty passive one. The press is the acknowledgement; nothing else may be
+   the first feedback.
+2. **Hover is desktop-only.** Every `:hover` rule lives under
+   `@media (hover: hover)`. On touch, hover styles stick to the last tapped
+   element and their transitions delay the real state change.
+3. **A burst of taps is one tap.** Toggles (rail picks, slot clears, roster
+   picks) go through `ui.tsx` `useMashGuard`: a repeat on the same key inside
+   500ms — mash-refreshed — is swallowed, so mashing never un-picks. A
+   deliberate un-pick is a second tap a beat later.
+4. **Nothing heavy on the main thread between the tap and the paint.**
+   Long lists are memoised per card (`RailCard`, `SetupCard`,
+   `CreatureCard`); every `<img>` decodes async; rails and grids gate their
+   image `src` on an IntersectionObserver (`useNear`); the ambient motes do
+   not drift on coarse pointers (a moving backdrop re-blurs every
+   `backdrop-filter` panel each frame); the rail has no scroll-snap on touch
+   (the snap settle swallowed the tap after a swipe).
+5. **The next action is on screen.** After a battle result, NEXT BATTLE is
+   in the header, not under three panels; the bracket setup's action bar
+   (RANDOM EIGHT, START) comes first and sticks to the top while the roster
+   scrolls; the home page fits one screen (compact action tiles).
+
+## Image delivery (2026-09-20)
+
+- Part portraits are 512px on the long side (`images.PORTRAIT_MAX_PX`,
+  WebP q85): the largest box they ever fill is 168px, 336 device px. The
+  1024px library was 42MB and ~3.7MB decoded per portrait; Safari was
+  re-decoding oversized bitmaps on every rail scroll. Hero renders stay
+  1536×1024; codex thumbs 512².
+- `/assets` and `/media` are served with `Cache-Control: public,
+  max-age=604800, stale-while-revalidate=2592000` and a real `image/webp`
+  type (`backend/app/static_cache.py`); the shell is `no-cache`. Before this
+  Safari re-validated every image on nearly every screen.
+- `Asset`, `PartImg` and `MediaImg` take `lazy`: the rail and the roster
+  fetch only what is within a screen of the viewport.

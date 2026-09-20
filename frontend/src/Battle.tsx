@@ -235,6 +235,24 @@ export function Battle({
           <Asset slot={envIcon(environment)} label="" className="battle__envicon" />
           {envLabel(environment)}
         </div>
+        {/* The one thing to do after a result, in view without scrolling
+            (the footer copy sits under the reasons, the tree and the tracker
+            on the iPad — Henry never found it). */}
+        {showResult &&
+          (nextMatch ? (
+            <Btn
+              accent="purple"
+              icon="icons/nav_arena"
+              className="battle__next"
+              onClick={() => go({ name: "arena", tid: t.id, matchId: nextMatch.id })}
+            >
+              NEXT BATTLE
+            </Btn>
+          ) : champion ? (
+            <Btn accent="gold" icon="icons/tile_hall" className="battle__next" onClick={() => go({ name: "hall" })}>
+              HALL OF CHAMPIONS
+            </Btn>
+          ) : null)}
       </header>
 
       <section

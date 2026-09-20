@@ -205,8 +205,10 @@
   background: linear-gradient(180deg, rgba(79, 216, 255, 0.22) 0%, rgba(6, 10, 26, 0.85) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
-.gate-key:hover:not(:disabled) {
-  filter: brightness(1.18) drop-shadow(0 0 14px rgba(79, 216, 255, 0.5));
+@media (hover: hover) {
+  .gate-key:hover:not(:disabled) {
+    filter: brightness(1.18) drop-shadow(0 0 14px rgba(79, 216, 255, 0.5));
+  }
 }
 .gate-key:active:not(:disabled) {
   transform: scale(0.94);

@@ -89,6 +89,11 @@ Failure: composited finale (the standard battle presentation) — never blocks.
 Environments (9 arenas, opaque scenes), source-creature portraits, UI chrome,
 fusion chamber, trophies. Cutout-style assets use native transparent
 background — the Agora chroma-key/flood-fill pipeline is retired entirely.
+Every part portrait (pregenerated or summoned) is stored TIGHT (alpha bbox)
+at 512px on the long side, WebP q85 (`images.normalize_portrait`; the boot
+pass in `summon.resweep_portraits` re-cuts the media volume whenever
+`TIGHT_MARKER` is bumped). 512 covers the largest well (168px, 2× DPR) and
+cut the library from 42MB to ~10MB (UI_STANDARD §Image delivery).
 One style anchor generated first, then `images.edit` with the anchor as
 reference keeps the set consistent. Pregen batches run offline in parallel;
 per-image latency doesn't matter.

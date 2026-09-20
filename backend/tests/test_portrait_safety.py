@@ -41,6 +41,15 @@ def alpha_bbox_size(data: bytes) -> tuple[int, int]:
     return (right - left, bottom - top)
 
 
+def tight_size(data: bytes) -> tuple[int, int]:
+    """What normalize_portrait leaves: the alpha bbox, long side capped."""
+    from app.services.images import PORTRAIT_MAX_PX
+
+    w, h = alpha_bbox_size(data)
+    scale = min(1.0, PORTRAIT_MAX_PX / max(w, h))
+    return (round(w * scale), round(h * scale))
+
+
 def arm_real_ladder(monkeypatch) -> None:
     """AI 'on' with no network: the LLM rewrite is the regex scrub, backoff is instant."""
     from app.services import ai, images
@@ -193,8 +202,8 @@ async def test_part_portrait_retries_anonymous_after_safety_rejection(client, mo
     assert saved.exists()
     with Image.open(saved) as img:
         assert img.format == "WEBP" and img.mode == "RGBA"
-        assert img.size == alpha_bbox_size(png)  # TIGHT: the ellipse's own bbox
-        assert img.size[0] < 1024 and img.size[1] < 1024
+        assert img.size == tight_size(png)  # TIGHT: the ellipse's own bbox, capped
+        assert max(img.size) <= images.PORTRAIT_MAX_PX
 
 
 async def test_part_portrait_never_resends_a_rejected_prompt(client, monkeypatch):
@@ -387,7 +396,7 @@ async def test_resweep_heals_stuck_parts_and_tightens_media_once(client, monkeyp
     assert healed.portrait_status == "complete"
 
     # The tight pass ran once, in place, format preserved.
-    assert (parts_dir / ".tight-v1").exists()
+    assert (parts_dir / summon_svc.TIGHT_MARKER).exists()
     with Image.open(parts_dir / "custom_leaf-fox.png") as img:
         assert img.format == "PNG"
         assert img.size == alpha_bbox_size(padded)

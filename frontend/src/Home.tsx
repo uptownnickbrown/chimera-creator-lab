@@ -195,7 +195,7 @@ export function Home({ go, profile }: { go: Go; profile: ProfileView | null }) {
               tint={a.accent === "cyan" ? undefined : a.accent}
             />
             <span className="tile__label">
-              {a.lines[0]}
+              {a.lines[0]}{" "}
               <br />
               {a.lines[1]}
             </span>

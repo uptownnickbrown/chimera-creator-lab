@@ -67,7 +67,18 @@ def to_webp(png: bytes) -> bytes:
 # applies this to the committed library; generate_part_portrait applies it to
 # every new render; the boot pass in services/summon.py catches portraits
 # already on the media volume.
-PORTRAIT_MAX_PX = 1024
+#
+# 512, not 1024 (2026-09-20): the biggest box a part portrait ever fills is
+# the 168px summon candidate card — 336 device px on the iPad — so a 1024px
+# file was 4x the pixels Safari would ever paint. The old 160-file library
+# was 42MB / ~3.7MB decoded per portrait; at 512 it is a quarter of both, and
+# the picker rail stops re-decoding a hundred oversized bitmaps on scroll.
+# Bump summon.TIGHT_MARKER whenever this changes so the boot pass re-cuts the
+# portraits already on the volume.
+PORTRAIT_MAX_PX = 512
+#: Portraits are painted at a third of their pixel size at most; q85 is
+#: indistinguishable from q90 there and a third smaller on the wire.
+PORTRAIT_WEBP_QUALITY = 85
 #: Alpha below this is fringe (resampling haze, faint glow tails), not creature.
 PORTRAIT_ALPHA_THRESH = 8
 
@@ -96,7 +107,7 @@ def normalize_portrait(data: bytes, *, fmt: str = "WEBP") -> bytes:
     if fmt.upper() == "PNG":
         img.save(out, "PNG", optimize=True)
     else:
-        img.save(out, "WEBP", quality=WEBP_QUALITY, method=WEBP_METHOD)
+        img.save(out, "WEBP", quality=PORTRAIT_WEBP_QUALITY, method=WEBP_METHOD)
     return out.getvalue()
 
 

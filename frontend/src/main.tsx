@@ -14,6 +14,12 @@ import "@fontsource/inter/latin-700.css";
 
 import "./theme.css";
 
+/* iOS Safari applies :active to a tapped element only when some touchstart
+   listener exists on the page. This empty one turns on the pressed state
+   every button and card defines in theme.css (§touch feel): the press is the
+   acknowledgement, before React or the network has answered. */
+document.addEventListener("touchstart", () => {}, { passive: true });
+
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
