@@ -298,7 +298,7 @@ AUDIT_JS = """
     // .stage__subject / .rv__hero fix) resolves the percentage everywhere
     const pcs = getComputedStyle(p);
     if (pcs.display === "grid") {
-      const rows = pcs.gridTemplateRows.trim().split(/\s+/);
+      const rows = pcs.gridTemplateRows.trim().split(/\\s+/);
       const inner = p.clientHeight - parseFloat(pcs.paddingTop) - parseFloat(pcs.paddingBottom);
       if (rows.length === 1 && Math.abs(parseFloat(rows[0]) - inner) <= 1) continue;
     }
