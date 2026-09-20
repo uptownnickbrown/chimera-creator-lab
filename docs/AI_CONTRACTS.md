@@ -33,13 +33,17 @@ famous trademarked characters ("Your request was rejected by the safety
 system", HTTP 400): Henry's summoned Charizard/Mewtwo/Eevee-family parts never
 got a portrait, and heroes whose `visual_spec` said "Night Fury-style" burned
 all three rungs on the identical prompt. A rejected prompt is now never
-re-sent. On the first rejection the description is rewritten once by gpt-5.1
-("for a painter who has never seen any franchise": names, brands and
-"like <character>" comparisons out, every physical detail kept — regex scrub
-as fallback and on top), and the ladder continues with the rewritten prompt;
-a second rejection stops. For hero renders only summoned-part names and the
-creature's own name are scrubbed — curated names ("shark", "dragon") are
-anatomy. Upstream, both the creature SYSTEM_PROMPT and the summon resolver
+re-sent; each refusal moves to the next of four prompt variants, all written
+by gpt-5.1 with the regex scrub on top: **named** (the pregen-shaped prompt),
+**anonymous** (names, brands and "like <character>" comparisons out, every
+physical detail kept), **cousin** (the filter knows Charizard, Mewtwo,
+Blastoise and Umbreon by shape alone, so: same body plan, element, palette
+family and pose, only the two or three signature details changed — the
+player still gets the kind of beast they asked for), and **distinct** (a
+clearly new species, last resort). Refused renders are not billed; each
+rewrite is a few tenths of a cent. For hero renders only summoned-part names
+and the creature's own name are scrubbed — curated names ("shark", "dragon")
+are anatomy. Upstream, both the creature SYSTEM_PROMPT and the summon resolver
 forbid franchise/character names in image descriptions. Summoned parts whose
 render failed report `portrait_status: failed` (TAP TO REPAINT in the lab,
 `POST /api/library/custom/{slug}/retry-portrait`), and every boot re-renders
