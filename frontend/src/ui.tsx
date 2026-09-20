@@ -245,6 +245,32 @@ export function MediaImg({
 }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
+  // `loading="lazy"` is advisory and WebKit fetched all 129 Codex thumbs
+  // before the dossier's hero (measured 2026-09-20: hero landed at ~3s,
+  // after the last thumb). So lazy images hold their src until they come
+  // within a screen of the viewport — IntersectionObserver works back to
+  // iPadOS 12, which covers Henry's iPad.
+  const ref = useRef<HTMLImageElement>(null);
+  const [near, setNear] = useState(!lazy);
+  useEffect(() => {
+    if (!lazy || near) return;
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setNear(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setNear(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "100% 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [lazy, near]);
   if (!src || failed) {
     return (
       <div className={`pending ${className}`} aria-label={alt}>
@@ -255,8 +281,9 @@ export function MediaImg({
   }
   return (
     <img
+      ref={ref}
       className={`asset ${className}`}
-      src={src}
+      src={near ? src : undefined}
       alt={alt}
       loading={lazy ? "lazy" : undefined}
       onError={() => setFailed(true)}

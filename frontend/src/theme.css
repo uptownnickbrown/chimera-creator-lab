@@ -1420,6 +1420,71 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   font-weight: 700;
   font-size: 14px;
 }
+/* Every media well in the app, one rule (the 2026-09-20 old-WebKit sweep,
+   scripts/qa_screens.py `imgrisk`): the image or placeholder sits out of
+   flow and is sized in percent of the well, which is definite in every
+   engine once laid out. `padding: inherit` keeps a padded well's inset.
+   Wells keep their own object-fit / object-position rules below. */
+.tree__art,
+.fighter__art,
+.rank__art,
+.past__art,
+.crew__art,
+.corner__badge,
+.pickplate__art,
+.nextmatch__art,
+.shelf__art,
+.ccard__art,
+.crow__art,
+.detail__part-img,
+.finales__item,
+.fw__orbiter-art,
+.fw__spot-src,
+.finale__artwrap { position: relative; }
+.tree__art .asset,
+.fighter__art .asset,
+.rank__art .asset,
+.past__art .asset,
+.crew__art .asset,
+.corner__badge .asset,
+.pickplate__art .asset,
+.nextmatch__art .asset,
+.shelf__art .asset,
+.ccard__art .asset,
+.crow__art .asset,
+.detail__part-img .asset,
+.finales__item .asset,
+.fw__orbiter-art .asset,
+.fw__spot-src .asset,
+.finale__artwrap .asset,
+.tree__art .pending,
+.fighter__art .pending,
+.rank__art .pending,
+.past__art .pending,
+.crew__art .pending,
+.corner__badge .pending,
+.pickplate__art .pending,
+.nextmatch__art .pending,
+.shelf__art .pending,
+.ccard__art .pending,
+.crow__art .pending,
+.detail__part-img .pending,
+.finales__item .pending,
+.fw__orbiter-art .pending,
+.fw__spot-src .pending,
+.finale__artwrap .pending,
+.finales__item .finales__art,
+.finale__artwrap .finale__art,
+.detail__part-img .summonwait {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  padding: inherit;
+  box-sizing: border-box;
+}
+
 /* Portrait wells that are sized by a grid track or an aspect ratio (this
    one, the cluster orbs, the Fusion Wait spots) position their image
    ABSOLUTELY and size it in percent of the well. An in-flow `height: 100%`
@@ -2057,7 +2122,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   line-height: 1.1;
   color: #fff;
 }
-.crow__meta { display: flex; align-items: center; gap: 5px; }
+.crow__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 5px; min-width: 0; }
 .crow__meta .badge { font-size: 13px; padding: 1px 7px; }
 .crow__wins {
   display: inline-flex;
@@ -2247,6 +2312,8 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   gap: 14px;
 }
 .arena__status { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 13.5px; }
+/* one baseline: the status badge and the MY CALLS plate share a height */
+.arena__status > .badge, .arena__status > .arena__calls { display: inline-flex; align-items: center; min-height: 30px; }
 .arena__calls {
   padding: 3px 10px;
   clip-path: var(--clip-notch-sm);
@@ -3262,7 +3329,11 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   min-height: 0;
 }
 .fw__chamber-art { position: relative; aspect-ratio: 1; height: 100%; max-height: 452px; }
-.fw__chamber-img { animation: fw-breathe 4.4s ease-in-out infinite; filter: var(--tint) drop-shadow(0 0 50px rgba(168, 107, 255, 0.4)); }
+.fw__chamber-img {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: contain; /* out of flow: see .slot__art */
+  animation: fw-breathe 4.4s ease-in-out infinite;
+  filter: var(--tint) drop-shadow(0 0 50px rgba(168, 107, 255, 0.4));
+}
 @keyframes fw-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
 
 .fw__sparks { position: absolute; inset: 14% 20% 16%; overflow: hidden; pointer-events: none; }
@@ -3447,6 +3518,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   position: absolute; left: 0; right: 0; top: 1%; bottom: 25%;
   z-index: 1;
   display: grid; place-items: end center;
+  grid-template-rows: 100%; /* definite row: see .stage__subject */
   animation: rv-hero 1100ms cubic-bezier(0.16, 0.84, 0.24, 1) both;
 }
 .rv__hero .asset {
@@ -3637,6 +3709,11 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .adds__name { font-size: 13.5px; letter-spacing: 0.03em; }
   .adds__blurb { font-size: 13px; line-height: 1.25; }
   .codex { grid-template-columns: minmax(228px, 258px) minmax(0, 1fr); gap: 12px; }
+  /* six sort pills wrapped into three rows here — text-only and tighter
+     they sit three to a row, and the list starts one row sooner */
+  .codex__sorts { gap: 5px; }
+  .sortpill { min-height: 30px; padding: 2px 8px; gap: 0; letter-spacing: 0.06em; }
+  .sortpill__icon { display: none; }
   .codex__list .search input { width: 56px; }
   .sortpill { font-size: 13px; padding: 3px 8px; gap: 5px; }
   .crow { grid-template-columns: 46px minmax(0, 1fr) auto; min-height: 56px; gap: 8px; }

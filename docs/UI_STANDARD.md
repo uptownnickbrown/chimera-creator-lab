@@ -155,3 +155,19 @@ interactive/panel boxes, and horizontal overflow. All four counts must be
 ZERO on every screen before sign-off; the fitted desktop grids flow-and-
 scroll below 1100px instead of squeezing (see the ≤1100 structural pass in
 theme.css).
+
+Real-device lesson (2026-09-20): Henry's iPad runs iPadOS 16.6 (the Railway
+request logs say `Version/16.6 Safari`), three years behind Playwright's
+WebKit. That engine resolves an in-flow image's `height: 100%` inside an
+auto grid row as `auto`, so the image takes its intrinsic size and grows out
+of its well — the slot-card portraits painted over their name plates while
+the sweep was clean. Two rules follow: (1) every media well positions its
+image absolutely and sizes it in percent of the well (one shared rule block
+in theme.css, above `.slot__art`), or gives itself one definite row
+(`grid-template-rows: 100%`, the stage fix); (2) the sweep's `imgrisk` audit
+simulates the old engine by giving every in-flow image an auto height for a
+moment and flagging any that would outgrow its parent — it must be ZERO
+too. Vendor prefixes for that Safari (`-webkit-backdrop-filter` and friends)
+come from autoprefixer with the `browserslist` in frontend/package.json;
+without them none of the holo-panel blurs rendered on the device. A photo
+from the iPad outranks the sweep.

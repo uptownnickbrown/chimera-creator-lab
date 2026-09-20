@@ -133,6 +133,10 @@ FW_STATES = {"a": (99991, 2600), "b": (99992, 5200), "c": (99993, 4200)}
 #              the COMPLETE badge) — FitText can't shrink an unconstrained box
 #   overlaps — interactive/panel boxes painting over each other (foot buttons
 #              over the bracket, RUN A TOURNAMENT over the finales)
+#   imgrisk  — in-flow images that would outgrow their parent if their
+#              percentage height resolved as auto, which is exactly what
+#              iPadOS 16.6 WebKit does inside auto grid rows (the slot-card
+#              portraits over their name plates, 2026-09-20)
 AUDIT_JS = """
 () => {
   const vw = innerWidth, vh = innerHeight;
@@ -269,6 +273,43 @@ AUDIT_JS = """
         res.overlaps.push({ a: label(a), b: label(b),
                             pct: Math.round((100 * inter) / small) });
     }
+  }
+  // ── old-WebKit image escape (Henry's iPad, iPadOS 16.6, 2026-09-20) ──
+  // That engine resolves an in-flow image's percentage height against an
+  // auto grid row as `auto`, so the image takes its intrinsic size and
+  // grows out of its well. Simulate it: give every in-flow image an auto
+  // height for a moment and see whether it would then poke out of its
+  // parent. Absolutely positioned images resolve against a laid-out box in
+  // every engine and are skipped. Anything flagged must get the
+  // absolute-image treatment (theme.css, above .slot__art).
+  res.imgrisk = [];
+  for (const img of document.querySelectorAll("img")) {
+    if (res.imgrisk.length >= 24) break;
+    const cs = getComputedStyle(img);
+    if (cs.display === "none" || cs.position === "absolute" || cs.position === "fixed") continue;
+    const p = img.parentElement;
+    if (!p) continue;
+    // a grid well with ONE definite row the size of the well (the
+    // .stage__subject / .rv__hero fix) resolves the percentage everywhere
+    const pcs = getComputedStyle(p);
+    if (pcs.display === "grid") {
+      const rows = pcs.gridTemplateRows.trim().split(/\s+/);
+      const inner = p.clientHeight - parseFloat(pcs.paddingTop) - parseFloat(pcs.paddingBottom);
+      if (rows.length === 1 && Math.abs(parseFloat(rows[0]) - inner) <= 1) continue;
+    }
+    const r0 = img.getBoundingClientRect();
+    if (r0.width < 2 || r0.height < 2) continue;
+    if (r0.bottom < -50 || r0.top > vh + 400) continue;
+    if (!img.naturalHeight) continue; // not loaded: nothing to measure
+    const saved = [img.style.height, img.style.maxHeight, img.style.minHeight];
+    img.style.height = "auto"; img.style.maxHeight = "none"; img.style.minHeight = "0";
+    const r1 = img.getBoundingClientRect();
+    const pr = p.getBoundingClientRect();
+    [img.style.height, img.style.maxHeight, img.style.minHeight] = saved;
+    const out = Math.max(r1.bottom - pr.bottom, pr.top - r1.top);
+    if (out > 3)
+      res.imgrisk.push({ what: label(p), src: (img.getAttribute("src") || "").split("/").pop(),
+                         by: Math.round(out) });
   }
   res.below = res.below.slice(0, 24);
   res.clipped = res.clipped.slice(0, 24);
@@ -455,8 +496,8 @@ def main(base: str, out: Path) -> None:
                 flags = []
                 if a["hOverflow"]:
                     flags.append(f"hoverflow {a['hOverflow']}px")
-                for k in ("clipped", "escapes", "overlaps"):
-                    if a[k]:
+                for k in ("clipped", "escapes", "overlaps", "imgrisk"):
+                    if a.get(k):
                         flags.append(f"{k} {len(a[k])}")
                 print(f"  shot {name}_{vp_name}  (min font {a['min']}px"
                       + (";  " + ", ".join(flags) if flags else "") + ")")
@@ -567,15 +608,15 @@ def main(base: str, out: Path) -> None:
         f = fonts[k]
         flag = "  <-- BELOW FLOOR" if (f["min"] or 99) < 13 else ""
         counts = "  ".join(
-            f"{n}:{len(f.get(n) or [])}" for n in ("clipped", "escapes", "overlaps"))
+            f"{n}:{len(f.get(n) or [])}" for n in ("clipped", "escapes", "overlaps", "imgrisk"))
         hov = f.get("hOverflow") or 0
         print(f"  {k:28s} min {f['min']}px  {counts}  hoverflow:{hov}{flag}")
     print("\nflagged details:")
     any_flag = False
     for k in sorted(fonts):
         f = fonts[k]
-        for n in ("clipped", "escapes", "overlaps"):
-            for item in (f.get(n) or [])[:6]:
+        for n in ("clipped", "escapes", "overlaps", "imgrisk"):
+            for item in (f.get(n) or [])[:8]:
                 any_flag = True
                 print(f"  {k:26s} {n:8s} {json.dumps(item, ensure_ascii=False)}")
     if not any_flag:
