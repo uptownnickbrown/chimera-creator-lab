@@ -1,6 +1,6 @@
 """The image safety filter vs. Henry's Pokémon (Railway logs, 2026-09-19/20).
 
-gpt-image-1.5 refuses prompts that name famous trademarked characters, and a
+gpt-image refuses prompts that name famous trademarked characters, and a
 retry of the identical prompt is doomed. These tests pin the fix: a rejected
 prompt is never re-sent, the fallback prompt is anatomy only (no name, no
 franchise words), transient errors still retry, and the boot resweep heals

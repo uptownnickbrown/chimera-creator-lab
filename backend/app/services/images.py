@@ -1,9 +1,10 @@
 """Hero-image pipeline (docs/AI_CONTRACTS.md §1B, §3).
 
-gpt-image-1.5 with `background=transparent` — the only bakeoff model with
-native alpha, which matters for translucent flame/lightning/spray edges that
-a chroma key destroys. OpenAI-only by decision; on repeated failure we mark
-the row `failed` and the UI offers a friendly retry ("the lab is recharging").
+gpt-image-2.5 Flare with `background=transparent` (ai.IMAGE_MODEL; the
+2026-09-20 bakeoff moved it off gpt-image-1.5) — native alpha, which matters
+for translucent flame/lightning/spray edges that a chroma key destroys.
+OpenAI-only by decision; on repeated failure we mark the row `failed` and the
+UI offers a friendly retry ("the lab is recharging").
 
 Files land in the backend-owned media dir (served at /media by the API, so
 prod does not depend on writing into the frontend image). A creature row is

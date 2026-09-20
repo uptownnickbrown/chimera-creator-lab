@@ -20,15 +20,16 @@ movement, mythic powers) so interpretation stays stable. Output = the
 CreatureRecord schema (schemas.py). `visual_spec` must be a complete
 image-ready physical description.
 
-**Stage B — hero render (gpt-image-1.5, quality=high, background=transparent,
-1536×1024, ~50s).** Prompt = STYLE constant (realistic AAA creature concept
+**Stage B — hero render (gpt-image-2.5-flare, quality=high, background=transparent,
+1536×1024, ~20s).** Prompt = STYLE constant (realistic AAA creature concept
 art, one coherent species, dynamic pose, no gore, NO TEXT) + `visual_spec`.
 Runs as soon as Stage A lands; frontend polls `image_status`.
-Failure: one retry high, then quality=medium (verified path, ~26s), then a
-friendly "lab is recharging" state with a retry button. Record is never lost.
-Quality of the first two rungs is `CHIMERA_HERO_QUALITY` (default high).
+Failure: one retry high, then quality=medium (~14s), then a friendly "lab
+is recharging" state with a retry button. Record is never lost. Quality of
+the first two rungs is `CHIMERA_HERO_QUALITY` (default high; `xhigh` is the
+premium tier at ~$0.075).
 
-**Safety rejections (2026-09-20).** gpt-image-1.5 refuses prompts that name
+**Safety rejections (2026-09-20).** gpt-image (1.5 and 2.5 alike) refuses prompts that name
 famous trademarked characters ("Your request was rejected by the safety
 system", HTTP 400): Henry's summoned Charizard/Mewtwo/Eevee-family parts never
 got a portrait, and heroes whose `visual_spec` said "Night Fury-style" burned
@@ -76,7 +77,7 @@ Battle order in a bracket never affects outcomes (each pair+env is
 independent), so pre-resolving a whole bracket in parallel is legal and makes
 the tournament feel instant after the first frame.
 
-## 3. Championship key art (gpt-image-1.5 `images.edit`, ~74s)
+## 3. Championship key art (gpt-image-2.5-flare `images.edit`, ~22s)
 
 Input: both finalists' hero cutouts + finals environment. Prompt pins
 identity: "Keep BOTH creatures' designs EXACTLY as shown — same anatomy,
@@ -84,7 +85,7 @@ colors, plates, proportions." Validated in bakeoff (`keyart_finals.png`).
 Generated during the semifinal→final transition so the ceremony never waits.
 Failure: composited finale (the standard battle presentation) — never blocks.
 
-## 4. Pregenerated assets (gpt-image-1.5 — OpenAI everywhere)
+## 4. Pregenerated assets (gpt-image — OpenAI everywhere)
 
 Environments (9 arenas, opaque scenes), source-creature portraits, UI chrome,
 fusion chamber, trophies. Cutout-style assets use native transparent
@@ -98,34 +99,38 @@ One style anchor generated first, then `images.edit` with the anchor as
 reference keeps the set consistent. Pregen batches run offline in parallel;
 per-image latency doesn't matter.
 
-## Cost model (list prices, 2026-09-20)
+## Cost model (measured 2026-09-20, gpt-image-2.5-flare)
 
-gpt-image-1.5 bills output tokens ($32/M): 1024² low/medium/high ≈
-$0.009 / $0.034 / $0.133; 1536×1024 ≈ 1.5× that ($0.05 medium, $0.20 high).
-gpt-5.1 is $1.25/M in, $10/M out, `reasoning_effort` defaults to `none`, so
-every text call here is a few tenths of a cent. Per unit of play:
+Image models bill output tokens ($30/M on gpt-image-2.5, $32/M on 1.5), and
+the 2.5 models spend far fewer of them per quality tier — the bakeoff
+(`research/bakeoff/run_2_5.py`, our own hero and part prompts) measured a
+1536×1024 hero at low / medium / high / xhigh ≈ 158 / 343 / 1,372 / 2,459
+output tokens ≈ $0.006 / $0.012 / $0.042 / $0.075, against 6,642 tokens
+($0.21) for the 1.5 "high" that shipped before, with better-looking output
+at every tier at or above medium. A 1024² part portrait at medium is ≈ $0.014
+(was $0.046). gpt-5.1 is $1.25/M in, $10/M out with `reasoning_effort` none,
+so every text call is a few tenths of a cent. Per unit of play:
 
-| Unit | Calls | ≈ Cost | Share of spend |
+| Unit | Calls | ≈ Cost | Was (1.5) |
 |---|---|---|---|
-| New chimera | record (gpt-5.1) + hero (1536×1024 high) | $0.21 | ~78% |
-| Tournament | ≤7 uncached battles ($0.01 each) + finals key art (edit, high) | $0.25–0.30 | ~13% |
-| Summon (new part) | resolver + portrait (1024² medium) | $0.04 | ~2% |
-| Battle replay / cached matchup / codex / hall | none | $0 | — |
+| New chimera | record (gpt-5.1) + hero (1536×1024 high) | $0.05 | $0.21 |
+| Tournament | ≤7 uncached battles ($0.01 each) + finals key art (edit, high) | $0.13 | $0.25–0.30 |
+| Summon (new part) | resolver + portrait (1024² medium) | $0.02 | $0.04 |
+| Battle replay / cached matchup / codex / hall | none | $0 | $0 |
 
-Observed pace (week of 2026-09-14): ~50 chimeras, ~7 tournaments, ~20 summons
-≈ $14/week. Levers, cheapest quality loss first: `CHIMERA_KEYART_QUALITY=medium`
-(−$0.15/tournament), `CHIMERA_HERO_QUALITY=medium` (−$0.15/chimera, the only
-lever that moves the bill more than a few dollars a month, and the one that
-visibly softens the art). Both are Railway env vars read at call time — flip,
-create one creature, judge, flip back. Failed image calls (safety rejections)
-are not billed; they cost Henry time, which the de-brand retry fixes.
+At the week-of-2026-09-14 pace (~50 chimeras, ~7 tournaments, ~20 summons)
+that is ≈ $4/week, down from ≈ $14. Levers: `CHIMERA_HERO_QUALITY=xhigh`
+(+$0.03/chimera, the premium tier) or `medium` (−$0.03, visibly softer);
+`CHIMERA_KEYART_QUALITY` likewise. Both are Railway env vars read at call
+time. Failed image calls (safety rejections) are not billed.
 
-## Cost/latency ledger (measured 2026-08-08)
+## Cost/latency ledger (measured 2026-09-20)
 
 | Job | Model | Latency |
 |---|---|---|
 | Creature record | gpt-5.1 | ~16s |
-| Hero render high | gpt-image-1.5 | ~50s |
-| Hero render medium (fallback) | gpt-image-1.5 | ~26s |
+| Hero render high | gpt-image-2.5-flare | ~20s (was ~41s on 1.5) |
+| Hero render medium (fallback) | gpt-image-2.5-flare | ~14s |
+| Part portrait medium | gpt-image-2.5-flare | ~13s |
 | Battle resolution | gpt-5.1 | ~15s (once per pair+env, then cached) |
-| Finals key art | gpt-image-1.5 edit | ~74s (pre-generated during semis) |
+| Finals key art | gpt-image-2.5-flare edit | ~22s (pre-generated during semis) |

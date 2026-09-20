@@ -17,7 +17,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "scripts" / "raw"
 OUT_DIR = ROOT / "frontend" / "public" / "assets"
-MODEL = "gpt-image-1.5"
+MODEL = "gpt-image-2.5-flare"  # same roster as backend ai.IMAGE_MODEL
 
 STYLE = (
     "Cinematic sci-fi game art for a neon creature-laboratory interface aimed "

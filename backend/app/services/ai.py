@@ -14,7 +14,17 @@ from ..config import REPO_ROOT
 log = logging.getLogger("chimera.ai")
 
 TEXT_MODEL = "gpt-5.1"
-IMAGE_MODEL = "gpt-image-1.5"
+# gpt-image-2.5 Flare (bakeoff 2026-09-20, research/bakeoff/run_2_5.py, on the
+# app's own prompts): its "high" tier beat the gpt-image-1.5 "high" we shipped
+# for a fifth of the tokens — 1,372 vs 6,642 output tokens per 1536x1024 hero,
+# $0.042 vs $0.214 — in half the time (~20s vs ~41s); part portraits at
+# "medium" went from $0.046 to $0.014 and got better. Sunburst renders the
+# same token count ~50% slower with slightly tighter alpha edges; Flare's
+# speed wins for a kid watching the chamber. Native transparent PNG output is
+# unchanged. The safety filter on trademarked names behaves exactly the same
+# (same 400, same code), so the four-rung prompt ladder stays; the new
+# moderation="low" parameter does not get a Charizard through and is unused.
+IMAGE_MODEL = "gpt-image-2.5-flare"
 
 _client = None
 

@@ -10,11 +10,12 @@ from pathlib import Path
 # repo root = .../chimera-creator (backend/app/config.py -> up three)
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# gpt-image-1.5 render qualities the cost knobs accept. At 1536x1024 "high"
-# is ≈ $0.20/image and "medium" ≈ $0.05, so CHIMERA_HERO_QUALITY /
+# gpt-image-2.5 render qualities the cost knobs accept. Measured 2026-09-20
+# at 1536x1024 on Flare: low ≈ $0.006 (~13s), medium ≈ $0.012 (~14s), high ≈
+# $0.042 (~20s), xhigh ≈ $0.075 (~26s). CHIMERA_HERO_QUALITY /
 # CHIMERA_KEYART_QUALITY let Nick trade render cost for quality from the
 # Railway dashboard without a deploy. Anything else warns once and stays "high".
-RENDER_QUALITIES = ("medium", "high")
+RENDER_QUALITIES = ("low", "medium", "high", "xhigh")
 _warned_quality: set[str] = set()
 
 

@@ -41,3 +41,4 @@ qa/
 
 # Claude Code scratch: agent worktrees, local settings
 .claude/
+research/bakeoff/r25/
