@@ -149,21 +149,25 @@ export function Asset({
 }
 
 /** A source-part portrait. Curated parts ship as painted /assets/parts/<slug>
-    files; SUMMONED parts carry a /media portrait in `art` — and while that
-    portrait is still being painted (or if it failed), they get a shimmering
-    conjure placeholder instead of a magenta gap: a part mid-summon is a real
-    part, not missing art. Accepts a bare slug for callers that only have the
-    slug list (Reveal's FUSED FROM). */
+    files; SUMMONED parts carry a /media portrait in `art`. While that portrait
+    is still being painted they get a shimmering conjure placeholder instead of
+    a magenta gap (a part mid-summon is a real part, not missing art); when
+    every render attempt was refused they get a quiet NOT PAINTED plate that,
+    given `onRepaint`, is a tap-to-repaint button. Accepts a bare slug for
+    callers that only have the slug list (Reveal's FUSED FROM). */
 export function PartImg({
   source,
   slug,
   label,
   className = "",
+  onRepaint,
 }: {
-  source?: Pick<SourceCreature, "slug" | "name" | "art" | "custom"> | null;
+  source?: Pick<SourceCreature, "slug" | "name" | "art" | "custom" | "portrait_status"> | null;
   slug?: string;
   label?: string;
   className?: string;
+  /** Lab rail only: makes the failed plate a REPAINT button. */
+  onRepaint?: (slug: string) => void;
 }) {
   const [failed, setFailed] = useState(false);
   const art = source?.art ?? null;
@@ -185,6 +189,35 @@ export function PartImg({
       />
     );
   }
+  // A missing file is as failed as a refused render: the portrait is gone
+  // either way and only a repaint brings it back.
+  const status = failed ? "failed" : source?.portrait_status ?? "pending";
+  if (status === "failed") {
+    const tappable = Boolean(onRepaint);
+    const repaint = (e: { stopPropagation: () => void }) => {
+      e.stopPropagation();
+      onRepaint?.(finalSlug);
+    };
+    return (
+      <div
+        className={`summonwait summonwait--failed${tappable ? " is-tappable" : ""} ${className}`}
+        role={tappable ? "button" : "img"}
+        tabIndex={tappable ? 0 : undefined}
+        aria-label={tappable ? `Repaint the ${name} portrait` : `${name} (no portrait)`}
+        onClick={tappable ? repaint : undefined}
+        onKeyDown={
+          tappable
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") repaint(e);
+              }
+            : undefined
+        }
+      >
+        <Asset slot="icons/nav_fusion" label="" className="summonwait__glyph" tint="purple" />
+        <span className="summonwait__label">{tappable ? "TAP TO REPAINT" : "NOT PAINTED"}</span>
+      </div>
+    );
+  }
   return (
     <div className={`summonwait ${className}`} role="img" aria-label={name}>
       <span className="summonwait__ring" aria-hidden="true" />
@@ -200,11 +233,15 @@ export function MediaImg({
   alt,
   className = "",
   note = "RENDER PENDING",
+  lazy = false,
 }: {
   src: string | null | undefined;
   alt: string;
   className?: string;
   note?: string;
+  /** Long lists (the 128-row Codex): off-screen thumbs must not queue ahead
+      of the dossier's hero and FUSED FROM art on the iPad's six connections. */
+  lazy?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
@@ -217,7 +254,13 @@ export function MediaImg({
     );
   }
   return (
-    <img className={`asset ${className}`} src={src} alt={alt} onError={() => setFailed(true)} />
+    <img
+      className={`asset ${className}`}
+      src={src}
+      alt={alt}
+      loading={lazy ? "lazy" : undefined}
+      onError={() => setFailed(true)}
+    />
   );
 }
 
@@ -227,18 +270,26 @@ export function CreatureImg({
   prefer = "thumb",
   className = "",
   note,
+  lazy,
 }: {
   creature: Pick<CreatureSummary, "name" | "hero_image_path" | "thumb_path"> | null | undefined;
   prefer?: "thumb" | "hero";
   className?: string;
   note?: string;
+  lazy?: boolean;
 }) {
   const src =
     prefer === "hero"
       ? creature?.hero_image_path || creature?.thumb_path
       : creature?.thumb_path || creature?.hero_image_path;
   return (
-    <MediaImg src={src} alt={creature?.name || "chimera"} className={className} note={note} />
+    <MediaImg
+      src={src}
+      alt={creature?.name || "chimera"}
+      className={className}
+      note={note}
+      lazy={lazy}
+    />
   );
 }
 

@@ -26,6 +26,24 @@ art, one coherent species, dynamic pose, no gore, NO TEXT) + `visual_spec`.
 Runs as soon as Stage A lands; frontend polls `image_status`.
 Failure: one retry high, then quality=medium (verified path, ~26s), then a
 friendly "lab is recharging" state with a retry button. Record is never lost.
+Quality of the first two rungs is `CHIMERA_HERO_QUALITY` (default high).
+
+**Safety rejections (2026-09-20).** gpt-image-1.5 refuses prompts that name
+famous trademarked characters ("Your request was rejected by the safety
+system", HTTP 400): Henry's summoned Charizard/Mewtwo/Eevee-family parts never
+got a portrait, and heroes whose `visual_spec` said "Night Fury-style" burned
+all three rungs on the identical prompt. A rejected prompt is now never
+re-sent. On the first rejection the description is rewritten once by gpt-5.1
+("for a painter who has never seen any franchise": names, brands and
+"like <character>" comparisons out, every physical detail kept — regex scrub
+as fallback and on top), and the ladder continues with the rewritten prompt;
+a second rejection stops. For hero renders only summoned-part names and the
+creature's own name are scrubbed — curated names ("shark", "dragon") are
+anatomy. Upstream, both the creature SYSTEM_PROMPT and the summon resolver
+forbid franchise/character names in image descriptions. Summoned parts whose
+render failed report `portrait_status: failed` (TAP TO REPAINT in the lab,
+`POST /api/library/custom/{slug}/retry-portrait`), and every boot re-renders
+any part still missing art (`summon.resweep_portraits`, two at a time).
 
 **Derived assets (local, instant):** alpha-aware bounding-box crop →
 square thumbnail; cutout reused everywhere (Codex, battle compositing).
@@ -70,6 +88,28 @@ background — the Agora chroma-key/flood-fill pipeline is retired entirely.
 One style anchor generated first, then `images.edit` with the anchor as
 reference keeps the set consistent. Pregen batches run offline in parallel;
 per-image latency doesn't matter.
+
+## Cost model (list prices, 2026-09-20)
+
+gpt-image-1.5 bills output tokens ($32/M): 1024² low/medium/high ≈
+$0.009 / $0.034 / $0.133; 1536×1024 ≈ 1.5× that ($0.05 medium, $0.20 high).
+gpt-5.1 is $1.25/M in, $10/M out, `reasoning_effort` defaults to `none`, so
+every text call here is a few tenths of a cent. Per unit of play:
+
+| Unit | Calls | ≈ Cost | Share of spend |
+|---|---|---|---|
+| New chimera | record (gpt-5.1) + hero (1536×1024 high) | $0.21 | ~78% |
+| Tournament | ≤7 uncached battles ($0.01 each) + finals key art (edit, high) | $0.25–0.30 | ~13% |
+| Summon (new part) | resolver + portrait (1024² medium) | $0.04 | ~2% |
+| Battle replay / cached matchup / codex / hall | none | $0 | — |
+
+Observed pace (week of 2026-09-14): ~50 chimeras, ~7 tournaments, ~20 summons
+≈ $14/week. Levers, cheapest quality loss first: `CHIMERA_KEYART_QUALITY=medium`
+(−$0.15/tournament), `CHIMERA_HERO_QUALITY=medium` (−$0.15/chimera, the only
+lever that moves the bill more than a few dollars a month, and the one that
+visibly softens the art). Both are Railway env vars read at call time — flip,
+create one creature, judge, flip back. Failed image calls (safety rejections)
+are not billed; they cost Henry time, which the de-brand retry fixes.
 
 ## Cost/latency ledger (measured 2026-08-08)
 

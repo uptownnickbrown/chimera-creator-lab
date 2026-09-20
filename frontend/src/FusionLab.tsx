@@ -187,12 +187,35 @@ export function FusionLab({ go }: { go: Go }) {
     }
   }, []);
 
-  /* While any summoned part is missing its portrait, poll the library until
-     the render lands (backend paints in ~26s; give up after ~4 min). */
+  /* While any summoned part's portrait is still PAINTING, poll the library
+     until the render lands (backend paints in ~26s). A part whose render was
+     refused reports "failed" and shows TAP TO REPAINT instead — nothing to
+     wait for until Henry taps it. */
   const awaitingArt = useMemo(
-    () => (sources ?? []).some((s) => s.custom && !s.art),
+    () => (sources ?? []).some((s) => s.custom && !s.art && s.portrait_status !== "failed"),
     [sources],
   );
+
+  /** TAP TO REPAINT on a failed summoned card: flip it back to PAINTING…
+      (which restarts the poll above) and ask the backend for a fresh render. */
+  const repaintPortrait = useCallback(async (slug: string) => {
+    const mark = (status: "pending" | "failed") =>
+      setSources((prev) =>
+        prev ? prev.map((s) => (s.slug === slug ? { ...s, portrait_status: status } : s)) : prev,
+      );
+    mark("pending");
+    setError(null);
+    try {
+      await api.retryPortrait(slug);
+    } catch (e) {
+      mark("failed");
+      setError(
+        e instanceof ApiError && e.status < 500
+          ? e.message
+          : "The painter is busy right now — try again in a moment.",
+      );
+    }
+  }, []);
   useEffect(() => {
     if (!awaitingArt) return;
     let polls = 0;
@@ -442,7 +465,7 @@ export function FusionLab({ go }: { go: Go }) {
                   title={ready && !takenSlugs.has(s.slug) ? `Swap ${s.name} into part 4` : s.name}
                 >
                   <span className="pcard__art">
-                    <PartImg source={s} />
+                    <PartImg source={s} onRepaint={s.custom ? repaintPortrait : undefined} />
                     {s.custom && <span className="pcard__summoned">SUMMONED</span>}
                     {takenSlugs.has(s.slug) && <span className="pcard__check">✓</span>}
                     {s.custom && removing !== s.slug && (

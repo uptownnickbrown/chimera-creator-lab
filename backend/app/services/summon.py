@@ -101,11 +101,15 @@ RESOLVER_SYSTEM = (
     "- blurb: one exciting sentence about the creature.\n"
     "- traits: exactly 3 short powers or features, 2-4 words each, lowercase "
     "(like 'fire breath' or 'super sonar').\n"
-    "- contribution: one sentence starting with 'Adds' — what this part gives "
-    "a fused chimera.\n"
+    "- contribution: one SHORT sentence, under 60 characters, starting with "
+    "'Adds' — what this part gives a fused chimera (it sits in a small panel).\n"
     "- portrait_description: a complete physical description for a painter — "
     "body plan, colors, textures, signature features, pose. Describe ONLY the "
-    "creature's own body: no scenery, no ground, no backdrop, no text.\n"
+    "creature's own body: no scenery, no ground, no backdrop, no text. Write "
+    "it for a painter who has never seen any cartoon, video game, or movie: "
+    "NEVER include the creature's own name, any franchise, company, or "
+    "character name, or a 'like <character>' comparison — pure anatomy only "
+    "(the image model rejects prompts that name famous characters).\n"
     "Set unused string fields to '' and unused list fields to []."
 )
 
@@ -145,10 +149,13 @@ async def resolve(query: str) -> SummonResolution:
     if not ai.ai_enabled():
         log.info("summon: STUB resolution for %r", query)
         return stub_resolution(query)
+    # Index FIRST, query LAST: the ~2.5K-token index is identical call to
+    # call, so OpenAI's automatic prefix caching (>=1024 identical leading
+    # tokens) serves it from cache — with the query up front it never hit.
     user = (
-        f"The player typed: {query!r}\n\n"
         "Library index (slug | name | also answers to):\n"
-        f"{_library_index()}"
+        f"{_library_index()}\n\n"
+        f"The player typed: {query!r}"
     )
     return await ai.structured(RESOLVER_SYSTEM, user, SummonResolution, name="summon")
 
@@ -157,6 +164,14 @@ async def resolve(query: str) -> SummonResolution:
 
 def _file_slug(slug: str) -> str:
     return slug.replace("/", "_")
+
+
+def _status_value(part: CustomPart) -> str:
+    """The row's enum as its wire string (a row not yet flushed has None)."""
+    status = part.portrait_status
+    if status is None:
+        return "complete" if part.art else "pending"
+    return status.value if hasattr(status, "value") else str(status)
 
 
 def to_source(part: CustomPart) -> SourceCreature:
@@ -171,6 +186,7 @@ def to_source(part: CustomPart) -> SourceCreature:
         art=part.art,
         aliases=list(part.aliases or []),
         custom=True,
+        portrait_status=_status_value(part),
     )
 
 
@@ -237,7 +253,9 @@ async def _portrait_task(part_id: int) -> None:
         if part is None:
             return
         slug, name, description = part.slug, part.name, part.portrait_description
-    art = await images.generate_part_portrait(_file_slug(slug), name, description)
+    # names=[name]: the part's own name is the usual safety-filter trigger
+    # (Charizard, Mewtwo...) and must vanish from the fallback prompt.
+    art = await images.generate_part_portrait(_file_slug(slug), name, description, names=[name])
     async with session_factory()() as db:
         part = await db.get(CustomPart, part_id)
         if part is None:
@@ -245,9 +263,125 @@ async def _portrait_task(part_id: int) -> None:
         part.art = art
         part.portrait_status = ImageStatus.complete if art else ImageStatus.failed
         await db.commit()
-        library.set_custom_art(part.slug, art)
+        library.set_custom_art(part.slug, art, status=part.portrait_status.value)
         if art:
             register(part)  # refresh the registry entry with the final row
+
+
+async def retry_portrait(db: AsyncSession, slug: str) -> CustomPart | None:
+    """Re-queue one summoned part's portrait (bare or `custom/` slug).
+
+    Marks the row pending, commits (the task's fresh session must see it),
+    then spawns the same render task a summon does. None for an unknown slug.
+    """
+    full = f"custom/{slug.removeprefix('custom/')}"
+    row = (await db.execute(select(CustomPart).where(CustomPart.slug == full))).scalar_one_or_none()
+    if row is None:
+        return None
+    row.portrait_status = ImageStatus.pending
+    await db.commit()
+    library.set_custom_art(row.slug, row.art, status="pending")
+    _spawn(_portrait_task(row.id), f"retry-portrait:{row.slug}")
+    return row
+
+
+# -- boot resweep ---------------------------------------------------------------
+
+#: Written into <media>/parts once every portrait there has been through
+#: images.normalize_portrait. Bump the suffix to force another pass.
+TIGHT_MARKER = ".tight-v1"
+#: Portrait re-renders in flight at once during the boot resweep. Two keeps
+#: the image API's rate limit and the boot-time CPU comfortable.
+RESWEEP_CONCURRENCY = 2
+
+
+def _tighten_media_portraits() -> int:
+    """One-time pass: trim every portrait on the media volume to its alpha
+    bounding box, in place, keeping each file's own format. Returns the
+    number of files rewritten (0 when the marker says it already ran)."""
+    from ..config import get_settings
+
+    parts_dir = get_settings().media_dir / "parts"
+    parts_dir.mkdir(parents=True, exist_ok=True)
+    marker = parts_dir / TIGHT_MARKER
+    if marker.exists():
+        return 0
+    done = 0
+    for path in sorted(parts_dir.iterdir()):
+        ext = path.suffix.lower()
+        if ext not in (".webp", ".png") or not path.is_file():
+            continue
+        try:
+            tight = images.normalize_portrait(
+                path.read_bytes(), fmt="PNG" if ext == ".png" else "WEBP"
+            )
+            tmp = path.with_name(path.name + ".tmp")
+            tmp.write_bytes(tight)
+            tmp.replace(path)
+            done += 1
+        except Exception as exc:  # noqa: BLE001 - one bad file never stops the pass
+            log.warning("portrait resweep: could not tighten %s: %s", path.name, exc)
+    marker.write_text("images.normalize_portrait applied to every portrait here\n")
+    return done
+
+
+async def resweep_portraits() -> None:
+    """Boot task (spawned from main.lifespan when AI is enabled), never raises.
+
+    (a) Tighten every portrait already on the media volume, once (marker).
+    (b) Re-render every summoned part whose portrait never landed — art
+        missing, or status failed/pending — two at a time. This is what heals
+        the parts the safety filter stranded before the fallback existed.
+    """
+    from ..db import session_factory
+    from . import ai
+
+    try:
+        tightened = await asyncio.to_thread(_tighten_media_portraits)
+        if tightened:
+            log.info("portrait resweep: %d portraits tightened in place", tightened)
+    except Exception:
+        log.exception("portrait resweep: tight pass failed — continuing")
+
+    if not ai.ai_enabled():
+        return
+    try:
+        async with session_factory()() as db:
+            rows = list((await db.execute(select(CustomPart))).scalars())
+            todo = [
+                (r.id, r.slug) for r in rows
+                if r.art is None or r.portrait_status in (ImageStatus.failed, ImageStatus.pending)
+            ]
+        if not todo:
+            return
+        log.info("portrait resweep: %d parts queued", len(todo))
+        gate = asyncio.Semaphore(RESWEEP_CONCURRENCY)
+
+        async def one(part_id: int, slug: str) -> None:
+            async with gate:
+                # Honest state while it paints: the picker shows "rendering"
+                # and the retry endpoint will not double-queue it.
+                async with session_factory()() as db:
+                    part = await db.get(CustomPart, part_id)
+                    if part is None:
+                        return
+                    part.portrait_status = ImageStatus.pending
+                    await db.commit()
+                    library.set_custom_art(part.slug, part.art, status="pending")
+                try:
+                    await _portrait_task(part_id)
+                except Exception:
+                    log.exception("portrait resweep: %s crashed", slug)
+                    return
+                async with session_factory()() as db:
+                    part = await db.get(CustomPart, part_id)
+                    outcome = _status_value(part) if part is not None else "deleted"
+                log.info("portrait resweep: %s -> %s", slug, outcome)
+
+        await asyncio.gather(*(one(part_id, slug) for part_id, slug in todo))
+        log.info("portrait resweep: done")
+    except Exception:
+        log.exception("portrait resweep failed — continuing")
 
 
 # -- the endpoint's brain -------------------------------------------------------

@@ -127,6 +127,10 @@ export interface SourceCreature {
       Custom parts carry their portrait in `art` (a /media path) — it is null
       while the portrait is still being painted. */
   custom?: boolean;
+  /** Summoned parts only: "pending" while the portrait paints, "failed" when
+      every render attempt was refused (the card offers TAP TO REPAINT).
+      Curated parts always report "complete". */
+  portrait_status?: "complete" | "pending" | "failed";
 }
 
 export interface SummonResponse {
@@ -284,6 +288,14 @@ export const api = {
     request<{ slug: string; deleted: boolean }>(
       "DELETE",
       `/library/custom/${slug.replace(/^custom\//, "")}`,
+    ),
+  /** Re-run a summoned part's portrait render after a failure. Answers
+      "rendering" (task spawned / already in flight) or "complete" (nothing
+      to do — the art already exists). */
+  retryPortrait: (slug: string) =>
+    request<{ slug: string; portrait_status: string }>(
+      "POST",
+      `/library/custom/${slug.replace(/^custom\//, "")}/retry-portrait`,
     ),
   predict: (tournamentId: number, matchId: string, pick_id: number) =>
     request<TournamentView>(

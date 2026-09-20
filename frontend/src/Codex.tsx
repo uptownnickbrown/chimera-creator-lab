@@ -210,7 +210,7 @@ export function Codex({ go, selectedId }: { go: Go; selectedId?: number }) {
                 onClick={() => go({ name: "codex", id: c.id })}
               >
                 <span className="crow__art">
-                  <CreatureImg creature={c} note="" />
+                  <CreatureImg creature={c} note="" lazy />
                   {c.favorite && <span className="crow__fav" aria-label="favorite" />}
                 </span>
                 <span className="crow__id">

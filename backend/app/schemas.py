@@ -271,6 +271,21 @@ class SourceCreature(Api):
     custom: bool = Field(
         default=False, description="True for parts Henry summoned (custom_parts table)"
     )
+    portrait_status: Literal["complete", "pending", "failed"] = Field(
+        default="complete",
+        description="Summoned parts only: whether the picker portrait landed. Curated "
+        "parts ship with their art and are always 'complete'.",
+    )
+
+
+class RetryPortraitResponse(Api):
+    """POST /api/library/custom/{slug}/retry-portrait."""
+
+    slug: str
+    portrait_status: str = Field(
+        description="'rendering' while a portrait task is in flight, 'complete' when the "
+        "art already exists"
+    )
 
 
 class Environment(Api):

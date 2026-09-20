@@ -177,11 +177,14 @@ def remove_custom(slug: str) -> None:
     _raw_customs.pop(slug, None)
 
 
-def set_custom_art(slug: str, art: str | None) -> None:
-    """The portrait render landed (or failed) — update the live entry."""
+def set_custom_art(slug: str, art: str | None, status: str | None = None) -> None:
+    """The portrait render landed (or failed, or was re-queued) — update the
+    live entry so /api/library says the same thing as the row."""
     for c in _customs:
         if c.slug == slug:
             c.art = art
+            if status is not None:
+                c.portrait_status = status
 
 
 def environments() -> list[Environment]:
@@ -216,7 +219,11 @@ def raw_environment(slug: str) -> dict:
 def display_name(slug: str) -> str:
     """Pretty name for a slug, falling back to a title-cased slug."""
     found = source_by_slug(slug)
-    return found.name if found else slug.replace("_", " ").replace("-", " ").title()
+    if found:
+        return found.name
+    # A deleted summoned part is a ghost: "custom/night-fury" reads as
+    # "Night Fury", never "Custom/Night Fury".
+    return slug.removeprefix("custom/").replace("_", " ").replace("-", " ").title()
 
 
 def validate_slugs(slugs: list[str]) -> list[str]:

@@ -76,6 +76,34 @@ Only painted assets from `assets/icons`, `assets/trophy`, `assets/ui`, sized
 mapping; a missing slot in dev renders a visible magenta outline (we WANT to
 see gaps, not hide them politely).
 
+## Portrait alignment (source-part art, 2026-09-20)
+
+Every part portrait — the 160 pregenerated ones under `assets/parts` and every
+summoned one under `/media/parts` — is stored as a TIGHT alpha crop: trimmed
+to the creature's own bounding box, any aspect ratio, no baked-in canvas or
+margin (`backend/app/services/images.py` `normalize_portrait`; the committed
+library was re-cut with `scripts/normalize_portraits.py`; the media volume is
+normalized once at boot). A square canvas centred each creature at whatever
+height its silhouette happened to land, so Henry's rail read as a row of
+creatures floating at different heights, some kissing the card edge.
+
+With a tight image the CONTEXT decides the spacing, and the rule is:
+
+- **Cards and wells** (picker rail, part slots, summon candidates, FUSED
+  FROM tiles): `object-fit: contain; object-position: 50% 100%` inside an
+  even inset (10-12px, or ~8% on small wells). Every creature's feet land on
+  the same ground line; wide creatures sit low and whole, tall ones stand
+  tall. A soft cyan floor ellipse under the feet (`.pcard__art::before`) is
+  the lab's lit floor. Never `cover`: a cropped head reads as sloppy.
+- **Orbs and circles** (proto-fusion cluster, Fusion Wait orbiters and
+  source spots, tiny 34px chips): `object-fit: contain`, centred, at
+  84-100% of the circle — the whole creature inside the ring.
+- **Never** size a portrait by its pixel dimensions: they vary by creature.
+  Size the box, let `contain` do the rest.
+
+Hero renders and their derived 512px thumbnails are a separate pipeline
+(alpha-fit onto a square with a small margin) and keep their own rules.
+
 ## Per-screen composition (vs art-direction mocks)
 
 - **Home** (`welcome.png`): featured creature (most recent champion or

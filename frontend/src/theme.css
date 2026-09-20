@@ -1358,6 +1358,9 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 }
 .lab__slots, .lab__adds { display: flex; flex-direction: column; min-height: 0; }
 .lab__slots .panel__body, .lab__adds .panel__body { flex: 1; min-height: 0; overflow: hidden; padding: 12px 13px 13px; }
+/* The adds rows are content-sized (below); if four long names ever outgrow
+   the fitted frame the body scrolls rather than clipping a sentence in half. */
+.lab__adds .panel__body { overflow: auto; }
 .slots {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1426,9 +1429,18 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   overflow: hidden;
   clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
 }
-.slot__art .asset { width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; }
+.slot__art .asset {
+  width: 100%;
+  height: 100%;
+  padding: 10px 10px 6px;
+  box-sizing: border-box;
+  object-fit: contain;
+  object-position: 50% 100%;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
+}
+.slot__art .summonwait { padding: 0; }
 .slot__art--empty { background: radial-gradient(circle at 50% 45%, rgba(79, 216, 255, 0.12), rgba(4, 8, 22, 0.9) 70%); }
-.slot__art--empty .asset { width: 74%; height: 74%; object-fit: contain; opacity: 0.5; }
+.slot__art--empty .asset { width: 74%; height: 74%; padding: 0; object-fit: contain; opacity: 0.5; }
 .slot__plate {
   display: grid;
   gap: 1px;
@@ -1529,9 +1541,10 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   box-shadow: 0 0 0 2px rgba(79, 216, 255, 0.55), 0 0 30px -4px rgba(79, 216, 255, 0.75);
   overflow: hidden;
 }
-/* the portraits ship on black, so `screen` drops the plate and leaves the
-   creature glowing over the platform — a proto-fusion, not four stickers */
-.cluster__art .asset { width: 112%; height: 112%; max-width: none; object-fit: cover; mix-blend-mode: screen; }
+/* `screen` lifts the creature into a glowing hologram over the platform — a
+   proto-fusion, not four stickers. Tight portraits: show the whole creature
+   inside the orb rather than a cover-crop of its middle. */
+.cluster__art .asset { width: 84%; height: 84%; object-fit: contain; mix-blend-mode: screen; }
 .cluster__art::after {
   content: "";
   position: absolute;
@@ -1575,13 +1588,13 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 
 /* Four rows, always exactly four: the panel never scrolls and never clips a
    part in half. */
+/* Rows are never squeezed below their content (a two-line blurb was getting
+   its second line sliced off on the iPad frame); spare height is shared. */
 .adds__list {
   display: grid;
-  grid-template-rows: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(max-content, 1fr));
   gap: 8px;
-  min-height: 0;
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
 }
 .adds {
   display: grid;
@@ -1607,7 +1620,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   --notch-sm: 6px;
   background: rgba(3, 6, 16, 0.8);
 }
-.adds__art .asset { width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; }
+.adds__art .asset { width: 100%; height: 100%; padding: 4px; box-sizing: border-box; object-fit: contain; }
 .adds__art { position: relative; }
 .adds:not(.is-filled) .adds__art .asset { opacity: 0.35; object-fit: contain; }
 .adds:not(.is-filled) .adds__art::after {
@@ -1619,16 +1632,28 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   color: var(--cyan);
   text-shadow: 0 0 12px rgba(79, 216, 255, 0.85);
 }
-.adds__name { font-family: var(--font-display); font-weight: 700; font-size: 15px; letter-spacing: 0.08em; line-height: 1.2; color: var(--cyan); }
-.adds__text { min-width: 0; }
-.adds__blurb {
-  font-size: 15.5px;
-  line-height: 1.3;
-  color: var(--text-dim);
+/* At most two lines: FitText shrinks a long name (ALLIGATOR SNAPPING TURTLE)
+   toward the 13px floor until it fits the clamp, so a name never pushes its
+   blurb out of the row. The 272px iPad column is too narrow for one line. */
+.adds__name {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  color: var(--cyan);
+}
+.adds__text { min-width: 0; }
+/* Never clamped: the row is content-sized and the panel scrolls before a
+   sentence gets sliced. */
+.adds__blurb {
+  font-size: 14.5px;
+  line-height: 1.3;
+  color: var(--text-dim);
 }
 .adds__bullets { margin: 2px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 6px; }
 .adds__bullets li {
@@ -1760,20 +1785,50 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .pcard:hover:not(:disabled) { transform: translateY(-4px); filter: drop-shadow(0 8px 22px rgba(var(--accent-rgb), 0.4)); }
 .pcard:disabled { opacity: 0.32; cursor: not-allowed; }
 .pcard.is-taken { --accent-rgb: 168, 107, 255; filter: drop-shadow(0 0 20px rgba(168, 107, 255, 0.55)); }
-.pcard__art { position: relative; display: block; width: 100%; height: 152px; overflow: hidden; }
-/* Every portrait crops from the BOTTOM of its square (the creature's feet),
-   so the whole rail shares one ground line whatever the well shape. */
-.pcard__art .asset { width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; }
+/* Portraits are TIGHT alpha crops (backend normalize_portrait — no baked-in
+   canvas), so the card decides the spacing: an even inset on every side and
+   `contain` anchored to the bottom puts every creature's feet on the same
+   ground line, whole, never kissing the notch. A lit floor ellipse under the
+   feet sells the "standing in the lab" read across the whole rail. */
+.pcard__art {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  width: 100%;
+  height: 152px;
+  padding: 12px 12px 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.pcard__art .asset {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 100%;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
+}
+.pcard__art::before {
+  content: "";
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 4px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(79, 216, 255, 0.3), rgba(79, 216, 255, 0) 70%);
+  pointer-events: none;
+}
 .pcard__art::after {
   content: "";
   position: absolute;
   left: 7%;
   right: 7%;
-  bottom: 2px;
+  bottom: 3px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(79, 216, 255, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(79, 216, 255, 0.45), transparent);
   pointer-events: none;
 }
+.pcard__art .summonwait { position: absolute; inset: 0; width: auto; height: auto; }
 .pcard__check {
   position: absolute;
   top: 7px;
@@ -1812,13 +1867,24 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 /* The picker rail shrinks its portraits on the shorter iPad frame so the whole
    lab still composes as one screen rather than a scroll. */
 @media (max-height: 860px) {
+  .lab { gap: 8px; }
+  .lab__head .display { font-size: 22px; }
+  /* The iPad frame is where WHAT EACH PART ADDS ran out of room: four rows of
+     name + a whole sentence need ~300px. The right column borrows 28px from
+     the stage so a long name fits on one line and a blurb on two, and every
+     row/portrait spacing in the panel tightens a notch. */
+  .lab__main { grid-template-columns: minmax(272px, 300px) minmax(0, 1fr) minmax(300px, 330px); gap: 14px; }
   .pcard { width: 134px; }
-  .pcard__art { height: 114px; }
+  .pcard__art { height: 106px; padding: 9px 9px 8px; }
+  .pcard__plate { padding: 6px 6px 7px; }
   .lab__picker .panel__body { padding: 8px 14px 6px; }
   .lab__picker .panel__head { padding: 9px 14px 7px; }
   .rail { padding-bottom: 6px; }
   .rail__arrow { min-height: 96px; }
-  .adds__list { gap: 7px; }
+  .adds__list { gap: 6px; }
+  .adds { grid-template-columns: 40px minmax(0, 1fr); gap: 9px; padding: 5px 7px; }
+  .adds__art { width: 40px; height: 40px; }
+  .adds__blurb { font-size: 14px; line-height: 1.25; }
 }
 
 /* ── Codex (codex.png) ───────────────────────────────────────────────────── */
@@ -3125,7 +3191,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   box-shadow: 0 0 0 1px rgba(79, 216, 255, 0.55), 0 0 14px -6px var(--cyan);
   overflow: hidden;
 }
-.fw__spot-src .asset { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.fw__spot-src .asset { width: 100%; height: 100%; padding: 2px; box-sizing: border-box; border-radius: 50%; object-fit: contain; }
 .fw__spot-hint {
   margin-top: 1px;
   font-family: var(--font-display);
@@ -3188,7 +3254,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   overflow: hidden;
   animation: fw-spin-rev 17s linear infinite 1.5s;
 }
-.fw__orbiter-art .asset { border-radius: 50%; object-fit: cover; }
+.fw__orbiter-art .asset { width: 100%; height: 100%; border-radius: 50%; object-fit: contain; }
 @keyframes fw-spin { to { transform: rotate(360deg); } }
 @keyframes fw-spin-rev { to { transform: rotate(-360deg); } }
 
@@ -3396,7 +3462,9 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 .fused__art {
   width: 100%; aspect-ratio: 1; overflow: hidden;
   clip-path: var(--clip-notch-sm); --notch-sm: 6px;
-  object-fit: cover;
+  padding: 8% 8% 6%;
+  box-sizing: border-box;
+  object-fit: contain;
   object-position: 50% 100%;
   box-shadow: inset 0 0 0 1px rgba(79, 216, 255, 0.4);
   /* Never let the 1fr row stretch a replaced element taller than the column:
@@ -3505,12 +3573,17 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .crewrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* The lab keeps its stage at the 1024 floor — the proto-fusion cluster is
      the point of the screen; the two side panels give up the width instead. */
-  .lab__main { grid-template-columns: minmax(196px, 232px) minmax(0, 1fr) minmax(196px, 236px); }
+  /* WHAT EACH PART ADDS keeps a 270px column: the longest library name
+     (ALLIGATOR SNAPPING TURTLE) then fits one line and a sentence fits two,
+     which is the only way four content-sized rows fit the 810px frame. */
+  .lab__main { grid-template-columns: minmax(196px, 232px) minmax(0, 1fr) minmax(250px, 270px); }
   .lab__main .panel__head h2 { font-size: 13px; letter-spacing: 0.12em; }
-  .adds { grid-template-columns: 40px minmax(0, 1fr); gap: 9px; }
-  .adds__art { width: 40px; height: 40px; }
-  .adds__name { font-size: 13.5px; }
-  .adds__blurb { font-size: 13px; }
+  .lab__adds .panel__body { padding: 10px 11px 11px; }
+  .adds__list { gap: 5px; }
+  .adds { grid-template-columns: 34px minmax(0, 1fr); gap: 8px; padding: 5px 7px; }
+  .adds__art { width: 34px; height: 34px; }
+  .adds__name { font-size: 13.5px; letter-spacing: 0.03em; }
+  .adds__blurb { font-size: 13px; line-height: 1.25; }
   .codex { grid-template-columns: minmax(228px, 258px) minmax(0, 1fr); gap: 12px; }
   .codex__list .search input { width: 56px; }
   .sortpill { font-size: 13px; padding: 3px 8px; gap: 5px; }
@@ -3527,8 +3600,8 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .stat__icon { width: 21px; height: 21px; }
   .stat__value { font-size: 21px; }
   .detail__actions .btn { min-width: 108px; }
-  /* two readable lines beat one ellipsized one — the blurbs are short */
-  .adds__blurb { -webkit-line-clamp: 2; font-size: 13px; line-height: 1.25; }
+  /* adds blurbs are never clamped: rows are content-sized and the panel
+     scrolls before a sentence is sliced (see .adds__list). */
   .arena__setup { grid-template-columns: 1fr; }
   .battle {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr);
@@ -3722,6 +3795,25 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   color: var(--purple-hot);
   text-shadow: 0 0 10px rgba(168, 107, 255, 0.8);
 }
+/* Every render attempt refused (a famous character name tripped the image
+   safety filter, or the file is gone): a quiet, honest plate — no spinner
+   pretending to paint — that becomes TAP TO REPAINT on the lab rail. */
+.summonwait--failed {
+  background:
+    radial-gradient(80% 60% at 50% 40%, rgba(120, 160, 215, 0.14), transparent 70%),
+    linear-gradient(180deg, rgba(14, 20, 44, 0.92), rgba(6, 8, 22, 0.96));
+}
+.summonwait--failed::after { display: none; }
+.summonwait__glyph { width: 40%; height: 40%; max-width: 64px; object-fit: contain; opacity: 0.55; }
+.summonwait--failed .summonwait__label { color: var(--text-dim); text-shadow: none; }
+.summonwait--failed.is-tappable { cursor: pointer; }
+.summonwait--failed.is-tappable:hover .summonwait__glyph,
+.summonwait--failed.is-tappable:focus-visible .summonwait__glyph { opacity: 1; }
+.summonwait--failed.is-tappable:hover .summonwait__label,
+.summonwait--failed.is-tappable:focus-visible .summonwait__label {
+  color: var(--purple-hot);
+  text-shadow: 0 0 10px rgba(168, 107, 255, 0.8);
+}
 /* Tight spots (slot cards, adds rows, orbiters): the label would collide. */
 .slot__art .summonwait__label, .adds__art .summonwait__label,
 .cluster__art .summonwait__label, .fw__orbiter-art .summonwait__label,
@@ -3891,8 +3983,22 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   background: linear-gradient(180deg, rgba(14, 22, 52, 0.92), rgba(4, 7, 20, 0.97));
 }
 .summon-cand:hover { transform: translateY(-4px) scale(1.02); filter: drop-shadow(0 10px 26px rgba(168, 107, 255, 0.5)); }
-.summon-cand__art { display: block; width: 100%; height: 168px; overflow: hidden; }
-.summon-cand__art .asset { width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; }
+.summon-cand__art {
+  display: grid;
+  place-items: end center;
+  width: 100%;
+  height: 168px;
+  padding: 12px 12px 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.summon-cand__art .asset {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 100%;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
+}
 .summon-cand__plate {
   display: flex;
   align-items: center;
@@ -4191,8 +4297,8 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   right: 6px;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   clip-path: var(--clip-notch-sm);
   --notch-sm: 5px;
   background: rgba(6, 10, 26, 0.85);
@@ -4769,6 +4875,7 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   box-shadow: 0 0 0 3px rgba(79, 216, 255, 0.7), 0 0 44px -4px var(--cyan), 0 14px 40px rgba(0, 0, 0, 0.6);
 }
 .fw__srcspot-art .asset, .fw__srcspot-art .summonwait { width: 100%; height: 100%; object-fit: cover; }
+.fw__srcspot-art .asset { padding: 8%; box-sizing: border-box; object-fit: contain; }
 .fw__srcspot-plate {
   display: grid;
   gap: 3px;

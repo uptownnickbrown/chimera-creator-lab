@@ -1,6 +1,7 @@
 """Runtime settings. Single-player game, so knobs stay few and env-driven."""
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -8,6 +9,25 @@ from pathlib import Path
 
 # repo root = .../chimera-creator (backend/app/config.py -> up three)
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# gpt-image-1.5 render qualities the cost knobs accept. At 1536x1024 "high"
+# is ≈ $0.20/image and "medium" ≈ $0.05, so CHIMERA_HERO_QUALITY /
+# CHIMERA_KEYART_QUALITY let Nick trade render cost for quality from the
+# Railway dashboard without a deploy. Anything else warns once and stays "high".
+RENDER_QUALITIES = ("medium", "high")
+_warned_quality: set[str] = set()
+
+
+def _quality(env_name: str, default: str = "high") -> str:
+    raw = os.environ.get(env_name, default).strip().lower()
+    if raw in RENDER_QUALITIES:
+        return raw
+    if env_name not in _warned_quality:
+        _warned_quality.add(env_name)
+        logging.getLogger("chimera.config").warning(
+            "%s=%r is not one of %s — using %r", env_name, raw, RENDER_QUALITIES, default
+        )
+    return default
 
 
 @dataclass(frozen=True)
@@ -41,6 +61,10 @@ class Settings:
     media_dir: Path = field(
         default_factory=lambda: Path(os.environ.get("CHIMERA_MEDIA_DIR", str(REPO_ROOT / "media")))
     )
+    # Render-cost knobs (see RENDER_QUALITIES): the first two hero attempts and
+    # the championship key art. Part portraits are always "medium".
+    hero_quality: str = field(default_factory=lambda: _quality("CHIMERA_HERO_QUALITY"))
+    keyart_quality: str = field(default_factory=lambda: _quality("CHIMERA_KEYART_QUALITY"))
 
 
 def _normalize_db_url(url: str) -> str:

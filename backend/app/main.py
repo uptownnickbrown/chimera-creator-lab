@@ -38,6 +38,15 @@ async def lifespan(app: FastAPI):
         )
     await _sweep_orphans()
     await _seed_starter_crew()
+    if ai.ai_enabled():
+        # Background, after the sweep has turned dead "pending" portraits into
+        # "failed": re-render every summoned part whose portrait never landed
+        # (the safety-filter fallback makes the trademarked ones paintable now)
+        # and tighten portraits already on the media volume. _spawn logs a
+        # crash instead of letting asyncio swallow it.
+        from .services import summon as summon_svc
+
+        summon_svc._spawn(summon_svc.resweep_portraits(), "portrait-resweep")
     yield
 
 

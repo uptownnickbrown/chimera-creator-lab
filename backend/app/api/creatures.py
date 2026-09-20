@@ -175,8 +175,14 @@ async def _generate_task_inner(creature_id: int, sources: list[str]) -> None:
         # Honest BODY FORGE signal: flagged the moment the render task exists,
         # surfaced by detail() until image_status settles.
         generation.PROGRESS.setdefault(creature_id, {})["image_started"] = True
+        # `sources` rides along so a safety-rejected prompt can be scrubbed of
+        # the source parts' names (images.generate_hero); the name is whatever
+        # the stream has revealed so far.
         hero_task = asyncio.create_task(
-            images.generate_hero(SimpleNamespace(id=creature_id, visual_spec=spec, name=""))
+            images.generate_hero(SimpleNamespace(
+                id=creature_id, visual_spec=spec, sources=list(sources),
+                name=generation.PROGRESS.get(creature_id, {}).get("name") or "",
+            ))
         )
 
     log.info("generation task start: creature %s from %s", creature_id, sources)
@@ -225,7 +231,8 @@ async def _generate_task_inner(creature_id: int, sources: list[str]) -> None:
             if hero_task is None:  # visual_spec never fired mid-stream; render now
                 generation.PROGRESS[creature_id]["image_started"] = True
                 hero = await images.generate_hero(
-                    SimpleNamespace(id=creature_id, visual_spec=record.visual_spec, name=record.name)
+                    SimpleNamespace(id=creature_id, visual_spec=record.visual_spec,
+                                    name=record.name, sources=list(sources))
                 )
             else:
                 hero = await hero_task
@@ -292,11 +299,11 @@ async def _retry_hero_task(creature_id: int) -> None:
         creature = await db.get(Creature, creature_id)
         if creature is None:
             return
-        spec, name = creature.visual_spec, creature.name
+        spec, name, sources = creature.visual_spec, creature.name, list(creature.sources or [])
     generation.PROGRESS[creature_id] = {"image_started": True}
     try:
         hero = await images.generate_hero(
-            SimpleNamespace(id=creature_id, visual_spec=spec, name=name)
+            SimpleNamespace(id=creature_id, visual_spec=spec, name=name, sources=sources)
         )
         thumb = (
             await images.generate_thumb(SimpleNamespace(id=creature_id)) if hero else None
