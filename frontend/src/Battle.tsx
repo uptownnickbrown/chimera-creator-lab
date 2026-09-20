@@ -17,7 +17,15 @@
    Resolve is idempotent and permanently cached, so revisiting a finished
    match replays exactly the same fight for free. When the championship match
    resolves, the Finale takes over and the generated key art is the hero
-   moment. */
+   moment.
+
+   FIGHT is a gpt-5.1 call (5-15s). The tap must answer in the same frame, so
+   the predict UI gives way to the CLASH the moment it lands: both fighters
+   lunge, FIGHT! slams in, the arena lines roll — theatre until the verdict,
+   never a dimmed button (Henry mashed it, 2026-09-20). The tournament rides
+   along as one compact strip under the arena — seven match pips and a
+   count — not the bracket tree + tracker panels that stacked a screen of
+   scrolling under every result on the iPad. */
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Go } from "./App";
 import {
@@ -38,7 +46,6 @@ import {
   FitText,
   Loading,
   MoveCards,
-  Panel,
   RarityBadge,
   Stage,
   StatRow,
@@ -50,6 +57,17 @@ import {
 const MAX_HEALTH = 1000;
 /** Slow enough to read aloud; a tap advances immediately. */
 const BEAT_MS = 5200;
+/** Arena lines while the verdict is being written — rolled every 1.4s. */
+const CLASH_LINES = [
+  "THE BELL RINGS!",
+  "CLAWS OUT!",
+  "THE CROWD ROARS!",
+  "THE GROUND SHAKES!",
+  "A HUGE HIT LANDS!",
+  "WHO'S STILL STANDING?",
+  "THE JUDGES LEAN IN…",
+];
+const CLASH_LINE_MS = 1400;
 
 /** The battle's own a/b ordering is not the bracket's — always match by id. */
 function healthOf(battle: BattleView | null, id?: number): number {
@@ -86,6 +104,13 @@ export function Battle({
   const [ceremony, setCeremony] = useState(false);
   /** Scout modal: which creature id is open (null = closed). */
   const [scoutId, setScoutId] = useState<number | null>(null);
+  const [clashLine, setClashLine] = useState(0);
+  useEffect(() => {
+    if (!fighting) return;
+    setClashLine(0);
+    const t = setInterval(() => setClashLine((i) => i + 1), CLASH_LINE_MS);
+    return () => clearInterval(t);
+  }, [fighting]);
   const beatTimer = useRef<number | null>(null);
   /* A kid alternating taps between the two pick plates fires overlapping
      POSTs; only the newest response may set state or the pick shown can be
@@ -198,7 +223,9 @@ export function Battle({
   const nextMatch = t.rounds
     .flatMap((r) => r.matches)
     .find((m) => m.id !== matchId && m.winner === null && m.a !== null && m.b !== null);
-  const winsToGo = t.rounds.flatMap((r) => r.matches).filter((m) => m.winner === null).length;
+  const order = t.rounds.flatMap((r) => r.matches);
+  const matchNo = order.findIndex((m) => m.id === matchId) + 1;
+  const winsToGo = order.filter((m) => m.winner === null).length;
 
   async function predict(id: number) {
     if (fighting) return; // the pick is locked once FIGHT is in flight
@@ -268,6 +295,7 @@ export function Battle({
           loser={showResult && winnerId !== a?.id}
           picked={predicted === a?.id}
           resolved={showResult}
+          fighting={fighting}
           health={healthOf(battle, a?.id)}
           animate={health}
           onPick={!showResult && a ? () => predict(a.id) : undefined}
@@ -329,12 +357,35 @@ export function Battle({
                       />
                     ))}
                   </span>
-                  <span className="story__hint">
-                    {beat < lastBeat ? "TAP FOR WHAT HAPPENS NEXT" : "THE END"}
+                  {/* A kid looks for a button: the NEXT pill is one, and the
+                      whole card is its hit area. The flash ring answers the
+                      tap in the same frame as the new line. */}
+                  <span className={`story__next${beat < lastBeat ? "" : " is-end"}`}>
+                    {beat < lastBeat ? "NEXT" : "THE END"}
+                    {beat < lastBeat && <i className="story__chev" aria-hidden="true" />}
                   </span>
                 </span>
+                <span className="story__flash" key={`flash${beat}`} aria-hidden="true" />
               </button>
             </>
+          ) : fighting ? (
+            <div className="clash" role="status" aria-live="polite">
+              <span className="clash__burst" aria-hidden="true" />
+              <div className="clash__word">FIGHT!</div>
+              <p className="clash__line" key={clashLine}>
+                {CLASH_LINES[clashLine % CLASH_LINES.length]}
+              </p>
+              <div className="clash__vs">
+                <span className="clash__thumb">
+                  <CreatureImg creature={a} />
+                </span>
+                <span className="clash__v">VS</span>
+                <span className="clash__thumb">
+                  <CreatureImg creature={b} />
+                </span>
+              </div>
+              <p className="clash__sub">THE JUDGES ARE WRITING THE VERDICT</p>
+            </div>
           ) : (
             <div className="predict">
               <p className="predict__ask">WHO DO YOU THINK WINS?</p>
@@ -392,6 +443,7 @@ export function Battle({
           loser={showResult && winnerId !== b?.id}
           picked={predicted === b?.id}
           resolved={showResult}
+          fighting={fighting}
           health={healthOf(battle, b?.id)}
           animate={health}
           onPick={!showResult && b ? () => predict(b.id) : undefined}
@@ -421,90 +473,104 @@ export function Battle({
         </section>
       )}
 
-      <aside className="battle__rail">
-        <Panel title="TOURNAMENT BRACKET" accent="cyan" className="battle__tree">
-          <div className="tree">
-            {t.rounds.map((round) => (
-              <div className="tree__round" key={round.name}>
-                <div className="tree__title">{round.name.toUpperCase()}</div>
-                {round.matches.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    className={`tree__match${m.id === matchId ? " is-current" : ""}`}
-                    onClick={() => m.a && m.b && go({ name: "arena", tid: t.id, matchId: m.id })}
-                    disabled={!m.a || !m.b}
-                  >
-                    {[m.a, m.b].map((cid, side) => {
-                      const c = cid ? byId.get(cid) : null;
-                      return (
-                        <span
-                          key={side}
-                          className={`tree__side${c && m.winner === c.id ? " is-winner" : ""}${
-                            c && m.winner !== null && m.winner !== c.id ? " is-out" : ""
-                          }`}
-                        >
-                          <span className="tree__art">
-                            <CreatureImg creature={c} />
-                          </span>
-                          <FitText className="tree__name">{c ? (c.name || "UNNAMED").toUpperCase() : "TBD"}</FitText>
-                          {c && m.winner === c.id && <span className="tree__tick">✓</span>}
-                        </span>
-                      );
-                    })}
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
-        </Panel>
-
-        <Panel title="CHAMPION TRACKER" accent="gold" className="battle__tracker">
+      {/* The tournament, in one glance: seven pips, the current one lit,
+          a tap on a fought pip replays it. Replaces the bracket tree +
+          champion tracker panels (a screen of scroll under every result). */}
+      <section className="tstrip" aria-label="Tournament progress">
+        <div className="tstrip__key">
+          <Asset
+            slot="trophy/champion_cup"
+            label=""
+            className={`tstrip__cup${champion ? "" : " tstrip__cup--dim"}`}
+          />
+          <span className="tstrip__keytext">
+            {champion ? (
+              <>
+                <span className="tstrip__kicker">ARENA CHAMPION</span>
+                <FitText className="tstrip__champ">{(champion.name || "CHAMPION").toUpperCase()}</FitText>
+              </>
+            ) : (
+              <>
+                <span className="tstrip__kicker">TOURNAMENT</span>
+                <span className="tstrip__count num">
+                  BATTLE {matchNo} OF {order.length}
+                </span>
+              </>
+            )}
+          </span>
+        </div>
+        <ol className="tstrip__rounds">
+          {t.rounds.map((round) => (
+            <li className="tstrip__round" key={round.name}>
+              <span className="tstrip__rname">
+                {round.name.toUpperCase().replace("QUARTERFINALS", "QF").replace("SEMIFINALS", "SF").replace("CHAMPIONSHIP", "FINAL")}
+              </span>
+              <span className="tstrip__pips">
+                {round.matches.map((m) => {
+                  const seated = Boolean(m.a && m.b);
+                  const done = m.winner !== null;
+                  const w = done ? byId.get(m.winner as number) : null;
+                  const cls = `pip${m.id === matchId ? " is-current" : ""}${done ? " is-done" : seated ? " is-ready" : " is-locked"}`;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      className={cls}
+                      disabled={!seated || m.id === matchId}
+                      onClick={() => go({ name: "arena", tid: t.id, matchId: m.id })}
+                      aria-label={
+                        done ? `Replay: ${w?.name ?? "winner"} won` : seated ? "Fight this match" : "Waiting on fighters"
+                      }
+                      title={done ? `${w?.name ?? "Winner"} won — tap to replay` : undefined}
+                    >
+                      {done && w ? (
+                        <CreatureImg creature={w} />
+                      ) : (
+                        <Asset slot={seated ? "icons/nav_arena" : "ui/tbd"} label="" className="pip__glyph" />
+                      )}
+                    </button>
+                  );
+                })}
+              </span>
+            </li>
+          ))}
+        </ol>
+        <div className="tstrip__togo">
           {champion ? (
-            <div className="tracker">
-              <Asset slot="trophy/champion_cup" label="" className="tracker__cup" />
-              <FitText className="tracker__name">{(champion.name || "CHAMPION").toUpperCase()}</FitText>
-              <div className="tracker__label">ARENA CHAMPION</div>
-              <Btn accent="gold" size="sm" onClick={() => setCeremony(true)}>
-                SEE THE FINALE
-              </Btn>
-            </div>
+            <Btn accent="gold" size="sm" onClick={() => setCeremony(true)}>
+              SEE THE FINALE
+            </Btn>
           ) : (
-            <div className="tracker">
-              <Asset slot="trophy/champion_cup" label="" className="tracker__cup tracker__cup--dim" />
-              <div className="tracker__count num">{winsToGo}</div>
-              <div className="tracker__label">
-                BATTLE{winsToGo === 1 ? "" : "S"} LEFT TO CROWN A CHAMPION
-              </div>
-              <div className="tracker__stars">
-                {t.rounds.map((r) => (
-                  <i key={r.name} className={r.matches.every((m) => m.winner !== null) ? "is-on" : ""} />
-                ))}
-              </div>
-            </div>
+            <span className="tstrip__left num">
+              <b>{winsToGo}</b> {winsToGo === 1 ? "BATTLE" : "BATTLES"} TO GO
+            </span>
           )}
-        </Panel>
-      </aside>
+          <Btn accent="ghost" size="sm" onClick={() => go({ name: "arena", tid: t.id })}>
+            VIEW BRACKET
+          </Btn>
+        </div>
+      </section>
 
-      <footer className="battle__foot">
-        {nextMatch ? (
-          <Btn
-            accent="purple"
-            size="lg"
-            icon="icons/nav_arena"
-            onClick={() => go({ name: "arena", tid: t.id, matchId: nextMatch.id })}
-          >
-            NEXT BATTLE
-          </Btn>
-        ) : (
-          <Btn accent="gold" size="lg" icon="icons/tile_hall" onClick={() => go({ name: "hall" })}>
-            HALL OF CHAMPIONS
-          </Btn>
-        )}
-        <Btn accent="cyan" onClick={() => go({ name: "arena", tid: t.id })}>
-          VIEW BRACKET
-        </Btn>
-      </footer>
+      {/* Only after a verdict: a NEXT BATTLE that skips the fight on screen
+          was a trap in the predict phase. The strip carries VIEW BRACKET. */}
+      {showResult && (
+        <footer className="battle__foot">
+          {nextMatch ? (
+            <Btn
+              accent="purple"
+              size="lg"
+              icon="icons/nav_arena"
+              onClick={() => go({ name: "arena", tid: t.id, matchId: nextMatch.id })}
+            >
+              NEXT BATTLE
+            </Btn>
+          ) : (
+            <Btn accent="gold" size="lg" icon="icons/tile_hall" onClick={() => go({ name: "hall" })}>
+              HALL OF CHAMPIONS
+            </Btn>
+          )}
+        </footer>
+      )}
 
       {scoutId !== null && <ScoutModal creatureId={scoutId} onClose={() => setScoutId(null)} />}
 
@@ -527,6 +593,7 @@ function Corner({
   loser,
   picked,
   resolved,
+  fighting,
   health,
   animate,
   onPick,
@@ -538,6 +605,8 @@ function Corner({
   loser: boolean;
   picked: boolean;
   resolved: boolean;
+  /** FIGHT is in flight: the render lunges toward the middle. */
+  fighting?: boolean;
   health: number;
   animate: boolean;
   onPick?: () => void;
@@ -550,7 +619,11 @@ function Corner({
      becomes a scout target. The name chip scouts in every phase. */
   const stageAction = onPick ?? (resolved ? onScout : undefined);
   return (
-    <div className={`corner corner--${side}${winner ? " is-winner" : ""}${loser ? " is-out" : ""}`}>
+    <div
+      className={`corner corner--${side}${winner ? " is-winner" : ""}${loser ? " is-out" : ""}${
+        fighting ? " is-fighting" : ""
+      }`}
+    >
       <button type="button" className="corner__id" onClick={onScout} disabled={!onScout} title={creature ? `Scout ${creature.name}` : undefined}>
         <span className="corner__badge">
           <CreatureImg creature={creature} />

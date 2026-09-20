@@ -20,7 +20,16 @@
    Every progress milestone is real: the conduit fills off record_status /
    ability_names / core_stats / image_started / image_status, never off a bare
    timer. BODY FORGE ignites on the backend's image_started signal and then
-   crawls asymptotically toward 90 — honest start, theatrical middle. */
+   crawls asymptotically toward 90 — honest start, theatrical middle.
+
+   Fitted and still (2026-09-20, Henry's iPad): the screen never scrolls and
+   nothing moves when a chunk lands. Every slot that fills during the wait
+   has its size reserved up front — the ticker is two lines tall from the
+   start, the ability list is four rows whether two names or four have
+   streamed, the centre spotlight card is one fixed-height slot that first
+   holds each donor's contribution and then the ability walkthrough, the
+   codex preview's chip and trait rows are fixed grids. Content swaps in
+   place; the chamber art never shrinks mid-wait. */
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { Ability, CreatureDetail, SourceCreature } from "./api";
 import { getLibraryCached } from "./api";
@@ -292,12 +301,12 @@ export function FusionWait({
                           setTapHeld(true);
                         }}
                       >
-                        {a.name.toUpperCase()}
+                        <FitText>{a.name.toUpperCase()}</FitText>
                       </button>
                     ))
                   : abilityNames.map((name) => (
                       <span className="fw__chip" key={name}>
-                        {name.toUpperCase()}
+                        <FitText>{name.toUpperCase()}</FitText>
                       </span>
                     ))}
                 {/* Unstreamed slots are a deliberate mystery, never an empty box:
@@ -353,16 +362,13 @@ export function FusionWait({
             </div>
 
             {/* Source spotlight: the donor's portrait enlarges toward center
-                over the vortex with a holo plate of what it contributes. */}
+                over the vortex; what it contributes reads in the slot below
+                (a plate over the vortex covered the show). */}
             {srcSpot && (
               <div className="fw__srcspot" key={srcSpot.slug}>
                 <span className="fw__srcspot-art">
                   <PartImg source={srcSpot} />
                 </span>
-                <div className="fw__srcspot-plate">
-                  <FitText className="fw__srcspot-name">{srcSpot.name.toUpperCase()}</FitText>
-                  <p className="fw__srcspot-line">{contributionOf(srcSpot)}</p>
-                </div>
               </div>
             )}
           </div>
@@ -371,9 +377,13 @@ export function FusionWait({
             {creature?.name ? (
               <div className="fw__named" key={creature.name}>
                 <span className="fw__flashline" aria-hidden="true" />
-                <h2 className="fw__name">{creature.name.toUpperCase()}</h2>
-                {creature.title && <p className="fw__title">{creature.title}</p>}
-                {creature.rarity && <RarityBadge rarity={creature.rarity} />}
+                <h2 className="fw__name">
+                  <FitText>{creature.name.toUpperCase()}</FitText>
+                </h2>
+                <p className="fw__title">
+                  {creature.rarity && <RarityBadge rarity={creature.rarity} />}
+                  {creature.title && <span>{creature.title}</span>}
+                </p>
               </div>
             ) : (
               <div className="fw__unnamed">
@@ -387,40 +397,64 @@ export function FusionWait({
             )}
           </div>
 
-          {/* Ability walkthrough spotlight — center stage while the hero paints. */}
-          {walkthroughOn && spot && (
+          {/* One fixed-height slot under the name: the donor's contribution
+              while the genome streams, then the ability walkthrough while
+              the hero paints. Same box, content swaps — nothing below moves. */}
+          <div className="fw__spotslot">
+          {walkthroughOn && spot ? (
             <div className="fw__spot" key={`${spot.kind}${"index" in spot ? spot.index : spot.text}`}>
-              {spot.kind === "ability" ? (
-                <>
-                  <span className="fw__spot-key">
-                    ABILITY {spot.index + 1} OF {abilities.length}
-                  </span>
-                  <h3 className="fw__spot-name">{spot.ability.name.toUpperCase()}</h3>
-                  <p className="fw__spot-blurb">{spot.ability.blurb}</p>
+              <span className="fw__spot-top">
+                <span className="fw__spot-key">
+                  {spot.kind === "ability"
+                    ? `ABILITY ${spot.index + 1} OF ${abilities.length}`
+                    : spot.kind === "strength"
+                      ? "STRONG AT"
+                      : "WATCH OUT"}
+                </span>
+                <span className="fw__spot-hint">
+                  {tapHeld ? "HOLDING HERE — THE TOUR RESUMES SOON" : "TAP AN ABILITY TO LOOK CLOSER"}
+                </span>
+              </span>
+              {spot.kind === "ability" && (
+                <span className="fw__spot-row">
+                  <h3 className="fw__spot-name">
+                    <FitText>{spot.ability.name.toUpperCase()}</FitText>
+                  </h3>
                   {spotSources.length > 0 && (
-                    <div className="fw__spot-sources">
+                    <span className="fw__spot-sources">
                       <span className="fw__spot-fused">FUSED FROM</span>
                       {spotSources.map((s) => (
                         <span className="fw__spot-src" key={s.slug} title={s.name}>
                           <PartImg source={s} />
                         </span>
                       ))}
-                    </div>
+                    </span>
                   )}
-                </>
-              ) : (
-                <>
-                  <span className="fw__spot-key">
-                    {spot.kind === "strength" ? "STRONG AT" : "WATCH OUT"}
-                  </span>
-                  <p className="fw__spot-blurb">{spot.text}</p>
-                </>
+                </span>
               )}
-              <span className="fw__spot-hint">
-                {tapHeld ? "HOLDING HERE — THE TOUR RESUMES SOON" : "TAP AN ABILITY TO LOOK CLOSER"}
+              <p className="fw__spot-blurb">{spot.kind === "ability" ? spot.ability.blurb : spot.text}</p>
+            </div>
+          ) : srcSpot ? (
+            <div className="fw__spot fw__spot--src" key={`src${srcSpot.slug}`}>
+              <span className="fw__spot-top">
+                <span className="fw__spot-key">IN THE MIX</span>
               </span>
+              <span className="fw__spot-row">
+                <h3 className="fw__spot-name">
+                  <FitText>{srcSpot.name.toUpperCase()}</FitText>
+                </h3>
+              </span>
+              <p className="fw__spot-blurb">{contributionOf(srcSpot)}</p>
+            </div>
+          ) : (
+            <div className="fw__spot fw__spot--quiet">
+              <span className="fw__spot-top">
+                <span className="fw__spot-key">READING THE GENOME</span>
+              </span>
+              <p className="fw__spot-blurb">The lab is decoding what each part brings to the splice.</p>
             </div>
           )}
+          </div>
         </section>
 
         {/* CODEX PREVIEW — the record forming as a codex card, chunk by chunk. */}
@@ -449,7 +483,7 @@ export function FusionWait({
               {(creature?.title || creature?.rarity) && (
                 <div className="fw__pv-sub">
                   {creature?.rarity && <RarityBadge rarity={creature.rarity} />}
-                  {creature?.title && <span className="fw__pv-title">{creature.title}</span>}
+                  {creature?.title && <FitText className="fw__pv-title">{creature.title}</FitText>}
                 </div>
               )}
 
@@ -468,40 +502,40 @@ export function FusionWait({
                 })}
               </div>
 
-              {abilityNames.length > 0 && (
-                <div className="fw__pv-chips">
-                  {abilityNames.map((name) => (
+              {/* Four reserved chip cells and two reserved trait rows: the
+                  panel is the same height before and after they stream in. */}
+              <div className="fw__pv-chips">
+                {Array.from({ length: 4 }).map((_, i) => {
+                  const name = abilityNames[i];
+                  return name ? (
                     <span className="chip chip--purple is-lit" key={name}>
-                      {name.toUpperCase()}
+                      <FitText>{name.toUpperCase()}</FitText>
                     </span>
-                  ))}
-                </div>
-              )}
+                  ) : (
+                    <span className="chip fw__pv-chipslot" key={`slot${i}`} aria-hidden="true" />
+                  );
+                })}
+              </div>
 
-              {(strengths.length > 0 || weaknesses.length > 0) && (
-                <div className="fw__pv-traits">
-                  {strengths.length > 0 && (
-                    <div className="traits__row">
-                      <span className="traits__key traits__key--green">STRONG AT</span>
-                      {strengths.slice(0, 2).map((text) => (
-                        <span className="chip chip--green is-lit" key={text}>
-                          {text.split(/\s+/).slice(0, 3).join(" ").replace(/[.,;:!?'"]+$/, "").toUpperCase()}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {weaknesses.length > 0 && (
-                    <div className="traits__row">
-                      <span className="traits__key traits__key--red">WATCH OUT</span>
-                      {weaknesses.slice(0, 2).map((text) => (
-                        <span className="chip chip--red is-lit" key={text}>
-                          {text.split(/\s+/).slice(0, 3).join(" ").replace(/[.,;:!?'"]+$/, "").toUpperCase()}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="fw__pv-traits">
+                {(
+                  [
+                    ["green", "STRONG AT", strengths[0]],
+                    ["red", "WATCH OUT", weaknesses[0]],
+                  ] as const
+                ).map(([tone, label, text]) => (
+                  <div className="traits__row" key={label}>
+                    <span className={`traits__key traits__key--${tone}`}>{label}</span>
+                    {text ? (
+                      <span className={`chip chip--${tone} is-lit`}>
+                        <FitText>{shortTrait(text)}</FitText>
+                      </span>
+                    ) : (
+                      <span className="chip fw__pv-chipslot" aria-hidden="true" />
+                    )}
+                  </div>
+                ))}
+              </div>
 
               <div className={`fw__pv-render${imageStarted ? " is-painting" : ""}`}>
                 <span className="fw__pv-renderlabel">
@@ -538,6 +572,11 @@ export function FusionWait({
       </footer>
     </div>
   );
+}
+
+/** A trait sentence as a three-word chip: "Super-tough spiked shell". */
+function shortTrait(text: string): string {
+  return text.split(/\s+/).slice(0, 3).join(" ").replace(/[.,;:!?'"]+$/, "").toUpperCase();
 }
 
 /** The child-facing "what this part adds" line for the source spotlight. */

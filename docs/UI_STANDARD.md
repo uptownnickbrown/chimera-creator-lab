@@ -127,10 +127,34 @@ Hero renders and their derived 512px thumbnails are a separate pipeline
 - **Battle/Bracket** (`battle.png`): two creatures on side platforms facing
   inward (loser's side dims after resolve), environment art as the arena
   backdrop panel, prediction = two GIANT tap targets, result = winner
-  laurel + three reason cards + health bars, bracket tree right rail,
-  champion tracker gold panel.
-- **Hall of Champions**: gold treatment, pedestal asset, champion on
-  platform_gold, record plaques.
+  laurel + three reason cards + health bars. Under it ONE tournament strip
+  (2026-09-20): the round pips (fought = winner thumb, current = lit,
+  seated = arena glyph, empty = dim), BATTLE n OF 7 / BATTLES TO GO or the
+  champion + SEE THE FINALE, VIEW BRACKET. The bracket-tree rail and the
+  champion-tracker panel are gone — on the iPad they stacked a screen of
+  scrolling under every result. FIGHT answers in the same frame with the
+  CLASH (FIGHT! slam, rolling arena lines, both fighters lunging) until the
+  gpt-5.1 verdict lands; the story card carries a NEXT pill and flashes its
+  edge on every tap.
+- **Hall of Champions** (rebuilt 2026-09-20): the THRONE — a 300/340px
+  cinematic band with the champion's crowning painting as the darkened
+  backdrop, the champion large on platform_gold in front of it, the name
+  plate + titles + VIEW RECORD / SEE THE CROWNING beside; then the FINALE
+  GALLERY — every championship painting as 3:2 cards in a swipeable rail
+  (SEE ALL → grid), each opening the full-bleed viewer (swipe / arrows /
+  keys, champion + runner-up thumbs, VIEW CHAMPION); then RECORDS, TOP
+  WINNERS and PAST CHAMPIONS side by side. Throne + gallery share the
+  iPad's first screen.
+- **Fusion Wait**: FITTED at every width — the one screen a kid only
+  watches never scrolls and never jitters. Every slot that fills during the
+  wait is reserved before it fills: two-line ticker, four ability rows, one
+  fixed-height centre card (donor contribution → ability walkthrough), a
+  fixed chip/trait grid in the codex preview. See FusionWait.tsx header.
+- **Reveal** rows (2026-09-20): hero row (intro · creature · abilities),
+  then FUSED FROM four-across beside a stats COLUMN, then (iPad) KNOW YOUR
+  CHIMERA full width; every panel content-sized. Never let a rail span two
+  rows on the flowing layout — the panels beside it stretch into empty
+  boxes.
 
 ## Motion
 
@@ -213,6 +237,15 @@ do on the tablet, in order:
    in the header, not under three panels; the bracket setup's action bar
    (RANDOM EIGHT, START) comes first and sticks to the top while the roster
    scrolls; the home page fits one screen (compact action tiles).
+6. **A slow answer gets theatre, not a dimmed button.** FIGHT is a 5-15s
+   model call: the tap swaps the predict UI for the CLASH in the same frame.
+   The finale wait and the fusion wait follow the same rule.
+7. **No resting transform on a tap target.** Centre with layout (`top:
+   calc(50% - h/2)`, flex `align-self`), never `translate(-50%)`: WebKit's
+   touch hit-testing missed the finale viewer's translated arrow buttons
+   (Playwright iPad emulation, 2026-09-20) while the untransformed close
+   button took every tap. `:active` press transforms are fine — they start
+   after the touch has landed.
 
 ## Image delivery (2026-09-20)
 

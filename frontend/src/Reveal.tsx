@@ -20,7 +20,15 @@ import {
   RarityBadge,
   StatRow,
   TraitList,
+  useMediaQuery,
 } from "./ui";
+
+/* Desktop keeps the fitted three-column composition (the side rail scrolls
+   inside itself). At the iPad's 1080px the page flows instead, and the
+   rail's second panel would have stretched the row beside it into a giant
+   empty box (Henry's iPad, 2026-09-20) — so KNOW YOUR CHIMERA moves to its
+   own full-width row there, and the stats stand as a column. */
+const WIDE = "(min-width: 1101px)";
 
 /* Gradual disclosure is the product: until the FIRST streamed field lands
    (the name — server-side it parses ~1-2s into the stream), poll fast so the
@@ -39,6 +47,7 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
   const [flashing, setFlashing] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [renaming, setRenaming] = useState(false);
+  const wide = useMediaQuery(WIDE);
   const timer = useRef<number | null>(null);
   /* Consecutive poll failures. A WiFi blip must not kill the wait — the
      creature keeps cooking server-side — so only a long unbroken run of
@@ -208,6 +217,11 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
   if (!creature) return null;
 
   const title = creature.title || creature.role;
+  const know = (creature.strengths.length > 0 || creature.weaknesses.length > 0) && (
+    <Panel title="KNOW YOUR CHIMERA" accent="cyan" className={wide ? "rv-in" : "rv__know rv-slide"}>
+      <TraitList strengths={creature.strengths} weaknesses={creature.weaknesses} />
+    </Panel>
+  );
 
   return (
     <>
@@ -298,11 +312,7 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
             ))}
           </Panel>
 
-          {(creature.strengths.length > 0 || creature.weaknesses.length > 0) && (
-            <Panel title="KNOW YOUR CHIMERA" accent="cyan" className="rv-in">
-              <TraitList strengths={creature.strengths} weaknesses={creature.weaknesses} />
-            </Panel>
-          )}
+          {wide && know}
           </div>
         </aside>
 
@@ -321,8 +331,10 @@ export function Reveal({ go, creatureId }: { go: Go; creatureId: number }) {
         </Panel>
 
         <Panel title="CHIMERA STATS" accent="teal" className="rv__stats rv-slide">
-          <StatRow stats={creature.core_stats} />
+          <StatRow stats={creature.core_stats} vertical />
         </Panel>
+
+        {!wide && know}
 
         <footer className="rv__foot rv-in" style={anim(1700)}>
           {/* Already saved at creation — the button says so instead of implying

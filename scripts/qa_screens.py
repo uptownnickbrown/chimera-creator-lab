@@ -16,7 +16,9 @@ parallel; marked in the report):
   * the three FROZEN Fusion Wait states (fw_a/fw_b/fw_c) via the creature
     detail endpoint — no real generation, no API spend
 Interaction shots: codex_release (RELEASE confirm), battle_scout (fighter
-stat modal). DELETE endpoints are never called by the sweep.
+stat modal), hall_viewer / hall_grid (finale gallery), battle_clash (FIGHT
+tapped with resolve left hanging). DELETE endpoints are never called by the
+sweep. Note the page scrolls inside `.screen`, not the window.
 """
 import argparse
 import json
@@ -566,6 +568,34 @@ def main(base: str, out: Path) -> None:
             if "battle" in SCREENS:  # absent on a dataset with no fought battles
                 shot("battle_scout", SCREENS["battle"][0], SCREENS["battle"][1], open_scout)
 
+            # Hall: the finale viewer (first painting) and the gallery grid.
+            # Taps go through el.click(): Playwright's own hit-test misplaces
+            # points inside a position:fixed overlay under WebKit iPad
+            # emulation (2026-09-20), and the viewer is one.
+            def open_viewer():
+                try:
+                    page.click(".gcard >> nth=0", timeout=3000)
+                    page.wait_for_timeout(1500)
+                    page.evaluate("document.querySelector('.viewer__arrow--r')?.click()")
+                    page.wait_for_timeout(1200)
+                except Exception:
+                    print("  (hall_viewer: no finale cards)")
+
+            shot("hall_viewer", SCREENS["hall"][0], SCREENS["hall"][1], open_viewer)
+
+            def open_grid():
+                try:
+                    # same hash as the previous shot: no remount, so the
+                    # viewer may still be open over the SEE ALL button
+                    page.evaluate("document.querySelector('.viewer__close')?.click()")
+                    page.wait_for_timeout(300)
+                    page.click("text=SEE ALL", timeout=3000)
+                    page.wait_for_timeout(1500)
+                except Exception:
+                    print("  (hall_grid: no SEE ALL button)")
+
+            shot("hall_grid", SCREENS["hall"][0], SCREENS["hall"][1], open_grid)
+
             # Fusion Wait frozen states — detail endpoint stubbed, zero AI spend.
             hero = newest_hero(base)
             for state, (cid, settle) in FW_STATES.items():
@@ -599,6 +629,28 @@ def main(base: str, out: Path) -> None:
                 page.route("**/api/tournaments/**", block_writes)
                 page.route(f"**/api/tournaments/{t2['id']}", stub_t)
                 shot("battle_predict", f"#/arena/{t2['id']}/{mid}", 3200)
+                page.unroute(f"**/api/tournaments/{t2['id']}")
+                page.unroute("**/api/tournaments/**")
+
+                # The CLASH: FIGHT tapped, the verdict never arrives (resolve
+                # is left hanging, never fulfilled) — the theatre stays up.
+                def hang_resolve(route):
+                    if route.request.method in ("POST", "PUT", "PATCH", "DELETE"):
+                        if not route.request.url.endswith("/resolve"):
+                            route.abort()
+                    else:
+                        route.fallback()
+
+                def tap_fight():
+                    try:
+                        page.click("text=FIGHT!", timeout=3000)
+                        page.wait_for_timeout(1800)
+                    except Exception:
+                        print("  (battle_clash: FIGHT not clickable)")
+
+                page.route("**/api/tournaments/**", hang_resolve)
+                page.route(f"**/api/tournaments/{t2['id']}", stub_t)
+                shot("battle_clash", f"#/arena/{t2['id']}/{mid}", 3200, tap_fight)
                 page.unroute(f"**/api/tournaments/{t2['id']}")
                 page.unroute("**/api/tournaments/**")
             ctx.close()

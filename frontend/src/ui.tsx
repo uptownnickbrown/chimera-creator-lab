@@ -140,6 +140,24 @@ function useNear(lazy: boolean): [React.RefObject<HTMLImageElement>, boolean] {
   return [ref, near];
 }
 
+/** A CSS media query as React state — for the few layouts where markup, not
+    just style, changes at a breakpoint (the reveal's KNOW YOUR CHIMERA panel
+    lives in the side rail on desktop and on its own row on the iPad). */
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() =>
+    typeof matchMedia === "function" ? matchMedia(query).matches : false,
+  );
+  useEffect(() => {
+    if (typeof matchMedia !== "function") return;
+    const mq = matchMedia(query);
+    const onChange = () => setMatches(mq.matches);
+    onChange();
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [query]);
+  return matches;
+}
+
 /** Kid-proof toggles. Henry taps a card, sees nothing for a beat (a render,
     an image swap, a slow frame) and taps again — and again — until something
     visibly happens. On a toggle every even tap undid the odd one, so the card
@@ -665,8 +683,18 @@ export function TraitList({
   );
 }
 
-/** The five child-facing stats (spec §12), tabular numerals, 0-100. */
-export function StatRow({ stats, compact }: { stats: Partial<CoreStats>; compact?: boolean }) {
+/** The five child-facing stats (spec §12), tabular numerals, 0-100.
+    `vertical` stacks them as rows (icon · name · bars · value) for a narrow
+    column — the reveal's stats panel on the iPad. */
+export function StatRow({
+  stats,
+  compact,
+  vertical,
+}: {
+  stats: Partial<CoreStats>;
+  compact?: boolean;
+  vertical?: boolean;
+}) {
   const entries: [string, number][] = [
     ["power", stats.power ?? 0],
     ["speed", stats.speed ?? 0],
@@ -675,7 +703,7 @@ export function StatRow({ stats, compact }: { stats: Partial<CoreStats>; compact
     ["special", stats.special ?? 0],
   ];
   return (
-    <div className={`statrow${compact ? " statrow--compact" : ""}`}>
+    <div className={`statrow${compact ? " statrow--compact" : ""}${vertical ? " statrow--vertical" : ""}`}>
       {entries.map(([key, value]) => (
         <div className="stat" key={key}>
           <span className={`stat__ring t-${STAT_TONES[key] === "orange" ? "red" : STAT_TONES[key]}`}>
