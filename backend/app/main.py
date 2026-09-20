@@ -12,11 +12,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from . import auth
-from .static_cache import StaticCacheMiddleware
 from .api import creatures, library, profile, tournaments
 from .config import get_settings
 from .db import create_all
 from .services import library as library_svc
+from .static_cache import StaticCacheMiddleware
 
 logging.basicConfig(level=logging.INFO)
 

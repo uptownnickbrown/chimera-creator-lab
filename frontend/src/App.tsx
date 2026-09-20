@@ -76,6 +76,42 @@ function sceneFor(route: Route): string {
   return "lab";
 }
 
+/* ── picking up a deploy on the Home Screen app ─────────────────────────────
+   A home-screen web app resumes the page it was suspended on, for days, and
+   iOS only refetches the shell on a cold launch — so a deploy never reached
+   Henry until Nick deleted and re-added the shortcut. The shell is served
+   no-cache now (backend static_cache.py); this watcher does the rest: when
+   the app comes to the foreground (and every 15 minutes) it refetches the
+   shell, compares the content-hashed bundle it names with the one running,
+   and reloads on a quiet screen — or at the next screen change when the
+   current one holds work (the lab's picks, a fusion, a battle). The hash
+   route survives the reload, so Henry lands where he was. Dev serves
+   /src/main.tsx, which never matches, so this is inert under vite. */
+const RUNNING_BUNDLE =
+  Array.from(document.scripts).find((s) => s.type === "module" && s.src)?.src ?? "";
+const UPDATE_POLL_MS = 15 * 60 * 1000;
+
+async function newBundleShipped(): Promise<boolean> {
+  try {
+    const res = await fetch("/index.html", { cache: "no-store" });
+    if (!res.ok) return false;
+    const m = (await res.text()).match(/src="([^"]*\/assets\/index-[^"]+\.js)"/);
+    return Boolean(m && RUNNING_BUNDLE && !RUNNING_BUNDLE.endsWith(m[1]));
+  } catch {
+    return false; // offline or asleep: never a reload loop
+  }
+}
+
+/** Screens with nothing in progress that a reload could lose. */
+function quietScreen(route: Route): boolean {
+  return (
+    route.name === "home" ||
+    route.name === "codex" ||
+    route.name === "hall" ||
+    (route.name === "arena" && !route.matchId)
+  );
+}
+
 export default function App() {
   const [route, setRoute] = useState<Route>(() => parseHash(location.hash));
   const [profile, setProfile] = useState<ProfileView | null>(null);
@@ -124,6 +160,27 @@ export default function App() {
   useEffect(() => {
     refreshProfile();
   }, [refreshProfile, route.name]);
+
+  /* Deploy watcher (see newBundleShipped above). */
+  const [stale, setStale] = useState(false);
+  useEffect(() => {
+    let dead = false;
+    const check = () => {
+      if (document.visibilityState !== "visible") return;
+      newBundleShipped().then((yes) => !dead && yes && setStale(true));
+    };
+    const onVisible = () => document.visibilityState === "visible" && check();
+    document.addEventListener("visibilitychange", onVisible);
+    const timer = window.setInterval(check, UPDATE_POLL_MS);
+    return () => {
+      dead = true;
+      document.removeEventListener("visibilitychange", onVisible);
+      clearInterval(timer);
+    };
+  }, []);
+  useEffect(() => {
+    if (stale && quietScreen(route)) location.reload();
+  }, [stale, route]);
 
   /* Codex keeps one mount across row taps: the id lives in the hash so refresh
      and deep links work, but remounting on every selection would wipe the
