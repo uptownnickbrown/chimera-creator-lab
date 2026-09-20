@@ -1420,9 +1420,19 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   font-weight: 700;
   font-size: 14px;
 }
+/* Portrait wells that are sized by a grid track or an aspect ratio (this
+   one, the cluster orbs, the Fusion Wait spots) position their image
+   ABSOLUTELY and size it in percent of the well. An in-flow `height: 100%`
+   image inside such a well is the stage-art escape all over again: iPad
+   Safari resolves the percentage against an auto row, falls back to the
+   image's intrinsic size, and the portrait grows down over the name plate
+   (photographed on Henry's iPad, 2026-09-20; Playwright's newer WebKit does
+   not reproduce it). An absolutely positioned box resolves against the
+   well's padding box, which every engine has already laid out. */
 .slot__art {
   position: relative;
   display: grid;
+  grid-template-rows: 100%;
   place-items: center;
   width: 100%;
   min-height: 0;
@@ -1430,6 +1440,9 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
 }
 .slot__art .asset {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
   padding: 10px 10px 6px;
@@ -1438,9 +1451,9 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   object-position: 50% 100%;
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
 }
-.slot__art .summonwait { padding: 0; }
+.slot__art .summonwait { position: absolute; inset: 0; width: auto; height: auto; padding: 0; }
 .slot__art--empty { background: radial-gradient(circle at 50% 45%, rgba(79, 216, 255, 0.12), rgba(4, 8, 22, 0.9) 70%); }
-.slot__art--empty .asset { width: 74%; height: 74%; padding: 0; object-fit: contain; opacity: 0.5; }
+.slot__art--empty .asset { left: 13%; top: 13%; width: 74%; height: 74%; padding: 0; object-fit: contain; opacity: 0.5; }
 .slot__plate {
   display: grid;
   gap: 1px;
@@ -1544,7 +1557,15 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 /* `screen` lifts the creature into a glowing hologram over the platform — a
    proto-fusion, not four stickers. Tight portraits: show the whole creature
    inside the orb rather than a cover-crop of its middle. */
-.cluster__art .asset { width: 84%; height: 84%; object-fit: contain; mix-blend-mode: screen; }
+.cluster__art .asset {
+  position: absolute;
+  left: 8%;
+  top: 8%;
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  mix-blend-mode: screen;
+}
 .cluster__art::after {
   content: "";
   position: absolute;
@@ -1569,7 +1590,7 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   color: rgba(120, 200, 255, 0.7);
   text-shadow: 0 0 12px rgba(79, 216, 255, 0.6);
 }
-.cluster__art--empty .asset { mix-blend-mode: normal; opacity: 0.32; width: 78%; height: 78%; object-fit: contain; }
+.cluster__art--empty .asset { mix-blend-mode: normal; opacity: 0.32; left: 11%; top: 11%; width: 78%; height: 78%; object-fit: contain; }
 .cluster__art--empty::after { display: none; }
 .cluster__name {
   padding: 1px 7px;
@@ -1801,8 +1822,13 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   overflow: hidden;
 }
 .pcard__art .asset {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
+  padding: inherit;
+  box-sizing: border-box;
   object-fit: contain;
   object-position: 50% 100%;
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
@@ -1885,6 +1911,32 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   .adds { grid-template-columns: 40px minmax(0, 1fr); gap: 9px; padding: 5px 7px; }
   .adds__art { width: 40px; height: 40px; }
   .adds__blurb { font-size: 14px; line-height: 1.25; }
+  /* Slot cards are 98x115 here and the two-line plate left the portrait a
+     63px well. A seated part says so with a green index badge and its name
+     alone; the SELECTED line and the third name line go, the art gets the
+     room back. */
+  .slot__plate { gap: 0; padding: 5px 5px 6px; }
+  .slot.is-filled .slot__state { display: none; }
+  .slot.is-filled .slot__index { background: var(--green); }
+  /* three lines is the floor: ALLIGATOR SNAPPING TURTLE needs them at 13px in a 98px card */
+  .slot__name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+  .slot__art .asset { padding: 7px 7px 4px; }
+
+  /* De-crowding the fitted frame (Nick, 2026-09-20: "it still feels crowded").
+     The same message was on screen three times — the STEP counter in the
+     title, the "N OF 4 PARTS CHOSEN" line, and the stage hint — while the
+     picker head and the CREATE button's subtitle already say it. One header
+     line (title + dots), no hint, no BACK TO HOME (HOME is one tap away in
+     the nav), and the reclaimed height goes to breathing room and the stage. */
+  .lab { gap: 12px; }
+  .lab__head { grid-auto-flow: column; align-items: center; justify-content: center; gap: 18px; }
+  .lab__step, .steps__label, .lab__hint, .lab__foot .btn--ghost { display: none; }
+  .lab__main { gap: 16px; }
+  /* Rows inside WHAT EACH PART ADDS lose their own box chrome: four bordered
+     rows inside a bordered panel read as clutter at this size. */
+  .adds { background: none; box-shadow: none; clip-path: none; padding: 5px 2px; }
+  .adds.is-filled { box-shadow: none; }
+  .adds + .adds { border-top: 1px solid rgba(79, 216, 255, 0.14); }
 }
 
 /* ── Codex (codex.png) ───────────────────────────────────────────────────── */
@@ -3992,13 +4044,20 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
   box-sizing: border-box;
   overflow: hidden;
 }
+.summon-cand__art { position: relative; }
 .summon-cand__art .asset {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
+  padding: inherit;
+  box-sizing: border-box;
   object-fit: contain;
   object-position: 50% 100%;
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
 }
+.summon-cand__art .summonwait { position: absolute; inset: 0; width: auto; height: auto; }
 .summon-cand__plate {
   display: flex;
   align-items: center;
@@ -4874,7 +4933,10 @@ button.chip:hover { transform: translateY(-1px); filter: brightness(1.12); }
   border-radius: 50%;
   box-shadow: 0 0 0 3px rgba(79, 216, 255, 0.7), 0 0 44px -4px var(--cyan), 0 14px 40px rgba(0, 0, 0, 0.6);
 }
-.fw__srcspot-art .asset, .fw__srcspot-art .summonwait { width: 100%; height: 100%; object-fit: cover; }
+.fw__srcspot-art { position: relative; }
+.fw__srcspot-art .asset, .fw__srcspot-art .summonwait {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover;
+}
 .fw__srcspot-art .asset { padding: 8%; box-sizing: border-box; object-fit: contain; }
 .fw__srcspot-plate {
   display: grid;
