@@ -366,12 +366,86 @@ async def debrand_via_llm(text: str, names: list[str]) -> str:
     return debrand(out, wanted)
 
 
+# Two redesign distances. "close" threads the needle (Nick, 2026-09-20): the
+# player asked for THIS creature, so it should still read as a cousin of it.
+# "far" is the last resort when even the cousin is refused.
+REIMAGINE_CLOSE_SYSTEM = (
+    "The image model refused a faithful portrait of this creature because "
+    "its anatomy alone identifies a famous copyrighted character. Describe "
+    "a CLOSE COUSIN of it for a kids' creature game: keep the same body "
+    "plan, the same element and powers, the same overall palette family, "
+    "size, mood and pose — a child who asked for this creature should still "
+    "recognize the kind of beast they wanted. Change ONLY the two or three "
+    "signature details that make it that specific character: shift its "
+    "exact colors by a shade or two, alter a marking, a crest, a tail tip, "
+    "a proportion. Never name or hint at the original. Output plain anatomy "
+    "only — body plan, colors, textures, features, pose — as one flowing "
+    "description a painter could work from directly, about the same length "
+    "as the input."
+)
+REIMAGINE_FAR_SYSTEM = (
+    "The image model refused a portrait of this creature twice because its "
+    "anatomy identifies a famous copyrighted character. Reimagine it as an "
+    "ORIGINAL species for a kids' creature game: keep the general animal "
+    "type, size, mood and one or two of its powers, but change the color "
+    "scheme, the silhouette and the signature features enough that nobody "
+    "could mistake it for any existing character. Never name or hint at the "
+    "original. Output plain anatomy only — body plan, colors, textures, "
+    "features, pose — as one flowing description a painter could work from "
+    "directly, about the same length as the input."
+)
+
+
+async def reimagine_via_llm(text: str, names: list[str], *, distance: str = "close") -> str:
+    """Rungs three and four: not a scrub but a redesign (the 2026-09-20
+    resweep showed Charizard, Mewtwo, Blastoise and Umbreon refused even with
+    every name gone — the filter knows them by shape). `distance` is "close"
+    (a cousin the player still recognizes) or "far" (a clearly new species).
+    The regex scrub runs on top; if the model call fails the caller gets a
+    clearly-different text back and the ladder ends on the next refusal."""
+    from . import ai
+
+    wanted = [n for n in dict.fromkeys(n.strip() for n in names) if n]
+    system = REIMAGINE_FAR_SYSTEM if distance == "far" else REIMAGINE_CLOSE_SYSTEM
+    out = ("A close cousin of, but not quite: " if distance != "far"
+           else "An original creature loosely inspired by, but clearly different from: ") + text
+    try:
+        if not ai.ai_enabled():
+            raise RuntimeError("AI disabled")
+        user = (
+            "Names that must not appear in any form (nor anything that hints "
+            f"at them): {', '.join(wanted) or '(none given)'}\n\n"
+            f"Refused description:\n{text}"
+        )
+        res = await ai.structured(system, user, DebrandedDescription, name="reimagine")
+        out = res.description.strip() or out
+    except Exception as exc:  # noqa: BLE001 - late rungs: degrade, never crash
+        log.warning("images: LLM reimagine (%s) failed (%s) — using the scrubbed text",
+                    distance, str(exc)[:200])
+    return debrand(out, wanted)
+
+
+#: Prompt variants a refused render walks through, in order. "named" is the
+#: pregen-shaped prompt, "anonymous" the faithful name-free rewrite, "cousin"
+#: a close redesign the player still recognizes, "distinct" a clearly new
+#: species — the last resort.
+_NEXT_VARIANT = {"named": "anonymous", "anonymous": "cousin", "cousin": "distinct"}
+
+
+async def _rewrite_for(variant: str, text: str, names: list[str]) -> str:
+    if variant == "anonymous":
+        return await debrand_via_llm(text, names)
+    return await reimagine_via_llm(text, names, distance="close" if variant == "cousin" else "far")
+
+
 async def _backoff(attempt: int) -> None:
     """Retry pause for transient API failures (tests stub this out)."""
     await asyncio.sleep(2 * attempt)
 
 
-PART_PORTRAIT_ATTEMPTS = 3
+#: Four rungs: named, anonymous, cousin, distinct (refused renders are free;
+#: only the text rewrites cost, a few tenths of a cent each).
+PART_PORTRAIT_ATTEMPTS = 4
 
 
 async def generate_part_portrait(
@@ -406,14 +480,16 @@ async def generate_part_portrait(
                 await _backoff(attempt)
                 continue
             rejected.add(prompt)
-            if variant == "anonymous":
-                log.warning("images: part portrait attempt %d for %s: the anonymous prompt "
-                            "was safety-rejected too — giving up", attempt, file_slug)
+            nxt = _NEXT_VARIANT.get(variant)
+            if nxt is None:
+                log.warning("images: part portrait attempt %d for %s: every prompt variant "
+                            "was safety-rejected — giving up", attempt, file_slug)
                 break
-            log.warning("images: part portrait attempt %d for %s safety-rejected (%s) — "
-                        "rewriting without the name", attempt, file_slug, str(exc)[:160])
-            scrubbed = await debrand_via_llm(description, [name, *(names or [])])
-            prompt, variant = part_portrait_prompt_anonymous(scrubbed), "anonymous"
+            log.warning("images: part portrait attempt %d for %s (%s) safety-rejected (%s) "
+                        "— trying the %s prompt", attempt, file_slug, variant,
+                        str(exc)[:120], nxt)
+            text = await _rewrite_for(nxt, description, [name, *(names or [])])
+            prompt, variant = part_portrait_prompt_anonymous(text), nxt
             if prompt in rejected:
                 break
             continue
@@ -464,12 +540,13 @@ def _hero_names(creature) -> list[str]:
     return names
 
 
-def hero_ladder() -> tuple[str, str, str]:
-    """(hero_quality, hero_quality, "medium") — the cost knob lives in
-    config.Settings (CHIMERA_HERO_QUALITY), read at call time so a dashboard
-    change takes effect on the next render, and tests can flip it."""
+def hero_ladder() -> tuple[str, str, str, str]:
+    """(hero_quality, hero_quality, "medium", "medium") — four rungs so the
+    safety ladder (named, anonymous, cousin, distinct) fits. The cost knob
+    lives in config.Settings (CHIMERA_HERO_QUALITY), read at call time so a
+    dashboard change takes effect on the next render, and tests can flip it."""
     quality = get_settings().hero_quality
-    return (quality, quality, "medium")
+    return (quality, quality, "medium", "medium")
 
 
 async def generate_hero(creature: Creature) -> str | None:
@@ -501,15 +578,17 @@ async def generate_hero(creature: Creature) -> str | None:
                 await _backoff(attempt)
                 continue
             rejected.add(prompt)
-            if variant == "anonymous":
-                log.warning("images: hero attempt %d (%s) for %s: the rewritten prompt was "
-                            "safety-rejected too — giving up", attempt, quality, creature.id)
+            nxt = _NEXT_VARIANT.get(variant)
+            if nxt is None:
+                log.warning("images: hero attempt %d (%s) for %s: every prompt variant was "
+                            "safety-rejected — giving up", attempt, quality, creature.id)
                 break
-            log.warning("images: hero attempt %d (%s) for %s safety-rejected (%s) — "
-                        "rewriting the visual_spec to plain anatomy",
-                        attempt, quality, creature.id, str(exc)[:160])
-            spec = await debrand_via_llm(creature.visual_spec or creature.name, _hero_names(creature))
-            prompt, variant = HERO_STYLE + spec, "anonymous"
+            log.warning("images: hero attempt %d (%s) for %s (%s) safety-rejected (%s) — "
+                        "trying the %s visual_spec", attempt, quality, creature.id, variant,
+                        str(exc)[:120], nxt)
+            spec = await _rewrite_for(nxt, creature.visual_spec or creature.name,
+                                      _hero_names(creature))
+            prompt, variant = HERO_STYLE + spec, nxt
             if prompt in rejected:
                 break
             continue

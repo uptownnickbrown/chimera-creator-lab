@@ -247,7 +247,9 @@ AUDIT_JS = """
   };
   // Intentional overlays: the picker rail arrows ride the strip edges and the
   // battle nameplates sit on the arena corners by design.
-  const INTENTIONAL = ".rail__arrow, .corner__stage, .corner__id";
+  // (.summonwait--failed is the TAP TO REPAINT plate that fills a summoned
+  // card's well; the ✕ release button is meant to ride on top of it.)
+  const INTENTIONAL = ".rail__arrow, .corner__stage, .corner__id, .summonwait--failed";
   const SEL = "button, a, [role=button], .btn, .panel, footer, .fw__spot, " +
               ".predict__ask, .nextmatch, .tile, .pickplate";
   const inFixedOverlay = (el) => {

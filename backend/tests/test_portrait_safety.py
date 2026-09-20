@@ -53,7 +53,12 @@ def arm_real_ladder(monkeypatch) -> None:
     async def no_wait(attempt):
         return None
 
+    async def reimagine(text, names, *, distance="close"):
+        lead = "A close cousin: " if distance == "close" else "A distant cousin: "
+        return lead + images.debrand(text, names)
+
     monkeypatch.setattr(images, "debrand_via_llm", scrub)
+    monkeypatch.setattr(images, "reimagine_via_llm", reimagine)
     monkeypatch.setattr(images, "_backoff", no_wait)
 
 
@@ -196,7 +201,8 @@ async def test_part_portrait_never_resends_a_rejected_prompt(client, monkeypatch
     from app.services import images
 
     arm_real_ladder(monkeypatch)
-    render = FakeRender(Exception(SAFETY_MSG), Exception(SAFETY_MSG), ellipse_png())
+    render = FakeRender(Exception(SAFETY_MSG), Exception(SAFETY_MSG), Exception(SAFETY_MSG),
+                        Exception(SAFETY_MSG), ellipse_png())
     monkeypatch.setattr(images, "_render", render)
 
     art = await images.generate_part_portrait(
@@ -205,9 +211,33 @@ async def test_part_portrait_never_resends_a_rejected_prompt(client, monkeypatch
         names=["Mewtwo"],
     )
     assert art is None
-    # Named, then anonymous, then nothing — the third slot is never spent on a
-    # prompt the filter already refused.
-    assert len(render.prompts) == 2 and len(set(render.prompts)) == 2
+    # Named, anonymous, cousin, distinct — four different prompts, and never a
+    # fifth call on one the filter already refused.
+    assert len(render.prompts) == 4 and len(set(render.prompts)) == 4
+    assert "A close cousin" in render.prompts[2] and "A distant cousin" in render.prompts[3]
+
+
+async def test_part_portrait_reimagines_when_the_faithful_rewrite_is_refused(client, monkeypatch):
+    """The 2026-09-20 resweep: Blastoise refused with every name gone — the
+    filter knows the shell cannons. The third rung redesigns it."""
+    from app.services import images
+
+    arm_real_ladder(monkeypatch)
+    render = FakeRender(Exception(SAFETY_MSG), Exception(SAFETY_MSG), ellipse_png())
+    monkeypatch.setattr(images, "_render", render)
+
+    art = await images.generate_part_portrait(
+        "custom_blastoise", "Blastoise",
+        "Blastoise: a huge bipedal blue turtle with two water cannons in its shell.",
+        names=["Blastoise"],
+    )
+    assert art == "/media/parts/custom_blastoise.webp"
+    named, anonymous, cousin = render.prompts
+    assert "Creature: Blastoise." in named
+    assert "Blastoise" not in anonymous and "cousin" not in anonymous
+    assert "A close cousin" in cousin and "Blastoise" not in cousin
+    assert "water cannons" in cousin, "the close rung keeps the creature's own features"
+    assert cousin.startswith(images.PART_PORTRAIT_STYLE)
 
 
 async def test_part_portrait_transient_error_retries_the_same_prompt(client, monkeypatch):
@@ -226,17 +256,17 @@ async def test_part_portrait_transient_error_retries_the_same_prompt(client, mon
     assert "Creature: Zapdos." in render.prompts[0]
 
 
-async def test_part_portrait_caps_at_three_attempts(client, monkeypatch):
+async def test_part_portrait_caps_at_four_attempts(client, monkeypatch):
     from app.services import images
 
     arm_real_ladder(monkeypatch)
     render = FakeRender(RuntimeError("500"), RuntimeError("500"), RuntimeError("500"),
-                        ellipse_png())
+                        RuntimeError("500"), ellipse_png())
     monkeypatch.setattr(images, "_render", render)
 
     art = await images.generate_part_portrait("custom_x", "Xeno Cat", "A cat.", names=[])
     assert art is None
-    assert len(render.calls) == 3
+    assert len(render.calls) == images.PART_PORTRAIT_ATTEMPTS == 4
 
 
 # -- hero renders ---------------------------------------------------------------
@@ -267,12 +297,27 @@ async def test_hero_gives_up_when_the_rewrite_is_rejected_too(client, monkeypatc
     from app.services import images
 
     arm_real_ladder(monkeypatch)
+    render = FakeRender(Exception(SAFETY_MSG), Exception(SAFETY_MSG), Exception(SAFETY_MSG),
+                        Exception(SAFETY_MSG), ellipse_png(size=(1536, 1024)))
+    monkeypatch.setattr(images, "_render", render)
+
+    assert await images.generate_hero(hero_creature()) is None
+    assert len(render.prompts) == 4 and len(set(render.prompts)) == 4
+    assert "A close cousin" in render.prompts[2] and "A distant cousin" in render.prompts[3]
+
+
+async def test_hero_third_rung_is_the_reimagined_spec(client, monkeypatch):
+    from app.services import images
+
+    arm_real_ladder(monkeypatch)
     render = FakeRender(Exception(SAFETY_MSG), Exception(SAFETY_MSG),
                         ellipse_png(size=(1536, 1024)))
     monkeypatch.setattr(images, "_render", render)
 
-    assert await images.generate_hero(hero_creature()) is None
-    assert len(render.prompts) == 2 and render.prompts[0] != render.prompts[1]
+    assert await images.generate_hero(hero_creature(id=4444)) == "/media/creatures/4444.webp"
+    assert [c["quality"] for c in render.calls] == ["high", "high", "medium"]
+    assert "A close cousin" in render.prompts[2]
+    assert "night" not in render.prompts[2].lower()
 
 
 async def test_hero_quality_knob_from_env(client, monkeypatch):
@@ -285,7 +330,7 @@ async def test_hero_quality_knob_from_env(client, monkeypatch):
     render = FakeRender(ellipse_png(size=(1536, 1024)))
     monkeypatch.setattr(images, "_render", render)
 
-    assert images.hero_ladder() == ("medium", "medium", "medium")
+    assert images.hero_ladder() == ("medium", "medium", "medium", "medium")
     assert await images.generate_hero(hero_creature(id=4343)) == "/media/creatures/4343.webp"
     assert render.calls[0]["quality"] == "medium"
 
