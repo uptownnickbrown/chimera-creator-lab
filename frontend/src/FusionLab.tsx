@@ -104,7 +104,8 @@ const RailCard = memo(function RailCard({
     >
       <span className="pcard__art">
         <PartImg source={s} onRepaint={onRepaint} lazy />
-        {s.custom && <span className="pcard__summoned">SUMMONED</span>}
+        {/* No SUMMONED ribbon: one list, no badge over the art (Nick,
+            2026-09-20). The quiet ✕ below is the only summoned-only mark. */}
         {taken && <span className="pcard__check">✓</span>}
         {s.custom && !removing && (
           <span

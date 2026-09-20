@@ -4509,24 +4509,6 @@ h1, h2, h3 { margin: 0; font-family: var(--font-display); font-weight: 700; }
 @keyframes summon-breathe { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.07); opacity: 1; } }
 @keyframes summon-twinkle { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
 
-/* SUMMONED ribbon on custom parts in the rail. */
-.pcard__summoned {
-  position: absolute;
-  top: 7px;
-  left: 7px;
-  padding: 2px 7px 1px;
-  clip-path: var(--clip-notch-sm);
-  --notch-sm: 5px;
-  background: linear-gradient(180deg, rgba(168, 107, 255, 0.95), rgba(110, 58, 200, 0.9));
-  color: #fff;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
-  box-shadow: 0 0 12px rgba(168, 107, 255, 0.75);
-}
-
 /* A matched/conjured part just flew in — slot and rail card pulse purple. */
 .slot.is-flash, .pcard.is-flash {
   animation: summon-land 1.8s ease-out 1;
