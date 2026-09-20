@@ -30,7 +30,7 @@ log = logging.getLogger("chimera.creatures")
 router = APIRouter(prefix="/api/creatures", tags=["creatures"])
 
 
-#: Absolute ceiling for the record phase (~26s typical) — see _generate_task.
+#: Absolute ceiling for the record phase (~16s typical) — see _generate_task.
 RECORD_DEADLINE_S = 180
 #: Outer fence over the WHOLE lifecycle (record + hero render + retries).
 TASK_DEADLINE_S = 420

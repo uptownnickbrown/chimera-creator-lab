@@ -465,7 +465,7 @@ async def generate_part_portrait(
 ) -> str | None:
     """Render a summoned part's picker portrait; return its web path or None.
 
-    quality=medium (~26s, the verified fast path) — a picker card, not a hero
+    quality=medium (~13s on Flare) — a picker card, not a hero
     render. Attempt 1 is the pregen-shaped prompt (with "Creature: <name>.");
     a safety rejection switches the remaining attempts to an anonymous prompt
     (name and franchise words scrubbed, anatomy kept). A rejected prompt is
@@ -651,7 +651,7 @@ async def generate_championship_art(fa: Creature, fb: Creature) -> str | None:
     for two-creature identity preservation).
 
     Generated when the FINALISTS are known (semifinals complete), before the
-    winner is — so the scene is a neutral titanic clash, and the ~74s render
+    winner is — so the scene is a neutral titanic clash, and the ~22s render
     hides inside the final prediction + battle. Championship only, never
     blocking: None simply means the ceremony uses the composited finale.
     """

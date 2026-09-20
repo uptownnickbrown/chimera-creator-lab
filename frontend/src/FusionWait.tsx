@@ -1,4 +1,5 @@
-/* The Fusion Wait — the 30-75s the chimera takes to cook, staged as theatre
+/* The Fusion Wait — the ~40s the chimera takes to cook (record ~16s, hero
+   ~20s on gpt-image-2.5 Flare; it was 30-75s on 1.5), staged as theatre
    rather than a spinner (ARCHITECTURE.md: staged reveal; brief: never a bare
    spinner).
 
@@ -204,10 +205,15 @@ export function FusionWait({
       return;
     }
     const t0 = Date.now();
+    /* Time constant sized to the render: gpt-image-2.5 Flare lands a high
+       hero in ~20s (xhigh ~26s), so the crawl reads ~75-80% when the real
+       signal arrives instead of jumping from 46%. It was 28 for the ~50s
+       gpt-image-1.5 render (bakeoff 2026-09-20). */
+    const FORGE_TAU_S = 11;
     const tick = () =>
       setForge((prev) => {
         const s = (Date.now() - t0) / 1000;
-        return Math.max(prev, Math.min(90, Math.round(90 * (1 - Math.exp(-s / 28)))));
+        return Math.max(prev, Math.min(90, Math.round(90 * (1 - Math.exp(-s / FORGE_TAU_S)))));
       });
     tick();
     const t = setInterval(tick, 700);

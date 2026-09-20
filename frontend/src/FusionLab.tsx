@@ -355,14 +355,16 @@ export function FusionLab({ go }: { go: Go }) {
         /* transient — keep polling */
       }
       if (dead) return;
-      /* A portrait is normally ~26s, but the image API's retry ladder can
-         legally stretch one to many minutes (300s client timeout per attempt,
-         two attempts — observed live 2026-08-10: the render landed AFTER the
-         old 4-minute give-up, so the card said PAINTING… forever). Never stop
+      /* A portrait is normally ~13s on gpt-image-2.5 Flare (was ~26s), so
+         the first minute polls every 3s and the card flips within a beat of
+         the render landing; but the image API's retry ladder can legally
+         stretch one to many minutes (300s client timeout per attempt, four
+         rungs — observed live 2026-08-10: the render landed AFTER the old
+         4-minute give-up, so the card said PAINTING… forever). Never stop
          watching while the lab is open — just watch more slowly. */
-      timer = window.setTimeout(tick, polls < 48 ? 5000 : 30000);
+      timer = window.setTimeout(tick, polls < 20 ? 3000 : polls < 48 ? 5000 : 30000);
     };
-    timer = window.setTimeout(tick, 5000);
+    timer = window.setTimeout(tick, 3000);
     return () => {
       dead = true;
       clearTimeout(timer);

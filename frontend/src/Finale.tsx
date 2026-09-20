@@ -4,7 +4,7 @@
 
    Three states, staged:
      WAITING   the champion is crowned but the finals key art (1536x1024, the
-               two finalists mid-clash) is still painting (~74s). Its own
+               two finalists mid-clash) is still painting (~22s on Flare; ~74s on 1.5). Its own
                theatre: the finalists face off, energy arcs between them, the
                final's story beats replay underneath. Never a spinner.
      ARRIVED   the art decodes -> a light-bloom iris (never full white), the

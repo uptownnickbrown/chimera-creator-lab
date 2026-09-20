@@ -124,7 +124,7 @@ def _battle_records(winner: Creature, loser: Creature, battle: Battle) -> None:
 
 # The bracket JSON is read-modify-written whole, and three writers can overlap:
 # predict, resolve (which holds its copy across a ~15s LLM await), and the
-# finals key-art task (~74s render deliberately overlapped with the final
+# finals key-art task (~22s render deliberately overlapped with the final
 # match). Without serialization the last committer silently reverts the
 # others — a lost winner, a lost pick, or paid key art stuck at "pending".
 # Single-process app, so one asyncio.Lock per tournament is the whole story;
@@ -336,7 +336,7 @@ async def resolve(
         bracket_svc.advance(bracket, round_index, match_index, winner_id)
 
         # Semifinals just completed -> both finalists known: pre-generate the
-        # championship key art now so the ~74s render hides inside the final
+        # championship key art now so the ~22s render hides inside the final
         # prediction + battle and the ceremony never waits (AI_CONTRACTS §3).
         final = bracket["rounds"][-1]["matches"][0]
         if (final.get("a") and final.get("b") and final.get("winner") is None
@@ -380,7 +380,7 @@ async def _final_art_task(tournament_id: int, a_id: int, b_id: int) -> None:
     from ..db import session_factory
 
     # Load, CLOSE the session, render sessionless, reopen to write: holding a
-    # SQLite transaction across the ~74s render blocked every other writer
+    # SQLite transaction across the render blocked every other writer
     # (this is what stranded creatures at "generating", 2026-08-09).
     async with session_factory()() as db:
         fa = await db.get(Creature, a_id)
